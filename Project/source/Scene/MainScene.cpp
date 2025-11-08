@@ -180,6 +180,11 @@ void MainScene::Update_Sub(void) noexcept {
 		CamPosition1 = EyeMat.pos();
 		CamTarget1 = CamPosition1 + EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp1 = EyeMat.yvec();
+
+
+		CamTarget1 = EyeMat.pos() + EyeMat.yvec() * (1.f * Scale3DRate);
+		CamPosition1 = CamTarget1 - EyeMat.zvec() * (-10.f * Scale3DRate);
+		CamUp1 = EyeMat.yvec();
 	}
 	if (this->m_FPSPer != 1.f) {
 		Util::Matrix4x4 EyeMat = Player->GetEyeMatrix();
@@ -272,18 +277,6 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	auto* CameraParts = Camera::Camera3D::Instance();
 
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
-	if (Player->IsFreeView()) {
-		DxLib::SetDrawBright(0, 255, 0);
-		m_Cursor->DrawRotaGraph(static_cast<int>(Player->GetAimPoint2D().x), static_cast<int>(Player->GetAimPoint2D().y), 1.0f, 0.f, true);
-
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * m_AutoAimActive), 0, 255));
-		DxLib::SetDrawBright(128, 0, 0);
-		m_Lock->DrawRotaGraph(static_cast<int>(Player->GetAimPoint2D().x), static_cast<int>(Player->GetAimPoint2D().y), 1.0f * (2.f - m_AutoAimActive), m_AimRotate, true);
-		DxLib::SetDrawBright(255, 0, 0);
-		m_Lock->DrawRotaGraph(static_cast<int>(Player->GetAimPoint2D().x), static_cast<int>(Player->GetAimPoint2D().y), 1.0f * (2.f - m_AutoAimActive), -m_AimRotate, true);
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-		DxLib::SetDrawBright(255, 255, 255);
-	}
 	{
 		int xpos = DrawerMngr->GetDispWidth() / 2;
 		int ypos = DrawerMngr->GetDispHeight() * 3 / 4;

@@ -20,12 +20,6 @@ void Plane::Update_Chara(void) noexcept {
 	bool RightKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::D);
 	bool UpKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::W);
 	bool DownKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::S);
-	uint8_t				MoveKey = 0;
-	MoveKey |= LeftKey ? (1 << 0) : 0;
-	MoveKey |= RightKey ? (1 << 1) : 0;
-	MoveKey |= UpKey ? (1 << 2) : 0;
-	MoveKey |= DownKey ? (1 << 3) : 0;
-
 
 	Util::Matrix4x4 Mat = GetEyeMatrix().rotation() * GetMat().rotation().inverse();
 	{
@@ -64,30 +58,13 @@ void Plane::Update_Chara(void) noexcept {
 		float RollPer = 0.f;
 		if (!IsFPSView()) {
 			if (m_PtichPer <= Util::deg2rad(-5.f * DeltaTime)) {
-				if (m_YawPer > 0.f) {
-					RollPer = Util::deg2rad(100.f * DeltaTime);
-				}
-				else {
-					RollPer = Util::deg2rad(-100.f * DeltaTime);
-				}
+				RollPer = Util::deg2rad(100.f * DeltaTime) * std::clamp(m_YawPer / Util::deg2rad(20.f * DeltaTime), -1.f, 1.f);
 			}
 			if (std::fabsf(m_YawPer) >= Util::deg2rad(2.f * DeltaTime)) {
-				if (m_YawPer > 0.f) {
-					RollPer = Util::deg2rad(100.f * DeltaTime);
-				}
-				else {
-					RollPer = Util::deg2rad(-100.f * DeltaTime);
-				}
+				RollPer = Util::deg2rad(100.f * DeltaTime) * std::clamp(m_YawPer / Util::deg2rad(20.f * DeltaTime), -1.f, 1.f);
 			}
 			if (std::fabsf(m_PtichPer) <= Util::deg2rad(5.f * DeltaTime) && std::fabsf(m_YawPer) <= Util::deg2rad(2.f * DeltaTime)) {
-				if (Mat.yvec().y < 0.9f) {
-					if (Mat.yvec().x > 0.f) {
-						RollPer = Util::deg2rad(-100.f * DeltaTime);
-					}
-					else {
-						RollPer = Util::deg2rad(100.f * DeltaTime);
-					}
-				}
+				RollPer = Util::deg2rad(-100.f * DeltaTime) * std::clamp(Mat.yvec().x / 1.f, -1.f, 1.f);
 			}
 		}
 		if (LeftKey && !RightKey) {
@@ -139,7 +116,6 @@ void Plane::Update_Chara(void) noexcept {
 
 
 
-	bool IsMove = (MoveKey != 0);
 	{
 		this->m_RadAdd.y = Util::deg2rad(static_cast<float>(LookX) / 30.f);
 		this->m_RadAdd.x = Util::deg2rad(static_cast<float>(-LookY) / 30.f);
@@ -202,21 +178,16 @@ void Plane::Update_Chara(void) noexcept {
 		}
 	}
 	// 進行方向に前進
-	Util::Easing(&m_Speed, (IsMove) ? GetSpeedMax() : 0.f, 0.9f);
+	Util::Easing(&m_Speed, GetSpeedMax(), 0.9f);
 
 	// 移動ベクトルを加算した仮座標を作成
 	Util::VECTOR3D PosBefore = GetTargetPos();
 	Util::VECTOR3D PosAfter;
-
-	Util::VECTOR2D InputVec = Util::VECTOR2D::zero();
 	{
-		Util::VECTOR3D Vec;
-		Vec.x = InputVec.x;
-		Vec.z = InputVec.y;
+		Util::VECTOR3D Vec = GetMat().zvec2();
 		PosAfter = PosBefore + Util::Matrix3x3::Vtrans(Vec * -GetSpeed(), this->m_Rot);
 	}
-
-	//他キャラとのヒット判定
+	//ヒット判定
 	//TODO
 
 	// 仮座標を反映

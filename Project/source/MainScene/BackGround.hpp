@@ -43,6 +43,7 @@ public:
 	}
 
 	void BGDraw(void) const noexcept {
+		SkyBoxID.SetMatrix(Util::Matrix4x4::Mtrans(GetCameraPosition()));
 		DxLib::SetUseLighting(FALSE);
 		SkyBoxID.DrawModel();
 		DxLib::SetUseLighting(TRUE);

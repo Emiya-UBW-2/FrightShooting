@@ -41,8 +41,6 @@ class MainScene : public Util::SceneBase {
 	Sound::SoundUniqueID			m_cursorID{ InvalidID };
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
 	Sound::SoundUniqueID			m_EnviID{ InvalidID };
-	float							m_AutoAimActive{};
-	float							m_AimRotate{};
 	bool							m_UseLens{ false };
 	char		padding4[3]{};
 	Util::VECTOR2D					m_LensPos{};
