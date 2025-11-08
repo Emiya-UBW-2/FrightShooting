@@ -101,22 +101,10 @@
     <ClCompile Include="source\Util\Sound.cpp">
       <Filter>ソース ファイル\Util</Filter>
     </ClCompile>
-    <ClCompile Include="source\Util\CharaAnim.cpp">
-      <Filter>ソース ファイル\Util</Filter>
-    </ClCompile>
     <ClCompile Include="source\MainScene\BaseObject.cpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClCompile>
-    <ClCompile Include="source\MainScene\Gun.cpp">
-      <Filter>ソース ファイル\MainScene</Filter>
-    </ClCompile>
-    <ClCompile Include="source\MainScene\EarlyCharacter.cpp">
-      <Filter>ソース ファイル\MainScene</Filter>
-    </ClCompile>
     <ClCompile Include="source\MainScene\PlayerManager.cpp">
-      <Filter>ソース ファイル\MainScene</Filter>
-    </ClCompile>
-    <ClCompile Include="source\MainScene\AmmoBox.cpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClCompile>
   </ItemGroup>
@@ -202,22 +190,10 @@
     <ClInclude Include="source\Util\Sound.hpp">
       <Filter>ソース ファイル\Util</Filter>
     </ClInclude>
-    <ClInclude Include="source\Util\CharaAnim.hpp">
-      <Filter>ソース ファイル\Util</Filter>
-    </ClInclude>
     <ClInclude Include="source\MainScene\BaseObject.hpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClInclude>
-    <ClInclude Include="source\MainScene\Gun.hpp">
-      <Filter>ソース ファイル\MainScene</Filter>
-    </ClInclude>
-    <ClInclude Include="source\MainScene\EarlyCharacter.hpp">
-      <Filter>ソース ファイル\MainScene</Filter>
-    </ClInclude>
     <ClInclude Include="source\MainScene\PlayerManager.hpp">
-      <Filter>ソース ファイル\MainScene</Filter>
-    </ClInclude>
-    <ClInclude Include="source\MainScene\AmmoBox.hpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClInclude>
   </ItemGroup>
