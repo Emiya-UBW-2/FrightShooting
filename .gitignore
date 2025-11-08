@@ -1,0 +1,20 @@
+﻿################################################################################
+# この .gitignore ファイルは Microsoft(R) Visual Studio によって自動的に作成されました。
+################################################################################
+
+/.vs
+/Project/.vs/
+/Project/x64
+/Project/VisualSt.e45d9127/x64
+/Project/Project/x64
+/KeyGuide/.vs
+/KeyGuide/VisualSt.e45d9127/x64
+/KeyGuide/x64
+/VoxelTool/.vs
+/VoxelTool/VoxelTool/x64
+/VoxelTool/x64
+/VoxelTool/Log.txt
+/ArmAnim/.vs
+/ArmAnim/ArmAnim/x64
+/ArmAnim/x64
+*.txt
