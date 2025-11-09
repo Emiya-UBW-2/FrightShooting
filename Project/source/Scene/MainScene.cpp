@@ -25,7 +25,6 @@ void MainScene::Init_Sub(void) noexcept {
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
 	Player->SetPos(Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f));
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 50000.f * Scale3DRate, 0.f));
 	//
 	this->m_Exit = false;
 	this->m_Fade = 1.f;
@@ -160,8 +159,8 @@ void MainScene::Update_Sub(void) noexcept {
 	ObjectManager::Instance()->UpdateObject();
 	//更新
 	auto* DrawerMngr = Draw::MainDraw::Instance();
-	float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
-	float YPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionY() - DrawerMngr->GetDispHeight() / 2) / static_cast<float>(DrawerMngr->GetDispHeight() / 2), -1.f, 1.f);
+	//float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
+	//float YPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionY() - DrawerMngr->GetDispHeight() / 2) / static_cast<float>(DrawerMngr->GetDispHeight() / 2), -1.f, 1.f);
 
 	Util::VECTOR3D CamPosition;
 	Util::VECTOR3D CamTarget;
@@ -208,7 +207,7 @@ void MainScene::Update_Sub(void) noexcept {
 		Util::Easing(&m_ShotFov, 0.f, 0.9f);
 	}
 
-	DxLib::SetMouseDispFlag(!Player->IsFPSView() && !Player->IsFreeView());
+	DxLib::SetMouseDispFlag(false);
 
 	BackGround::Instance()->Update();
 
@@ -271,9 +270,8 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* Localize = Util::LocalizePool::Instance();
-	auto* CameraParts = Camera::Camera3D::Instance();
 
-	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+	//auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 	{
 		int xpos = DrawerMngr->GetDispWidth() / 2;
 		int ypos = DrawerMngr->GetDispHeight() * 3 / 4;

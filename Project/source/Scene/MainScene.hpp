@@ -22,7 +22,6 @@ class MainScene : public Util::SceneBase {
 	char		padding[4]{};
 	float							m_CharaStyleChange{};
 	float							m_CharaStyleChangeR{};
-	char		padding2[4]{};
 	const Draw::GraphHandle*		m_StandGraph{};
 	const Draw::GraphHandle*		m_SquatGraph{};
 	const Draw::GraphHandle*		m_ProneGraph{};

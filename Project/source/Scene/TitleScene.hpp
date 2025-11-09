@@ -93,7 +93,7 @@ protected:
 	void Draw_Sub(void) noexcept override {}
 	void DrawFront_Sub(void) noexcept override {}
 	void DepthDraw_Sub(void) noexcept override {}
-	void DepthDraw_Sub(int layer) noexcept override {}
+	void DepthDraw_Sub(int) noexcept override {}
 	void ShadowDrawFar_Sub(void) noexcept override {}
 	void ShadowDraw_Sub(void) noexcept override {}
 	void UIDraw_Sub(void) noexcept override {
