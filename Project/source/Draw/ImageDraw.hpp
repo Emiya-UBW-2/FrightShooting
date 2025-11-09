@@ -122,6 +122,9 @@ namespace Draw {
 
 			return;
 		}
+		void MV1GetTexture(int MHandle, int TexIndex)noexcept {
+			Util::DXHandle::SetHandleDirect(DxLib::MV1GetTextureGraphHandle(MHandle, TexIndex));
+		}
 	public:
 		void DrawGraph(int posx, int posy, bool trns) const noexcept {
 			if (!Util::DXHandle::IsActive()) { return; }

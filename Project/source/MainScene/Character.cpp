@@ -115,7 +115,6 @@ void Plane::Update_Chara(void) noexcept {
 	DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 
 
-
 	{
 		this->m_RadAdd.y = Util::deg2rad(static_cast<float>(LookX) / 30.f);
 		this->m_RadAdd.x = Util::deg2rad(static_cast<float>(-LookY) / 30.f);
@@ -177,6 +176,11 @@ void Plane::Update_Chara(void) noexcept {
 			}
 		}
 	}
+	if (IsFPSView()) {
+		Util::Matrix4x4 Matt = GetMat().rotation();
+		this->m_Rad.x = Util::VECTOR3D::SignedAngle(Matt.yvec(), Util::VECTOR3D::up(), Matt.xvec());
+		this->m_Rad.y = Util::VECTOR3D::SignedAngle(Matt.zvec(), Util::VECTOR3D::forward(), Matt.yvec());
+	}
 	// 進行方向に前進
 	Util::Easing(&m_Speed, GetSpeedMax(), 0.9f);
 
@@ -184,8 +188,7 @@ void Plane::Update_Chara(void) noexcept {
 	Util::VECTOR3D PosBefore = GetTargetPos();
 	Util::VECTOR3D PosAfter;
 	{
-		Util::VECTOR3D Vec = GetMat().zvec2();
-		PosAfter = PosBefore + Util::Matrix3x3::Vtrans(Vec * -GetSpeed(), this->m_Rot);
+		PosAfter = PosBefore + Util::Matrix3x3::Vtrans(Util::VECTOR3D::forward() * -GetSpeed(), this->m_Rot);
 	}
 	//ヒット判定
 	//TODO
@@ -212,4 +215,23 @@ void Plane::Update_Chara(void) noexcept {
 	}
 	SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
 	SetModel().FlipAnimAll();
+
+	//射撃
+	for (auto& s : this->m_ShotEffect) {
+		s->SetMuzzleMat(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+	}
+	if (m_ShootTimer == 0.f) {
+		if (KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack)) {
+			this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+			++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
+
+			this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+			++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
+
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 50.f * Scale3DRate);
+
+			m_ShootTimer = 0.1f;
+		}
+	}
+	m_ShootTimer = std::max(m_ShootTimer - DeltaTime, 0.f);
 }

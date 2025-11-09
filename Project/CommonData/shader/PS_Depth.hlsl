@@ -48,26 +48,27 @@ Texture2D g_Tex2Texture : register(t1); // ディフューズマップテクスチャ
 PS_OUTPUT main(PS_INPUT PSInput)
 {
     PS_OUTPUT PSOutput;
-    float2 TexPos = PSInput.TextureCoord0;
-    TexPos.y = 1.f - TexPos.y;
-
 	// テクスチャカラーの読み込み
-    float4 Depth = g_Tex1Texture.Sample(g_Tex1Sampler, TexPos);
-    float Tex1 = Depth.r;
-    float Tex2 = g_Tex2Texture.Sample(g_Tex2Sampler, TexPos).r;
+    float2 T2 = PSInput.TextureCoord0;
+    T2.y = 1.f - T2.y;
+    float Tex1 = g_Tex1Texture.Sample(g_Tex1Sampler, T2).r;
+    float Tex2 = g_Tex2Texture.Sample(g_Tex2Sampler, PSInput.TextureCoord0).r;
+    
+    float Diff = (Tex1 - Tex2) / 1.f;
 
-    PSOutput.color0 = g_Tex1Texture.Sample(g_Tex1Sampler, TexPos);
-    
-    if (Depth.r == 0.f)
-    {
-        PSOutput.color0 = float4(0, 0, 0, 0);
-        return PSOutput;
-    }
-    
-    float Diff = abs(Tex1 - Tex2);
+	// 出力カラー = テクスチャカラー * ディフューズカラー
     PSOutput.color0.rgb = float3(1, 1, 1);
-    PSOutput.color0.a = (Diff > 12.5f * 1.5f) ? 1.f : 0.f;
+    if (Tex2 > 0.f && Tex1 > 0.f && Diff != 0.f)
+    {
+        PSOutput.color0.a = 1.f;
+   
+    }
+    else
+    {
+        PSOutput.color0.a = 0.f;
+    }
 
+	// 出力パラメータを返す
     return PSOutput;
 }
 

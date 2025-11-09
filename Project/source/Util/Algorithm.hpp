@@ -169,8 +169,8 @@ namespace Util {
 		inline static VECTOR3D		Cross(const VECTOR3D& A, const VECTOR3D& B) noexcept { return vget(A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x); }
 		inline static float			Distance(const VECTOR3D& A, const VECTOR3D& B) noexcept { return (A - B).magnitude(); }
 		inline static float			Dot(const VECTOR3D& A, const VECTOR3D& B) noexcept { return A.x * B.x + A.y * B.y + A.z * B.z; }
-		//static VECTOR3D			LerpVector3DX(const VECTOR3D& A, const VECTOR3D& B, float Per) noexcept { return Lerp<VECTOR3D>(A, B, Per); }
-		//static VECTOR3D			LerpUnclampedVector3DX(const VECTOR3D& A, const VECTOR3D& B, float Per) noexcept { return Lerp<VECTOR3D>(A, B, Per); }
+		//static VECTOR3D			LerpUtil::VECTOR3D(const VECTOR3D& A, const VECTOR3D& B, float Per) noexcept { return Lerp<VECTOR3D>(A, B, Per); }
+		//static VECTOR3D			LerpUnclampedUtil::VECTOR3D(const VECTOR3D& A, const VECTOR3D& B, float Per) noexcept { return Lerp<VECTOR3D>(A, B, Per); }
 		inline static VECTOR3D		Max(const VECTOR3D& A, const VECTOR3D& B) noexcept { return vget(std::max(A.x, B.x), std::max(A.y, B.y), std::max(A.z, B.z)); }
 		inline static VECTOR3D		Min(const VECTOR3D& A, const VECTOR3D& B) noexcept { return vget(std::min(A.x, B.x), std::min(A.y, B.y), std::min(A.z, B.z)); }
 		// MoveTowards

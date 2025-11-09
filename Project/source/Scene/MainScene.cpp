@@ -6,7 +6,7 @@ void MainScene::Load_Sub(void) noexcept {
 	ObjectManager::Create();
 	PlayerManager::Create();
 	BackGround::Create();
-	BackGround::Instance()->Load(this->m_MapName.c_str());
+	BackGround::Instance()->Load();
 
 	PlayerManager::Instance()->Load();
 
@@ -24,7 +24,8 @@ void MainScene::Init_Sub(void) noexcept {
 
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	Player->SetPos(Util::VECTOR3D::zero());
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f));
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 50000.f * Scale3DRate, 0.f));
 	//
 	this->m_Exit = false;
 	this->m_Fade = 1.f;
@@ -37,7 +38,7 @@ void MainScene::Init_Sub(void) noexcept {
 	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(0.02f, -1.f, 0.02f).normalized();
 
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
-	PostPassParts->SetShadowScale(0.5f);
+	PostPassParts->SetShadowScale(1.5f);
 	PostPassParts->SetAmbientLight(LightVec);
 
 	SetLightEnable(false);
@@ -181,10 +182,11 @@ void MainScene::Update_Sub(void) noexcept {
 		CamTarget1 = CamPosition1 + EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp1 = EyeMat.yvec();
 
-
+		/*
 		CamTarget1 = EyeMat.pos() + EyeMat.yvec() * (1.f * Scale3DRate);
 		CamPosition1 = CamTarget1 - EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp1 = EyeMat.yvec();
+		//*/
 	}
 	if (this->m_FPSPer != 1.f) {
 		Util::Matrix4x4 EyeMat = Player->GetEyeMatrix();
@@ -245,24 +247,19 @@ void MainScene::SetShadowDraw_Sub(void) noexcept {
 	ObjectManager::Instance()->Draw_SetShadow();
 }
 void MainScene::Draw_Sub(void) noexcept {
-	SetFogEnable(true);
-	SetFogMode(DX_FOGMODE_LINEAR);
-	SetFogStartEnd(20.0f * Scale3DRate, 50.0f * Scale3DRate);
-	SetFogColor(0, 0, 0);
-
-	SetVerticalFogEnable(true);
-	SetVerticalFogMode(DX_FOGMODE_LINEAR);
-	SetVerticalFogStartEnd(8.0f * Scale3DRate, 7.0f * Scale3DRate);
-	SetVerticalFogColor(0, 0, 0);
 	BackGround::Instance()->Draw();
-	SetVerticalFogEnable(false);
-
-	SetFogEnable(false);
 	ObjectManager::Instance()->Draw();
+}
+void MainScene::DrawFront_Sub(void) noexcept {
+	ObjectManager::Instance()->DrawFront();
 }
 void MainScene::DepthDraw_Sub(void) noexcept {
 	ObjectManager::Instance()->Draw_Depth();
 }
+void MainScene::DepthDraw_Sub(int layer) noexcept {
+	BackGround::Instance()->DepthDraw(layer);
+}
+
 void MainScene::ShadowDrawFar_Sub(void) noexcept {
 	BackGround::Instance()->ShadowDrawFar();
 }

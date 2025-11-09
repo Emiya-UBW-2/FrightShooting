@@ -158,6 +158,9 @@ public:
 	void Draw(void) const noexcept {
 		Draw_Sub();
 	}
+	void DrawFront(void) const noexcept {
+		DrawFront_Sub();
+	}
 	void ShadowDraw(void) const noexcept {
 		ShadowDraw_Sub();
 	}
@@ -171,6 +174,7 @@ protected:
 	virtual void SetShadowDraw_Sub(void) const noexcept = 0;
 	virtual void CheckDraw_Sub(void) noexcept = 0;
 	virtual void Draw_Sub(void) const noexcept = 0;
+	virtual void DrawFront_Sub(void) const noexcept = 0;
 	virtual void ShadowDraw_Sub(void) const noexcept = 0;
 	virtual void Dispose_Sub(void) noexcept = 0;
 };
@@ -216,6 +220,12 @@ public:
 			if (!object) { continue; }
 			object->CheckDraw();
 			object->Draw();
+		}
+	}
+	void			DrawFront(void) noexcept {
+		for (auto& object : this->m_ObjectList) {
+			if (!object) { continue; }
+			object->DrawFront();
 		}
 	}
 	void			Draw_SetShadow(void) noexcept {

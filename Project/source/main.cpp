@@ -94,7 +94,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 				});
 			// 3距離
 			{
-				float Far = 1000000.f;
+				float Far = 1000000.f * Scale3DRate;
 				float Near = CameraParts->GetCameraForDraw().GetCamFar();
 				for (int loop = 0; loop < 3; ++loop) {
 					PostPassParts->DrawGBuffer(Near, Far, []() {
@@ -112,6 +112,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			}
 			// ポストプロセス
 			PostPassParts->EndDraw();
+
+			/*
+			PostPassParts->SetDepthDraw([&](int layer) {
+				auto* SceneMngr = Util::SceneManager::Instance();
+				SceneMngr->DepthDraw3D(layer);
+				});
+			//*/
 		}
 		DrawerMngr->StartDraw();
 		{
