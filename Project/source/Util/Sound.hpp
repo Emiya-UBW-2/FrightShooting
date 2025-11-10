@@ -127,6 +127,9 @@ namespace Sound {
 			++this->m_nowSelect %= this->m_Size;
 			return Answer;
 		}
+		void			SetPosition(size_t ID, const Util::VECTOR3D& pos_t) noexcept {
+			this->m_HandleList[ID].SetPosition(pos_t);
+		}
 		void			SetPosition(const Util::VECTOR3D& pos_t) noexcept {
 			for (auto& h : this->m_HandleList) {
 				h.SetPosition(pos_t);
@@ -199,6 +202,7 @@ namespace Sound {
 		//再生
 		size_t			Play(int type_t = DX_PLAYTYPE_BACK, int Flag_t = TRUE, int panpal = -256) noexcept { return this->m_Handles->Play(type_t, Flag_t, panpal); }
 		size_t			Play3D(const Util::VECTOR3D& pos_t, float radius, int type_t = DX_PLAYTYPE_BACK) noexcept { return this->m_Handles->Play3D(pos_t, radius, type_t); }
+		void			SetPosition(size_t ID, const Util::VECTOR3D& pos_t) noexcept { this->m_Handles->SetPosition(ID, pos_t); }
 		void			SetPosition(const Util::VECTOR3D& pos_t) noexcept { this->m_Handles->SetPosition(pos_t); }
 		// 音声の総裁性時間をミリ秒で取得
 		LONGLONG		GetTotalTIme(void) noexcept { return this->m_Handles->GetTotalTIme(); }

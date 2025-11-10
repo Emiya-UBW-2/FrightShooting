@@ -75,13 +75,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 						SceneMngr->SetShadowDraw();
 						});
 			}
-			//Depth描画
-			{
-				PostPassParts->SetDepthDraw([]() {
-					auto* SceneMngr = Util::SceneManager::Instance();
-					SceneMngr->DepthDraw3D();
-					});
-			}
 		}
 		//描画
 		{

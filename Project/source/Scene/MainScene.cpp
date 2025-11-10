@@ -24,7 +24,10 @@ void MainScene::Init_Sub(void) noexcept {
 
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f));
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 0.f, 0.f));
+	for (int index = 1; index < 5; ++index) {
+		((std::shared_ptr<EnemyPlane>&)PlayerManager::Instance()->SetPlane().at(index))->SetPos(Util::VECTOR3D::vget(static_cast<float>(index) * 10.f * Scale3DRate, 0.f, 0.f));
+	}
 	//
 	this->m_Exit = false;
 	this->m_Fade = 1.f;
@@ -246,6 +249,11 @@ void MainScene::SetShadowDraw_Sub(void) noexcept {
 	ObjectManager::Instance()->Draw_SetShadow();
 }
 void MainScene::Draw_Sub(void) noexcept {
+	auto Pos = PlayerManager::Instance()->SetPlane().at(0)->GetMat().pos();
+	for (int index = 1; index < 5; ++index) {
+		DrawLine3D(Pos.get(), PlayerManager::Instance()->SetPlane().at(index)->GetMat().pos().get(), ColorPalette::Red);
+	}
+
 	BackGround::Instance()->Draw();
 	ObjectManager::Instance()->Draw();
 }

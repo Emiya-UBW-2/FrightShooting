@@ -418,24 +418,4 @@ namespace Util {
 		return (FileRead_findFirst(Path, &FileInfo) != (DWORD_PTR)InvalidID);
 		//*/
 	}
-
-	// 直線と点の一番近い点
-	static float GetMinLenSegmentToPoint(const Util::VECTOR3D& startpos, const Util::VECTOR3D& endpos, const Util::VECTOR3D& tgt) noexcept {
-		return Segment_Point_MinLength(startpos.get(), endpos.get(), tgt.get());
-	}
-	// 直線と直線の一番近い距離
-	static float GetMinLenSegmentToSegment(const Util::VECTOR3D& startpos, const Util::VECTOR3D& endpos, const Util::VECTOR3D& tgtstartpos, const Util::VECTOR3D& tgtendpos) noexcept {
-		return Segment_Segment_MinLength(startpos.get(), endpos.get(), tgtstartpos.get(), tgtendpos.get());
-	}
-	// 線分同士の交差判定
-	static bool GetSegmenttoSegment(const Util::VECTOR3D& SegmentAPos1, const Util::VECTOR3D& SegmentAPos2, const Util::VECTOR3D& SegmentBPos1, const Util::VECTOR3D& SegmentBPos2, SEGMENT_SEGMENT_RESULT* Result) noexcept {
-		VECTOR Pos1t = SegmentAPos1.get();
-		VECTOR Pos2t = SegmentAPos2.get();
-		VECTOR PosAt = SegmentBPos1.get();
-		VECTOR PosBt = SegmentBPos2.get();
-
-		Segment_Segment_Analyse(&Pos1t, &Pos2t, &PosAt, &PosBt, Result);
-		float len = 0.001f;
-		return (Result->SegA_SegB_MinDist_Square <= (len * len));
-	}
 }

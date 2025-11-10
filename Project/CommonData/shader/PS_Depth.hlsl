@@ -52,16 +52,26 @@ PS_OUTPUT main(PS_INPUT PSInput)
     float2 T2 = PSInput.TextureCoord0;
     T2.y = 1.f - T2.y;
     float Tex1 = g_Tex1Texture.Sample(g_Tex1Sampler, T2).r;
-    float Tex2 = g_Tex2Texture.Sample(g_Tex2Sampler, PSInput.TextureCoord0).r;
+    float Tex2 = g_Tex2Texture.Sample(g_Tex2Sampler, T2).r;
     
-    float Diff = (Tex1 - Tex2) / 1.f;
+    float Diff = (Tex1 - Tex2) / 10.f;
 
 	// 出力カラー = テクスチャカラー * ディフューズカラー
     PSOutput.color0.rgb = float3(1, 1, 1);
-    if (Tex2 > 0.f && Tex1 > 0.f && Diff != 0.f)
+    if (Tex1 < Tex2)
     {
-        PSOutput.color0.a = 1.f;
-   
+        PSOutput.color0.a = 0.f;
+    }
+    else if (Tex1 > 0.f && Diff != 0.f)
+    {
+        if (Tex2 == 0.f)
+        {
+            PSOutput.color0.a = 1.f;
+        }
+        else
+        {
+            PSOutput.color0.a = Diff;
+        }
     }
     else
     {

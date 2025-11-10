@@ -181,7 +181,7 @@ public:
 	static const int grassDiv{ 12 };//^2;
 	const float size{ 30.f };
 private:
-	const int grasss = 120;						/*grassの数*/
+	const int grasss = 90;						/*grassの数*/
 	int Flag = 0;
 	char		padding[4]{};
 	std::array<grass_t, grassDiv>grass__;
@@ -373,9 +373,9 @@ public:
 							z1 = zmid + GetRandf(zmid);
 						}
 
-						auto tmpvect = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 0.f, z1 - zmid) * (Scale3DRate * 200.f) +
+						auto tmpvect = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 0.f, z1 - zmid) * (Scale3DRate * 10.f) +
 							Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f) + 
-							Util::VECTOR3D::vget(0.f, GetRandf(20000.f) * Scale3DRate, 0.f);
+							Util::VECTOR3D::vget(0.f, GetRandf(2000.f) * Scale3DRate, 0.f);
 						tgt_g.Set_one(Util::Matrix4x4::Mtrans(tmpvect));
 					}
 					tgt_g.put();
@@ -405,7 +405,6 @@ public:
 	}
 	void Draw(void) const noexcept {
 		SetUseZBuffer3D(true);
-		SetUseZBufferFlag(true);
 		SetWriteZBufferFlag(true);
 		SetUseHalfLambertLighting(true);
 		for (int ID = 0; ID < grassDiv; ID++) {
@@ -462,9 +461,10 @@ public:
 		DxLib::SetUseLighting(TRUE);
 	}
 	void SetShadowDrawRigid(void) const noexcept {
+	}
+	void SetShadowDraw(void) const noexcept {
 		MapID.DrawModel();
 	}
-	void SetShadowDraw(void) const noexcept {}
 	void CheckDraw(void) noexcept {
 		m_Grass.CheckDraw();
 	}
@@ -474,9 +474,23 @@ public:
 		MapID.SetMatrix(Util::Matrix4x4::Mtrans(Pos));
 		MapID.DrawModel();
 
+		auto Prev = GetUseBackCulling();
+		SetUseBackCulling(DX_CULLING_LEFT);
 		m_Grass.Draw();
+		SetUseBackCulling(Prev);
 	}
-	void DepthDraw(int) noexcept {}
+	void DepthDraw(int layer) noexcept {
+		return;
+		auto Prev = GetUseBackCulling();
+		if (layer == 0) {
+			SetUseBackCulling(DX_CULLING_RIGHT);//背面
+		}
+		else {
+			SetUseBackCulling(DX_CULLING_LEFT);
+		}
+		m_Grass.Draw();
+		SetUseBackCulling(Prev);
+	}
 	void ShadowDrawFar(void) const noexcept {}
 	void ShadowDraw(void) const noexcept {
 		MapID.DrawModel();

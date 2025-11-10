@@ -1,4 +1,5 @@
 ﻿#include "Character.hpp"
+#include "PlayerManager.hpp"
 
 void Plane::CheckDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -151,7 +152,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 			this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
 			++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
 
-			this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+			this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), PlayerID);
 			++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
@@ -164,7 +165,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 			this->m_ShotEffect2.at(static_cast<size_t>(this->m_ShotEffect2ID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)));
 			++m_ShotEffect2ID %= static_cast<int>(this->m_ShotEffect2.size());
 
-			this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)));
+			this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), PlayerID);
 			++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
@@ -277,4 +278,53 @@ void Plane::Update_Chara(void) noexcept {
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::E),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack),
 		!IsFPSView(),GetEyeMatrix().rotation());
+}
+
+void EnemyPlane::CheckDraw_Sub(void) noexcept {
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+	this->m_AimPoint = GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Center)).pos();
+	auto Pos2D = ConvWorldPosToScreenPos(this->m_AimPoint.get());
+	this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+	this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+}
+
+void EnemyPlane::Update_Chara(void) noexcept {
+	m_TargetMat = GetMat().rotation();
+	Update(
+		false, false, false, false, false, false,
+		false,
+		true, m_TargetMat);
+
+}
+
+void Ammo::Update_Sub(void) noexcept {
+	if (this->DrawTimer == 0.f) { return; }
+	this->DrawTimer = std::max(this->DrawTimer - DeltaTime, 0.f);
+	if (this->Timer == 0.f) { return; }
+	this->Timer = std::max(this->Timer - DeltaTime, 0.f);
+	//this->YVecAdd -= GravAccel;
+	this->Vector.y += this->YVecAdd;
+	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
+	//if (BackGround::Instance()->CheckLine(GetMat().pos(), &Target)) 
+	for (auto& c : PlayerManager::Instance()->SetPlane()) {
+		int index = static_cast<int>(&c - &PlayerManager::Instance()->SetPlane().front());
+		if (Shooter == index) { continue; }
+		SEGMENT_SEGMENT_RESULT Result;
+		Util::GetSegmenttoSegment(c->GetMat().pos(), c->GetMat().pos(), GetMat().pos(), Target,&Result);
+		if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+			Target = Result.SegB_MinDist_Pos;
+			SetAmmo(Target);
+			for (auto& ae : this->m_AmmoEffectPer) {
+				ae->Set(
+					c->GetMat().pos(),
+					this->Vector.normalized() * -1.f
+				);
+			}
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(Target, 10.f * Scale3DRate);
+			break;
+		}
+	}
+	SetMatrix(GetMat().rotation() *
+		Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(this->Vector, GetMat().zvec()).normalized(), Util::deg2rad(1800.f) * DeltaTime) *
+		Util::Matrix4x4::Mtrans(Target));
 }

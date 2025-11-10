@@ -25,15 +25,20 @@ private:
 public:
 	void Load(void) noexcept {
 		ObjectManager::Instance()->LoadModel("data/model/Sopwith/");
-		this->m_Plane.resize(1);
+		this->m_Plane.resize(5);
 	}
 	void Init(void) noexcept {
-		size_t loop = 0;
+		this->m_Plane.at(0) = std::make_shared<Plane>();
+		ObjectManager::Instance()->InitObject(this->m_Plane.at(0), this->m_Plane.at(0), "data/model/Sopwith/");
+		this->m_Plane.at(0)->SetPlayerID(0);
+		//this->m_Plane.at(0)->SetPos(BackGround::Instance()->GetWorldPos(m.m_pos));
 
-		this->m_Plane.at(loop) = std::make_shared<Plane>();
-		ObjectManager::Instance()->InitObject(this->m_Plane.at(loop), this->m_Plane.at(loop), "data/model/Sopwith/");
-		//this->m_Plane.at(loop)->SetPos(BackGround::Instance()->GetWorldPos(m.m_pos));
-		++loop;
+		for (size_t loop = 1; loop < 5; ++loop) {
+			this->m_Plane.at(loop) = std::make_shared<EnemyPlane>();
+			ObjectManager::Instance()->InitObject(this->m_Plane.at(loop), this->m_Plane.at(loop), "data/model/Sopwith/");
+			this->m_Plane.at(loop) ->SetPlayerID(loop);
+		}
+		
 	}
 	void Dispose(void) noexcept {
 		for (auto& m : this->m_Plane) {

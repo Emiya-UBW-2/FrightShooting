@@ -985,6 +985,7 @@ namespace Draw {
 			this->m_ShadowDraw->SetDraw(setshadowdoing_rigid, setshadowdoing);
 		}
 		void		SetDepthDraw(std::function<void()> done) noexcept {
+			return;
 			auto* pOption = Util::OptionParam::Instance();
 			if (!pOption->GetParam(pOption->GetOptionType(Util::OptionType::Silhouette))->IsActive()) { return; }
 			if (DxLib::GetUseDirect3DVersion() != DX_DIRECT3D_11) { return; }
@@ -1046,8 +1047,8 @@ namespace Draw {
 				{
 					this->m_DepthColorScreen.SetDraw_Screen();
 					{
-						this->m_DepthBufferScreen.SetUseTextureToShader(0);
-						this->m_DepthBufferScreen2.SetUseTextureToShader(1);
+						this->m_DepthBufferScreen2.SetUseTextureToShader(0);
+						this->m_Gbuffer.GetDepthBuffer().SetRenderTargetToShader(1);
 
 						auto* DrawerMngr = Draw::MainDraw::Instance();
 						int xsize = DrawerMngr->GetRenderDispWidth();

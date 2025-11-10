@@ -134,6 +134,7 @@ private:
 	int				GetFrameNum(void) noexcept override { return 0; }
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
+	const Draw::GraphHandle* m_SmokeGraph{};
 	Util::VECTOR3D Vector{};
 	float YVecAdd{};
 	float Timer{};
@@ -154,6 +155,7 @@ public:
 	}
 public:
 	void Load_Sub(void) noexcept override {
+		this->m_SmokeGraph = Draw::GraphPool::Instance()->Get("data/Image/Smoke.png")->Get();
 	}
 	void Init_Sub(void) noexcept override {
 	}
@@ -182,16 +184,18 @@ public:
 		if (this->Timer == 0.f) { return; }
 		DxLib::SetUseLighting(FALSE);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->Timer), 0, 255));
-		DxLib::DrawCapsule3D(
-			(GetMat().pos() - this->Vector * std::clamp(this->Timer, 0.f, 1.f)).get(),
+		SetDrawBright(64, 32, 16);
+		DxLib::DrawBillboard3D(
 			GetMat().pos().get(),
-			0.01f * Scale3DRate / 2.f,
-			6,
-			DxLib::GetColor(255, 255, 128),
-			DxLib::GetColor(255, 255, 0),
+			0.5f,
+			0.5f,
+			0.8f * Scale3DRate,
+			Util::deg2rad(0.f),
+			this->m_SmokeGraph->get(),
 			true
 		);
 		DxLib::SetUseLighting(TRUE);
+		SetDrawBright(255, 255, 255);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 	}
 	void DrawFront_Sub(void) const noexcept override {
@@ -220,25 +224,21 @@ private:
 	Sound::SoundUniqueID HitGroundID{ InvalidID };
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	std::array<std::shared_ptr<AmmoHitEffect>, 10>	m_AmmoEffectPer{};
+	int Shooter{ InvalidID };
 public:
-	void Set(const Util::Matrix4x4& Muzzle) noexcept {
+	void Set(const Util::Matrix4x4& Muzzle, int ID) noexcept {
 		SetMatrix(Muzzle);
 		this->Vector = Muzzle.zvec() * -((200.f / 60.f * 1000.f + 1000.f) * Scale3DRate * DeltaTime);
 		this->YVecAdd = 0.f;
 		this->Timer = 5.f;
 		this->DrawTimer = this->Timer + 0.1f;
+		Shooter = ID;
 	}
 private:
 	void SetAmmo(const Util::VECTOR3D& pos) noexcept {
 		this->Vector = pos - GetMat().pos();
 		this->Timer = 0.f;
 		this->DrawTimer = this->Timer + 0.1f;
-		for (auto& ae : this->m_AmmoEffectPer) {
-			ae->Set(
-				pos,
-				this->Vector.normalized() * -1.f
-			);
-		}
 	}
 public:
 	void Load_Sub(void) noexcept override {
@@ -251,24 +251,7 @@ public:
 			ObjectManager::Instance()->InitObject(ae);
 		}
 	}
-	void Update_Sub(void) noexcept override {
-		if (this->DrawTimer == 0.f) { return; }
-		this->DrawTimer = std::max(this->DrawTimer - DeltaTime, 0.f);
-		if (this->Timer == 0.f) { return; }
-		this->Timer = std::max(this->Timer - DeltaTime, 0.f);
-		//this->YVecAdd -= GravAccel;
-		this->Vector.y += this->YVecAdd;
-		Util::VECTOR3D Target = GetMat().pos() + this->Vector;
-		//if (BackGround::Instance()->CheckLine(GetMat().pos(), &Target)) 
-		if(false)
-		{
-			SetAmmo(Target);
-			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(Target, 10.f * Scale3DRate);
-		}
-		SetMatrix(GetMat().rotation() *
-			Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(this->Vector, GetMat().zvec()).normalized(), Util::deg2rad(1800.f) * DeltaTime) *
-			Util::Matrix4x4::Mtrans(Target));
-	}
+	void Update_Sub(void) noexcept override;
 	void SetShadowDraw_Sub(void) const noexcept override {
 		if (this->Timer == 0.f) { return; }
 	}
@@ -337,15 +320,14 @@ private:
 	int													m_AmmoID{};
 	char		padding3[4]{};
 
-	Sound::SoundUniqueID	m_heartID{ InvalidID };
-	Sound::SoundUniqueID	m_PunchID{ InvalidID };
-	Sound::SoundUniqueID	m_KickID{ InvalidID };
-	Sound::SoundUniqueID	HitHumanID{ InvalidID };
-	Sound::SoundUniqueID	DownHumanID{ InvalidID };
-	Sound::SoundUniqueID	ArmlockStartID{ InvalidID };
-	Sound::SoundUniqueID	ArmlockID{ InvalidID };
-	Sound::SoundUniqueID	StimID{ InvalidID };
+	size_t	m_PropellerIndex{};
+	size_t	m_EngineIndex{};
+
+	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
+	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID								m_ShotID{ InvalidID };
+
+	int PlayerID{ InvalidID };
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -357,18 +339,13 @@ private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(CharaFrame::Max); }
 	const char*		GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
 public:
+	void SetPlayerID(int ID) noexcept {
+		PlayerID = ID;
+	}
+public:
 	void Load_Sub(void) noexcept override {
-		DownHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/DownHuman.wav", true);
-
-		this->m_heartID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/move/heart.wav", true);
-		this->HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitHuman.wav", true);
-
-		this->ArmlockStartID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/move/ArmlockStart.wav", true);
-		this->ArmlockID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/move/Armlock.wav", true);
-		this->StimID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/move/Stim.wav", true);
-
-		this->m_PunchID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/move/Punch.wav", true);
-		this->m_KickID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/move/Kick.wav", true);
+		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
+		this->m_EngineID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/engine.wav", true);
 		//Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, heartID)->Play3D(GetMat().pos(), 10.f * Scale3DRate);
 
 		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
@@ -377,7 +354,7 @@ public:
 		Load_Chara();
 	}
 	void Init_Sub(void) noexcept override {
-		this->m_Speed = 0.f;
+		this->m_Speed = GetSpeedMax();
 		this->m_TotalAmmo = this->m_CanHaveAmmo;
 
 		for (auto& s : this->m_ShotEffect) {
@@ -392,9 +369,14 @@ public:
 			s = std::make_shared<Ammo>();
 			ObjectManager::Instance()->InitObject(s);
 		}
+		m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
+		m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
+
 		Init_Chara();
 	}
 	void Update_Sub(void) noexcept override {
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
 		Update_Chara();
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
@@ -420,6 +402,9 @@ public:
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->StopAll();
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
+
 		SetModel().Dispose();
 
 		for (auto& s : this->m_ShotEffect) {
@@ -447,7 +432,7 @@ public:
 	auto GetTargetPos() const { return this->m_MyPosTarget; }
 	float GetSpeed() const { return this->m_Speed; }
 	float GetSpeedMax(void) const noexcept {
-		return 200.f / 60.f * 1000.f * Scale3DRate * DeltaTime;
+		return 200.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime;
 	}
 	void SetPos(Util::VECTOR3D MyPos) noexcept {
 		this->m_MyPosTarget = MyPos;
@@ -483,6 +468,32 @@ public:
 	void CheckDraw_Sub(void) noexcept override;
 public:
 	bool IsPlayer(void) noexcept override { return true; }
+
+	void Load_Chara(void) noexcept override {
+	}
+	void Init_Chara(void) noexcept override {
+	}
+	void Update_Chara(void) noexcept override;
+	void Draw_Chara(void) const noexcept override {}
+	void Dispose_Chara(void) noexcept override {
+	}
+};
+
+class EnemyPlane :public PlaneCommon {
+	Util::Matrix4x4				m_TargetMat;
+	Util::VECTOR3D											m_AimPoint;
+	Util::VECTOR2D											m_AimPoint2D;
+public:
+	EnemyPlane(void) noexcept {}
+	EnemyPlane(const EnemyPlane&) = delete;
+	EnemyPlane(EnemyPlane&&) = delete;
+	EnemyPlane& operator=(const EnemyPlane&) = delete;
+	EnemyPlane& operator=(EnemyPlane&&) = delete;
+	virtual ~EnemyPlane(void) noexcept {}
+public:
+	void CheckDraw_Sub(void) noexcept override;
+public:
+	bool IsPlayer(void) noexcept override { return false; }
 
 	void Load_Chara(void) noexcept override {
 	}
