@@ -206,68 +206,36 @@ void Plane::Update_Chara(void) noexcept {
 			this->m_RadAdd.y = Util::deg2rad(static_cast<float>(LookX) / 30.f);
 			this->m_RadAdd.x = Util::deg2rad(static_cast<float>(-LookY) / 30.f);
 
-			{
-				this->m_RadR.y = Util::AngleRange360(this->m_RadR.y + this->m_RadAdd.y);
-				float Per = 0.f;
-				{
-					float RadDif = this->m_RadR.y - this->m_Rad.y;
-					if (RadDif > 0.f) {
-						while (true) {
-							if (RadDif < DX_PI_F) { break; }
-							RadDif -= DX_PI_F * 2.f;
-						}
-					}
-					if (RadDif < 0.f) {
-						while (true) {
-							if (RadDif > -DX_PI_F) { break; }
-							RadDif += DX_PI_F * 2.f;
-						}
-					}
-					Per = std::clamp(RadDif / Util::deg2rad(15.f), -1.f, 1.f);
-				}
-				if (std::fabsf(Per) > 0.01f) {
-					float Power = 1.f;
-					this->m_Rad.y += Per * Power * Util::deg2rad(720.f) * DeltaTime;
-				}
-				else {
-					this->m_Rad.y = this->m_RadR.y;
-				}
-			}
-			{
-				this->m_RadR.x = Util::AngleRange360(this->m_RadR.x + this->m_RadAdd.x);
-				this->m_RadR.x = std::clamp(this->m_RadR.x, Util::deg2rad(-89), Util::deg2rad(89));
-
-				float Per = 0.f;
-				{
-					float RadDif = this->m_RadR.x - this->m_Rad.x;
-					if (RadDif > 0.f) {
-						while (true) {
-							if (RadDif < DX_PI_F) { break; }
-							RadDif -= DX_PI_F * 2.f;
-						}
-					}
-					if (RadDif < 0.f) {
-						while (true) {
-							if (RadDif > -DX_PI_F) { break; }
-							RadDif += DX_PI_F * 2.f;
-						}
-					}
-					Per = std::clamp(RadDif / Util::deg2rad(15.f), -1.f, 1.f);
-				}
-				if (std::fabsf(Per) > 0.01f) {
-					float Power = 1.f;
-					this->m_Rad.x += Per * Power * Util::deg2rad(720.f) * DeltaTime;
-				}
-				else {
-					this->m_Rad.x = this->m_RadR.x;
-				}
-			}
+			this->m_RadR.y = Util::AngleRange360(this->m_RadR.y + this->m_RadAdd.y);
+			this->m_RadR.x = Util::AngleRange360(this->m_RadR.x + this->m_RadAdd.x);
 		}
 		if (IsFPSView()) {
 			Util::Matrix4x4 Matt = GetMat().rotation();
-			this->m_Rad.x = Util::VECTOR3D::SignedAngle(Matt.yvec(), Util::VECTOR3D::up(), Matt.xvec());
-			this->m_Rad.y = Util::VECTOR3D::SignedAngle(Matt.zvec(), Util::VECTOR3D::forward(), Matt.yvec());
+
+			auto YT = Matt.zvec(); YT.z = std::hypotf(YT.x, YT.z); YT.x = 0.f; YT = YT.normalized();
+			auto XZ = Matt.zvec(); XZ.y = 0.f; XZ = XZ.normalized();
+
+			this->m_RadR.x = Util::VECTOR3D::SignedAngle(Util::VECTOR3D::forward(), YT, Util::VECTOR3D::right());
+			this->m_RadR.y = Util::VECTOR3D::SignedAngle(Util::VECTOR3D::forward(), XZ, Util::VECTOR3D::up());
 		}
+	}
+
+	auto Matt = GetEyeMatrix().rotation();
+	if (
+		(GetMat().pos().x > 2000.f * Scale3DRate) ||
+		(GetMat().pos().x < -2000.f * Scale3DRate) ||
+		(GetMat().pos().y > 1000.f * Scale3DRate) ||
+		(GetMat().pos().y < -1000.f * Scale3DRate) ||
+		(GetMat().pos().z > 2000.f * Scale3DRate) ||
+		(GetMat().pos().z < -2000.f * Scale3DRate)
+		) {
+		Matt = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - Util::VECTOR3D::vget(0.f, 0.f, 0.f)).normalized());
+
+		auto YT = Matt.zvec(); YT.z = std::hypotf(YT.x, YT.z); YT.x = 0.f; YT = YT.normalized();
+		auto XZ = Matt.zvec(); XZ.y = 0.f; XZ = XZ.normalized();
+
+		this->m_RadR.x = Util::VECTOR3D::SignedAngle(Util::VECTOR3D::forward(), YT, Util::VECTOR3D::right());
+		this->m_RadR.y = Util::VECTOR3D::SignedAngle(Util::VECTOR3D::forward(), XZ, Util::VECTOR3D::up());
 	}
 	Update(
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::W),
@@ -277,7 +245,63 @@ void Plane::Update_Chara(void) noexcept {
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Q),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::E),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack),
-		!IsFPSView(),GetEyeMatrix().rotation());
+		!IsFPSView(), Matt);
+	{
+		{
+			float Per = 0.f;
+			{
+				float RadDif = this->m_RadR.y - this->m_Rad.y;
+				if (RadDif > 0.f) {
+					while (true) {
+						if (RadDif < DX_PI_F) { break; }
+						RadDif -= DX_PI_F * 2.f;
+					}
+				}
+				if (RadDif < 0.f) {
+					while (true) {
+						if (RadDif > -DX_PI_F) { break; }
+						RadDif += DX_PI_F * 2.f;
+					}
+				}
+				Per = std::clamp(RadDif / Util::deg2rad(15.f), -1.f, 1.f);
+			}
+			if (std::fabsf(Per) > 0.01f) {
+				float Power = 0.5f;
+				this->m_Rad.y += Per * Power * Util::deg2rad(720.f) * DeltaTime;
+			}
+			else {
+				this->m_Rad.y = this->m_RadR.y;
+			}
+		}
+		{
+			this->m_RadR.x = std::clamp(this->m_RadR.x, Util::deg2rad(-89), Util::deg2rad(89));
+
+			float Per = 0.f;
+			{
+				float RadDif = this->m_RadR.x - this->m_Rad.x;
+				if (RadDif > 0.f) {
+					while (true) {
+						if (RadDif < DX_PI_F) { break; }
+						RadDif -= DX_PI_F * 2.f;
+					}
+				}
+				if (RadDif < 0.f) {
+					while (true) {
+						if (RadDif > -DX_PI_F) { break; }
+						RadDif += DX_PI_F * 2.f;
+					}
+				}
+				Per = std::clamp(RadDif / Util::deg2rad(15.f), -1.f, 1.f);
+			}
+			if (std::fabsf(Per) > 0.01f) {
+				float Power = 0.5f;
+				this->m_Rad.x += Per * Power * Util::deg2rad(720.f) * DeltaTime;
+			}
+			else {
+				this->m_Rad.x = this->m_RadR.x;
+			}
+		}
+	}
 }
 
 void EnemyPlane::CheckDraw_Sub(void) noexcept {
@@ -290,10 +314,21 @@ void EnemyPlane::CheckDraw_Sub(void) noexcept {
 
 void EnemyPlane::Update_Chara(void) noexcept {
 	m_TargetMat = GetMat().rotation();
+	auto Matt = m_TargetMat;
+	if (
+		(GetMat().pos().x > 2000.f * Scale3DRate) ||
+		(GetMat().pos().x < -2000.f * Scale3DRate) ||
+		(GetMat().pos().y > 1000.f * Scale3DRate) ||
+		(GetMat().pos().y < -1000.f * Scale3DRate) ||
+		(GetMat().pos().z > 2000.f * Scale3DRate) ||
+		(GetMat().pos().z < -2000.f * Scale3DRate)
+		) {
+		Matt = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - Util::VECTOR3D::vget(0.f, 0.f, 0.f)).normalized());
+	}
 	Update(
 		false, false, false, false, false, false,
 		false,
-		true, m_TargetMat);
+		true, Matt);
 
 }
 
@@ -320,7 +355,7 @@ void Ammo::Update_Sub(void) noexcept {
 					this->Vector.normalized() * -1.f
 				);
 			}
-			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(Target, 10.f * Scale3DRate);
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(Target, 500.f * Scale3DRate);
 			break;
 		}
 	}
