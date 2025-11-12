@@ -326,7 +326,7 @@ private:
 	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID								m_ShotID{ InvalidID };
-
+protected:
 	int PlayerID{ InvalidID };
 public:
 	PlaneCommon(void) noexcept {}
@@ -445,9 +445,10 @@ class Plane :public PlaneCommon {
 	Util::VECTOR2D		m_Rad = Util::VECTOR2D::zero();
 	Util::VECTOR2D		m_RadAdd = Util::VECTOR2D::zero();
 	Util::VECTOR2D		m_RadR = Util::VECTOR2D::zero();
-	bool				m_IsFPS{ false };
+	bool				m_IsFreeView{ false };
 	bool				m_PrevIsFPSView{};
-	char		padding[2]{};
+	bool				m_IsFPS{ false };
+	char		padding[1]{};
 	Util::VECTOR3D											m_AimPoint;
 	Util::VECTOR2D											m_AimPoint2D;
 public:

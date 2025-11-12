@@ -180,9 +180,12 @@ void Plane::Update_Chara(void) noexcept {
 	auto* KeyMngr = Util::KeyParam::Instance();
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 
+	m_IsFreeView = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Aim);
+	/*
 	if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Aim)) {
 		m_IsFPS ^= 1;
 	}
+	//*/
 	{
 		int LookX = 0;
 		int LookY = 0;
@@ -245,7 +248,7 @@ void Plane::Update_Chara(void) noexcept {
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Q),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::E),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack),
-		!IsFPSView(), Matt);
+		!m_IsFreeView, Matt);
 	{
 		{
 			float Per = 0.f;
@@ -313,7 +316,23 @@ void EnemyPlane::CheckDraw_Sub(void) noexcept {
 }
 
 void EnemyPlane::Update_Chara(void) noexcept {
-	m_TargetMat = GetMat().rotation();
+	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+
+	auto TargetPos = Player->GetMat().pos();
+
+	for (auto& c : PlayerManager::Instance()->SetPlane()) {
+		int index = static_cast<int>(&c - &PlayerManager::Instance()->SetPlane().front());
+		if (this->PlayerID == index) { continue; }
+		auto Vec = (c->GetMat().pos() - GetMat().pos());
+		if (Vec.magnitude() < (10.f * Scale3DRate)) {
+			TargetPos = (GetMat().pos() + Vec);
+			break;
+		}
+	}
+
+	m_TargetMat = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - TargetPos).normalized());
+
+	//m_TargetMat = GetMat().rotation();
 	auto Matt = m_TargetMat;
 	if (
 		(GetMat().pos().x > 2000.f * Scale3DRate) ||
