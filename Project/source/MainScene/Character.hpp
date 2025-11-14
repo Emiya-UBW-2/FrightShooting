@@ -162,8 +162,8 @@ public:
 	void Update_Sub(void) noexcept override {
 		if (this->Timer == 0.f) { return; }
 		this->Timer = std::max(this->Timer - DeltaTime, 0.f);
-		this->YVecAdd -= GravAccel;
-		this->Vector.y += this->YVecAdd;
+		//this->YVecAdd -= GravAccel;
+		//this->Vector.y += this->YVecAdd;
 		Util::VECTOR3D Target = GetMat().pos() + this->Vector;
 		Util::VECTOR3D Normal;
 		/*
@@ -184,7 +184,7 @@ public:
 		if (this->Timer == 0.f) { return; }
 		DxLib::SetUseLighting(FALSE);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->Timer), 0, 255));
-		SetDrawBright(64, 32, 16);
+		SetDrawBright(64 * 2, 32 * 2, 16 * 2);
 		DxLib::DrawBillboard3D(
 			GetMat().pos().get(),
 			0.5f,
@@ -298,7 +298,7 @@ private:
 	int					m_TotalAmmo{ 0 };//予備弾数
 	int					m_CanHaveAmmo{ 17 * 2 };//予備弾数
 	float				m_Speed = 0.f;
-	float				m_MovePer = 0.f;
+	float				m_SpeedTarget = 0.f;
 	int					m_FootSoundID{};
 
 	float				m_ShootTimer{};
@@ -354,7 +354,8 @@ public:
 		Load_Chara();
 	}
 	void Init_Sub(void) noexcept override {
-		this->m_Speed = GetSpeedMax();
+		this->m_SpeedTarget = GetSpeedMax();
+		this->m_Speed = this->m_SpeedTarget;
 		this->m_TotalAmmo = this->m_CanHaveAmmo;
 
 		for (auto& s : this->m_ShotEffect) {
@@ -427,7 +428,7 @@ public:
 	virtual void Draw_Chara(void) const noexcept = 0;
 	virtual void Dispose_Chara(void) noexcept = 0;
 public:
-	void Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept;
+	void Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool AccelKey, bool BrakeKey, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept;
 public:
 	auto GetTargetPos() const { return this->m_MyPosTarget; }
 	float GetSpeed() const { return this->m_Speed; }
@@ -484,6 +485,10 @@ class EnemyPlane :public PlaneCommon {
 	Util::Matrix4x4				m_TargetMat;
 	Util::VECTOR3D											m_AimPoint;
 	Util::VECTOR2D											m_AimPoint2D;
+	float						m_AutoTimer{};
+	float						m_AccelTimer{};
+	bool						m_Accel{ false };
+	bool						m_Brake{ false };
 public:
 	EnemyPlane(void) noexcept {}
 	EnemyPlane(const EnemyPlane&) = delete;

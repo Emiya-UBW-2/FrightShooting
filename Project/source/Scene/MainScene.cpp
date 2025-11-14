@@ -40,7 +40,7 @@ void MainScene::Init_Sub(void) noexcept {
 	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(0.02f, -1.f, 0.02f).normalized();
 
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
-	PostPassParts->SetShadowScale(1.5f);
+	PostPassParts->SetShadowScale(30.f);
 	PostPassParts->SetAmbientLight(LightVec);
 
 	SetLightEnable(false);
@@ -178,21 +178,22 @@ void MainScene::Update_Sub(void) noexcept {
 	Util::VECTOR3D CamTarget2;
 	Util::VECTOR3D CamUp2;
 
+	Util::Easing(&m_EyeRotFree, Player->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye)), 0.9f);
 	if (this->m_FPSPer != 0.f) {
 		Util::Matrix4x4 EyeMat = Player->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye));
 		CamPosition1 = EyeMat.pos();
 		CamTarget1 = CamPosition1 + EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp1 = EyeMat.yvec();
 
-		/*
-		CamTarget1 = EyeMat.pos() + EyeMat.yvec() * (1.f * Scale3DRate);
-		CamPosition1 = CamTarget1 - EyeMat.zvec() * (-10.f * Scale3DRate);
-		CamUp1 = EyeMat.yvec();
+		//*
+		CamTarget1 = EyeMat.pos() + m_EyeRotFree.yvec() * (1.f * Scale3DRate);
+		CamPosition1 = CamTarget1 - m_EyeRotFree.zvec() * (-2.f * Scale3DRate);
+		CamUp1 = m_EyeRotFree.yvec();
 		//*/
 	}
 	if (this->m_FPSPer != 1.f) {
 		Util::Matrix4x4 EyeMat = Player->GetEyeMatrix();
-		CamTarget2 = EyeMat.pos() + EyeMat.yvec() * (1.f * Scale3DRate);
+		CamTarget2 = EyeMat.pos() + EyeMat.yvec() * (2.f * Scale3DRate);
 		CamPosition2 = CamTarget2 - EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp2 = EyeMat.yvec();
 	}
@@ -279,7 +280,7 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* Localize = Util::LocalizePool::Instance();
 
-	//auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 	{
 		int xpos = DrawerMngr->GetDispWidth() / 2;
 		int ypos = DrawerMngr->GetDispHeight() * 3 / 4;
@@ -290,6 +291,13 @@ void MainScene::UIDraw_Sub(void) noexcept {
 				Draw::FontXCenter::MIDDLE, Draw::FontYCenter::TOP,
 				xpos, ypos + 18,
 				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8(Localize->Get(316)));
+			ypos += 52;
+		}
+		{
+			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->DrawString(
+				Draw::FontXCenter::MIDDLE, Draw::FontYCenter::TOP,
+				xpos, ypos + 18,
+				ColorPalette::White, ColorPalette::Black, "%05.2f km/h", Player->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime));
 			ypos += 52;
 		}
 	}

@@ -9,7 +9,7 @@ void Plane::CheckDraw_Sub(void) noexcept {
 	this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
 }
 
-inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept {
+inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool AccelKey, bool BrakeKey, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept {
 	bool LeftKey = a;
 	bool RightKey = d;
 	bool UpKey = w;
@@ -23,7 +23,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	{
 		float YawPer = 0.f;
 		if (IsAuto) {
-			YawPer = -Mat.zvec2().x * Util::deg2rad(100.f * DeltaTime);
+			YawPer = -Mat.zvec2().x * Util::deg2rad(20.f * DeltaTime);
 		}
 		if (QKey && !EKey) {
 			YawPer = Util::deg2rad(-100.f * DeltaTime);
@@ -34,7 +34,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		if (QKey && EKey) {
 			YawPer = Util::deg2rad(0.f * DeltaTime);
 		}
-		Util::Easing(&m_YawPer, YawPer, 0.9f);
+		Util::Easing(&m_YawPer, YawPer * (m_Speed / GetSpeedMax()), 0.9f);
 	}
 	{
 		float PitchPer = 0.f;
@@ -50,7 +50,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		if (DownKey && UpKey) {
 			PitchPer = Util::deg2rad(0.f * DeltaTime);
 		}
-		Util::Easing(&m_PtichPer, PitchPer, 0.9f);
+		Util::Easing(&m_PtichPer, PitchPer * (m_Speed / GetSpeedMax()), 0.9f);
 	}
 	{
 		float RollPer = 0.f;
@@ -74,7 +74,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		if (LeftKey && RightKey) {
 			RollPer = Util::deg2rad(0.f * DeltaTime);
 		}
-		Util::Easing(&m_RollPer, RollPer, 0.9f);
+		Util::Easing(&m_RollPer, RollPer * (m_Speed / GetSpeedMax()), 0.9f);
 	}
 	// 左右回転
 	{
@@ -96,13 +96,45 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	}
 
 	// 進行方向に前進
-	Util::Easing(&m_Speed, GetSpeedMax(), 0.9f);
+	{
+		if (AccelKey) {
+			this->m_SpeedTarget += DeltaTime;
+		}
+		if (BrakeKey) {
+			this->m_SpeedTarget -= DeltaTime;
+		}
+
+
+		auto Y = this->m_Rot.zvec2().y;
+		if (std::fabsf(Y) > 0.1f) {
+			this->m_SpeedTarget -= DeltaTime * ((std::fabsf(Y) - 0.1f) * (Y > 0.f ? 1.f : -1.f));
+		}
+		else {
+			float Speedkmh = GetSpeed() / GetSpeedMax();
+			if ((Speedkmh < 200.f / 200.f)) {
+				this->m_SpeedTarget += DeltaTime * 0.5f;
+			}
+		}
+
+		if (std::fabsf(m_YawPer / Util::deg2rad(200.f * DeltaTime)) > 0.1f) {
+			this->m_SpeedTarget -= DeltaTime * (std::fabsf(m_YawPer / Util::deg2rad(200.f * DeltaTime)) - 0.1f) * 0.5f;
+		}
+		if (std::fabsf(m_PtichPer / Util::deg2rad(200.f * DeltaTime)) > 0.1f) {
+			this->m_SpeedTarget -= DeltaTime * (std::fabsf(m_PtichPer / Util::deg2rad(200.f * DeltaTime)) - 0.1f) * 0.5f;
+		}
+		if (std::fabsf(m_RollPer / Util::deg2rad(200.f * DeltaTime)) > 0.1f) {
+			this->m_SpeedTarget -= DeltaTime * (std::fabsf(m_RollPer / Util::deg2rad(200.f * DeltaTime)) - 0.1f) * 0.5f;
+		}
+
+		this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() / 2.f, GetSpeedMax() * 3.f / 2.f);
+	}
+	Util::Easing(&m_Speed, this->m_SpeedTarget, 0.9f);
 
 	// 移動ベクトルを加算した仮座標を作成
 	Util::VECTOR3D PosBefore = GetTargetPos();
 	Util::VECTOR3D PosAfter;
 	{
-		PosAfter = PosBefore + Util::Matrix3x3::Vtrans(Util::VECTOR3D::forward() * -GetSpeed(), this->m_Rot);
+		PosAfter = PosBefore + Util::Matrix3x3::Vtrans(Util::VECTOR3D::forward() * -this->m_Speed, this->m_Rot);
 	}
 	//ヒット判定
 	//TODO
@@ -118,9 +150,6 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		this->m_Rot.Get44DX() *
 		Util::Matrix4x4::Mtrans(MyPos)
 	);
-
-	//移動割合
-	Util::Easing(&m_MovePer, GetSpeed() / GetSpeedMax(), 0.9f);
 	//
 	this->m_AnimPer[static_cast<size_t>(CharaAnim::Stand)] = 1.f;
 	//アニメアップデート
@@ -180,29 +209,28 @@ void Plane::Update_Chara(void) noexcept {
 	auto* KeyMngr = Util::KeyParam::Instance();
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 
-	m_IsFreeView = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Aim);
-	/*
+	m_IsFreeView = KeyMngr->GetBattleKeyPress(Util::EnumBattle::ChangeWeapon);
 	if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Aim)) {
 		m_IsFPS ^= 1;
 	}
-	//*/
-	{
-		int LookX = 0;
-		int LookY = 0;
 
-		if (IsFPSView()) {
-			if (this->m_PrevIsFPSView != IsFPSView()) {
-				DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
-			}
+	int LookX = 0;
+	int LookY = 0;
+
+	if (IsFPSView()) {
+		if (this->m_PrevIsFPSView != IsFPSView()) {
+			DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 		}
-		this->m_PrevIsFPSView = IsFPSView();
+	}
+	this->m_PrevIsFPSView = IsFPSView();
 
-		int MX = DrawerMngr->GetMousePositionX();
-		int MY = DrawerMngr->GetMousePositionY();
-		DxLib::GetMousePoint(&MX, &MY);
-		LookX = MX - DrawerMngr->GetWindowDrawWidth() / 2;
-		LookY = MY - DrawerMngr->GetWindowDrawHeight() / 2;
-		DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
+	int MX = DrawerMngr->GetMousePositionX();
+	int MY = DrawerMngr->GetMousePositionY();
+	DxLib::GetMousePoint(&MX, &MY);
+	LookX = MX - DrawerMngr->GetWindowDrawWidth() / 2;
+	LookY = MY - DrawerMngr->GetWindowDrawHeight() / 2;
+	DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
+	{
 
 
 		{
@@ -223,6 +251,7 @@ void Plane::Update_Chara(void) noexcept {
 		}
 	}
 
+	bool IsOut = false;
 	auto Matt = GetEyeMatrix().rotation();
 	if (
 		(GetMat().pos().x > 2000.f * Scale3DRate) ||
@@ -239,16 +268,21 @@ void Plane::Update_Chara(void) noexcept {
 
 		this->m_RadR.x = Util::VECTOR3D::SignedAngle(Util::VECTOR3D::forward(), YT, Util::VECTOR3D::right());
 		this->m_RadR.y = Util::VECTOR3D::SignedAngle(Util::VECTOR3D::forward(), XZ, Util::VECTOR3D::up());
+
+		IsOut = true;
 	}
+
 	Update(
-		KeyMngr->GetBattleKeyPress(Util::EnumBattle::W),
-		KeyMngr->GetBattleKeyPress(Util::EnumBattle::S),
+		KeyMngr->GetBattleKeyPress(Util::EnumBattle::W) || (m_IsFPS && LookY > 1),
+		KeyMngr->GetBattleKeyPress(Util::EnumBattle::S) || (m_IsFPS && LookY < -1),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::A),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::D),
-		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Q),
-		KeyMngr->GetBattleKeyPress(Util::EnumBattle::E),
+		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Q) || (m_IsFPS && LookX < -3),
+		KeyMngr->GetBattleKeyPress(Util::EnumBattle::E) || (m_IsFPS && LookX > 3),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack),
-		!m_IsFreeView, Matt);
+		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Run),
+		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Jump),
+		IsOut || !m_IsFreeView && !m_IsFPS, Matt);
 	{
 		{
 			float Per = 0.f;
@@ -320,6 +354,7 @@ void EnemyPlane::Update_Chara(void) noexcept {
 
 	auto TargetPos = Player->GetMat().pos();
 
+
 	for (auto& c : PlayerManager::Instance()->SetPlane()) {
 		int index = static_cast<int>(&c - &PlayerManager::Instance()->SetPlane().front());
 		if (this->PlayerID == index) { continue; }
@@ -333,6 +368,7 @@ void EnemyPlane::Update_Chara(void) noexcept {
 	m_TargetMat = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - TargetPos).normalized());
 
 	//m_TargetMat = GetMat().rotation();
+	bool IsOut = false;
 	auto Matt = m_TargetMat;
 	if (
 		(GetMat().pos().x > 2000.f * Scale3DRate) ||
@@ -343,11 +379,33 @@ void EnemyPlane::Update_Chara(void) noexcept {
 		(GetMat().pos().z < -2000.f * Scale3DRate)
 		) {
 		Matt = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - Util::VECTOR3D::vget(0.f, 0.f, 0.f)).normalized());
+
+		IsOut = true;
+	}
+
+	bool IsShot = false;
+	if (!IsOut) {
+		float angle = Util::VECTOR3D::Angle((Player->GetMat().pos() - GetMat().pos()).normalized(), GetMat().zvec2());
+		IsShot = angle < Util::deg2rad(5);
+	}
+
+	m_AccelTimer += DeltaTime;
+	if (m_AccelTimer > 5.f) {
+		m_AccelTimer -= 5.f;
+		float Speedkmh = GetSpeed() / GetSpeedMax();
+		m_Accel = (Speedkmh < 170.f / 200.f);
+		m_Brake = (Speedkmh > 250.f / 200.f);
+	}
+	m_AutoTimer += DeltaTime;
+	if (m_AutoTimer > 5.f) {
+		m_AutoTimer -= 5.f;
 	}
 	Update(
 		false, false, false, false, false, false,
-		false,
-		true, Matt);
+		IsShot,
+		m_Accel,
+		m_Brake,
+		IsOut || (m_AutoTimer > 2.5f), Matt);
 
 }
 
@@ -365,7 +423,7 @@ void Ammo::Update_Sub(void) noexcept {
 		if (Shooter == index) { continue; }
 		SEGMENT_SEGMENT_RESULT Result;
 		Util::GetSegmenttoSegment(c->GetMat().pos(), c->GetMat().pos(), GetMat().pos(), Target,&Result);
-		if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+		if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
 			Target = Result.SegB_MinDist_Pos;
 			SetAmmo(Target);
 			for (auto& ae : this->m_AmmoEffectPer) {

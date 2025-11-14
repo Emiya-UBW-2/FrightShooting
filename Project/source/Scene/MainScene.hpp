@@ -31,6 +31,7 @@ class MainScene : public Util::SceneBase {
 	Util::VECTOR3D					m_CamOffset{};
 	Util::VECTOR3D					m_CamVec{};
 	float							m_FPSPer{ 0.f };
+	Util::Matrix4x4					m_EyeRotFree;
 	float							m_CamCheckLen{};
 	float							m_CamCheckTimer{};
 	float							m_Fade{ 1.f };

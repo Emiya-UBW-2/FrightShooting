@@ -107,7 +107,7 @@ PS_OUTPUT main(PS_INPUT PSInput)
 	float Total1 = 0.f;
 	float Total2 = 0.f;
 
-	for (int i = 1;i <= 50;i++) {
+	for (int i = 1;i <= 150;i++) {
 		if (i <= caminfo.x) {
             lWorldPosition.xyz = ViewPositionOne * Depth * i / caminfo.x;
 			

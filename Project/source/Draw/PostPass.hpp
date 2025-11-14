@@ -611,6 +611,8 @@ namespace Draw {
 		private:
 			Draw::ScreenHandle			m_BaseShadowHandle;
 			Draw::ScreenHandle			m_DepthBaseScreenHandle;
+			Draw::ScreenHandle			m_DepthBaseScreenHandle2;
+			Draw::ScreenHandle			m_DepthNormalScreenHandle;
 			Draw::ScreenHandle			m_DepthScreenHandle;
 			Draw::ScreenHandle			m_DepthFarScreenHandle;
 
@@ -662,6 +664,8 @@ namespace Draw {
 				this->m_BaseShadowHandle.Make(xsizeEx, ysizeEx, TRUE);
 				int size = 2 << 10;
 				this->m_DepthBaseScreenHandle.Make(size, size, FALSE);			// 深度バッファ用の作成
+				this->m_DepthBaseScreenHandle2.Make(size, size, FALSE);			// 深度バッファ用の作成
+				this->m_DepthNormalScreenHandle.Make(size, size, FALSE);			// 深度バッファ用の作成
 				this->m_DepthScreenHandle.MakeDepth(size, size);					// 深度バッファの作成
 				this->m_DepthFarScreenHandle.MakeDepth(size, size);				// 深度バッファの作成
 
@@ -673,6 +677,8 @@ namespace Draw {
 			void			Dispose(void) noexcept {
 				this->m_BaseShadowHandle.Dispose();
 				this->m_DepthBaseScreenHandle.Dispose();
+				this->m_DepthBaseScreenHandle2.Dispose();
+				this->m_DepthNormalScreenHandle.Dispose();
 				this->m_DepthScreenHandle.Dispose();
 				this->m_DepthFarScreenHandle.Dispose();
 				this->m_Shader.Dispose();
@@ -689,9 +695,6 @@ namespace Draw {
 				auto* CameraParts = Camera::Camera3D::Instance();
 				Draw::Camera3DInfo tmp_cam = CameraParts->GetCameraForDraw();
 
-				this->m_BaseShadowHandle.SetUseTextureToShader(0);				// 影用深度記録画像をテクスチャにセット
-				this->m_DepthScreenHandle.SetUseTextureToShader(1);
-				this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
 				// 影の結果を出力
 				tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 0.01f * Scale3DRate, 30.f * Scale3DRate);
 				this->m_BaseShadowHandle.SetDraw_Screen();
@@ -699,11 +702,17 @@ namespace Draw {
 				{
 					auto* pOption = Util::OptionParam::Instance();
 					const float ShadowLevel = static_cast<float>(pOption->GetParam(pOption->GetOptionType(Util::OptionType::Shadow))->GetSelect());
+					this->m_BaseShadowHandle.SetUseTextureToShader(0);
+					this->m_DepthScreenHandle.SetUseTextureToShader(1);
+					this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
 					this->m_Shader.SetPixelParam(3, ShadowLevel, this->m_Scale * 450.f, 0.f, 0.f);
 					this->m_Shader.SetVertexCameraMatrix(4, GetCamViewMatrix(false), GetCamProjectionMatrix(false));
 					this->m_Shader.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_Shader.Draw_lamda(doing);
-					this->m_ShaderRigid.SetPixelParam(3, ShadowLevel, this->m_Scale * 450.f, 0.f, 0.f);
+
+					this->m_DepthScreenHandle.SetUseTextureToShader(1);
+					this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
+					this->m_ShaderRigid.SetPixelParam(3, ShadowLevel, this->m_Scale * 45000.f, 0.f, 0.f);
 					this->m_ShaderRigid.SetVertexCameraMatrix(4, GetCamViewMatrix(false), GetCamProjectionMatrix(false));
 					this->m_ShaderRigid.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_ShaderRigid.Draw_lamda(doing_rigid);
@@ -741,7 +750,7 @@ namespace Draw {
 				this->m_Scale = Scale;
 				// 影用の深度記録画像の準備を行う
 				this->m_DepthBaseScreenHandle.SetRenderTargetToShader(0);
-				DxLib::SetRenderTargetToShader(1, InvalidID);
+				this->m_DepthNormalScreenHandle.SetRenderTargetToShader(1);
 				this->m_DepthScreenHandle.SetRenderTargetToShader(2);
 				{
 					SetupCam(Center, this->m_Scale * Scale3DRate);
@@ -755,8 +764,8 @@ namespace Draw {
 			}
 			void			UpdateFar(std::function<void()> Shadowdoing, Util::VECTOR3D Center, float Scale) noexcept {
 				// 影用の深度記録画像の準備を行う
-				this->m_DepthBaseScreenHandle.SetRenderTargetToShader(0);
-				DxLib::SetRenderTargetToShader(1, InvalidID);
+				this->m_DepthBaseScreenHandle2.SetRenderTargetToShader(0);
+				this->m_DepthNormalScreenHandle.SetRenderTargetToShader(1);
 				this->m_DepthFarScreenHandle.SetRenderTargetToShader(2);
 				{
 					SetupCam(Center, Scale * Scale3DRate);
@@ -773,7 +782,7 @@ namespace Draw {
 				DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
 				this->m_BaseShadowHandle.DrawExtendGraph(0, 0, DrawerMngr->GetRenderDispWidth(), DrawerMngr->GetRenderDispHeight(), true);
 				DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-				//this->m_DepthBaseScreenHandle.DrawExtendGraph(0, 0,1080,1080, true);
+				//this->m_DepthBaseScreenHandle2.DrawExtendGraph(0, 0,1080,1080, true);
 			}
 		};
 		//

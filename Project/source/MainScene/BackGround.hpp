@@ -119,6 +119,10 @@ public:
 	void			Draw(void) const noexcept {
 		DrawPolygonIndexed3D_UseVertexBuffer(this->m_VerBuf, this->m_IndexBuf, this->m_pic.get(), TRUE);
 	}
+	void			DrawShader(void) const noexcept {
+		DrawPolygonIndexed3DToShader_UseVertexBuffer(this->m_VerBuf, this->m_IndexBuf);
+	}
+	
 	void			Dispose(void) noexcept {
 		this->m_Vertex.clear();
 		this->m_Index.clear();
@@ -143,7 +147,7 @@ class Grass {
 		char		padding[7]{};
 	public:
 		void Init(int total) {
-			this->m_Inst.Init("data/model/Cloud/tex.png", "data/model/Cloud/model2.mqoz", -1);
+			this->m_Inst.Init("data/model/Cloud/tex.png", "data/model/Cloud/model2.mv1", -1);
 			this->m_Inst.Reset();
 			this->m_Inst.Set_start(total);
 		}
@@ -170,6 +174,11 @@ class Grass {
 				this->m_Inst.Draw();
 			}
 		}
+		void DrawShader(void) const noexcept {
+			if (this->canlook) {
+				this->m_Inst.DrawShader();
+			}
+		}
 	};
 	struct GrassPos {
 		int X_PosMin = 0;
@@ -181,7 +190,7 @@ public:
 	static const int grassDiv{ 12 };//^2;
 	const float size{ 30.f };
 private:
-	const int grasss = 90;						/*grassの数*/
+	const int grasss = 120;						/*grassの数*/
 	int Flag = 0;
 	char		padding[4]{};
 	std::array<grass_t, grassDiv>grass__;
@@ -373,9 +382,9 @@ public:
 							z1 = zmid + GetRandf(zmid);
 						}
 
-						auto tmpvect = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 0.f, z1 - zmid) * (Scale3DRate * 10.f) +
+						auto tmpvect = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 0.f, z1 - zmid) * (Scale3DRate * 7.5f) +
 							Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f) + 
-							Util::VECTOR3D::vget(0.f, GetRandf(2000.f) * Scale3DRate, 0.f);
+							Util::VECTOR3D::vget(0.f, GetRandf(1250.f) * Scale3DRate, 0.f);
 						tgt_g.Set_one(Util::Matrix4x4::Mtrans(tmpvect));
 					}
 					tgt_g.put();
@@ -402,6 +411,21 @@ public:
 				this->grass__[static_cast<size_t>(ID)].Check_CameraViewClip(grassPosMin[static_cast<size_t>(ID)], grassPosMax[static_cast<size_t>(ID)]);
 			}
 		}
+	}
+	void DrawShader(void) const noexcept {
+		SetUseZBuffer3D(true);
+		SetWriteZBufferFlag(true);
+		SetUseHalfLambertLighting(true);
+		for (int ID = 0; ID < grassDiv; ID++) {
+#ifdef DEBUG
+			//DrawCube3D(grassPosMin[static_cast<size_t>(ID)].get(), grassPosMax[static_cast<size_t>(ID)].get(), GetColor(0, 0, 0), GetColor(0, 0, 0), FALSE);
+#endif
+			if (grasss != 0) {
+				grass__[static_cast<size_t>(ID)].DrawShader();
+			}
+		}
+		SetUseHalfLambertLighting(false);
+		SetWriteZBufferFlag(false);
 	}
 	void Draw(void) const noexcept {
 		SetUseZBuffer3D(true);
@@ -465,6 +489,7 @@ public:
 		DxLib::SetUseLighting(TRUE);
 	}
 	void SetShadowDrawRigid(void) const noexcept {
+		m_Grass.DrawShader();
 	}
 	void SetShadowDraw(void) const noexcept {
 		MapID.DrawModel();
@@ -532,7 +557,12 @@ public:
 		m_Grass.Draw();
 		SetUseBackCulling(Prev);
 	}
-	void ShadowDrawFar(void) const noexcept {}
+	void ShadowDrawFar(void) const noexcept {
+		auto Prev = GetUseBackCulling();
+		SetUseBackCulling(DX_CULLING_NONE);
+		m_Grass.Draw();
+		SetUseBackCulling(Prev);
+	}
 	void ShadowDraw(void) const noexcept {
 		MapID.DrawModel();
 	}

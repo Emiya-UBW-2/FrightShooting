@@ -113,7 +113,10 @@ namespace DXLibRef {
 		//ガイド表示の描画
 		void Draw(void) const noexcept;
 		//キー単体の描画
-		void DrawButton(int x, int y, int graphOffset) const noexcept { this->m_DerivationGuideImage[static_cast<size_t>(graphOffset)]->Draw(x, y); }
+		void DrawButton(int x, int y, int graphOffset) const noexcept {
+			if (graphOffset == static_cast<int>(Util::EnumInput::Max)) { return; }
+			this->m_DerivationGuideImage[static_cast<size_t>(graphOffset)]->Draw(x, y);
+		}
 		int GetDrawSize(int graphOffset) const noexcept { return this->m_DerivationGuideImage[static_cast<size_t>(graphOffset)]->GetDrawSize(); }
 	};
 }
