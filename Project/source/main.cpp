@@ -105,13 +105,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			}
 			// ポストプロセス
 			PostPassParts->EndDraw();
-
-			/*
-			PostPassParts->SetDepthDraw([&](int layer) {
-				auto* SceneMngr = Util::SceneManager::Instance();
-				SceneMngr->DepthDraw3D(layer);
-				});
-			//*/
 		}
 		DrawerMngr->StartDraw();
 		{

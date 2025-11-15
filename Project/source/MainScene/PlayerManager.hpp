@@ -36,7 +36,7 @@ public:
 		for (size_t loop = 1; loop < 5; ++loop) {
 			this->m_Plane.at(loop) = std::make_shared<EnemyPlane>();
 			ObjectManager::Instance()->InitObject(this->m_Plane.at(loop), this->m_Plane.at(loop), "data/model/Sopwith/");
-			this->m_Plane.at(loop) ->SetPlayerID(loop);
+			this->m_Plane.at(loop) ->SetPlayerID(static_cast<int>(loop));
 		}
 		
 	}

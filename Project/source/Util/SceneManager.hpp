@@ -50,7 +50,6 @@ namespace Util {
 		void Draw(void) noexcept { Draw_Sub(); }
 		void DrawFront(void) noexcept { DrawFront_Sub(); }
 		void DepthDraw(void) noexcept { DepthDraw_Sub(); }
-		void DepthDraw(int layer) noexcept { DepthDraw_Sub(layer); }
 		void ShadowDrawFar(void) noexcept { ShadowDrawFar_Sub(); }
 		void ShadowDraw(void) noexcept { ShadowDraw_Sub(); }
 		void UIDraw(void) noexcept { UIDraw_Sub(); }
@@ -65,7 +64,6 @@ namespace Util {
 		virtual void Draw_Sub(void) noexcept = 0;
 		virtual void DrawFront_Sub(void) noexcept = 0;
 		virtual void DepthDraw_Sub(void) noexcept = 0;
-		virtual void DepthDraw_Sub(int layer) noexcept = 0;
 		virtual void ShadowDrawFar_Sub(void) noexcept = 0;
 		virtual void ShadowDraw_Sub(void) noexcept = 0;
 		virtual void UIDraw_Sub(void) noexcept = 0;
@@ -159,14 +157,6 @@ namespace Util {
 			}
 			if (this->m_NowScene) {
 				this->m_NowScene->DepthDraw();
-			}
-		}
-		void DepthDraw3D(int layer) noexcept {
-			if (this->m_Phase == EnumScenePhase::Load || this->m_LoadEndSwitch) {
-				return;
-			}
-			if (this->m_NowScene) {
-				this->m_NowScene->DepthDraw(layer);
 			}
 		}
 		void UIDraw(void) noexcept {

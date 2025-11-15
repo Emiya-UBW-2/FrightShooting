@@ -19,6 +19,9 @@
 
 enum class CharaAnim {
 	Stand,//立ち
+	Roll,
+	Pitch,
+	Yaw,
 	Max,
 };
 
@@ -225,6 +228,7 @@ private:
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	std::array<std::shared_ptr<AmmoHitEffect>, 10>	m_AmmoEffectPer{};
 	int Shooter{ InvalidID };
+	char		padding[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID) noexcept {
 		SetMatrix(Muzzle);
@@ -326,8 +330,9 @@ private:
 	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID								m_ShotID{ InvalidID };
-protected:
 	int PlayerID{ InvalidID };
+	bool DamageSwitch{};
+	char		padding4[3]{};
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -342,6 +347,11 @@ public:
 	void SetPlayerID(int ID) noexcept {
 		PlayerID = ID;
 	}
+	int				GetPlayerID(void) const noexcept { return PlayerID; }
+	void SetDamage() noexcept {
+		DamageSwitch = true;
+	}
+	bool				GetDamageSwitch(void) const noexcept { return DamageSwitch; }
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
@@ -376,6 +386,7 @@ public:
 		Init_Chara();
 	}
 	void Update_Sub(void) noexcept override {
+		DamageSwitch = false;
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
 		Update_Chara();
@@ -489,6 +500,7 @@ class EnemyPlane :public PlaneCommon {
 	float						m_AccelTimer{};
 	bool						m_Accel{ false };
 	bool						m_Brake{ false };
+	char		padding[2]{};
 public:
 	EnemyPlane(void) noexcept {}
 	EnemyPlane(const EnemyPlane&) = delete;

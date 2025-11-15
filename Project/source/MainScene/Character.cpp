@@ -5,8 +5,10 @@ void Plane::CheckDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	this->m_AimPoint = GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Center)).pos();
 	auto Pos2D = ConvWorldPosToScreenPos(this->m_AimPoint.get());
-	this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
-	this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+	}
 }
 
 inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool AccelKey, bool BrakeKey, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept {
@@ -26,31 +28,31 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 			YawPer = -Mat.zvec2().x * Util::deg2rad(20.f * DeltaTime);
 		}
 		if (QKey && !EKey) {
-			YawPer = Util::deg2rad(-100.f * DeltaTime);
+			YawPer = Util::deg2rad(-20.f * DeltaTime);
 		}
 		if (EKey && !QKey) {
-			YawPer = Util::deg2rad(100.f * DeltaTime);
+			YawPer = Util::deg2rad(20.f * DeltaTime);
 		}
 		if (QKey && EKey) {
 			YawPer = Util::deg2rad(0.f * DeltaTime);
 		}
-		Util::Easing(&m_YawPer, YawPer * (m_Speed / GetSpeedMax()), 0.9f);
+		Util::Easing(&m_YawPer, YawPer * (m_Speed / GetSpeedMax()), 0.95f);
 	}
 	{
 		float PitchPer = 0.f;
 		if (IsAuto) {
-			PitchPer = Mat.zvec2().y * Util::deg2rad(100.f * DeltaTime);
+			PitchPer = Mat.zvec2().y * Util::deg2rad(50.f * DeltaTime);
 		}
 		if (UpKey && !DownKey) {
-			PitchPer = Util::deg2rad(-100.f * DeltaTime);
+			PitchPer = Util::deg2rad(-50.f * DeltaTime);
 		}
 		if (DownKey && !UpKey) {
-			PitchPer = Util::deg2rad(100.f * DeltaTime);
+			PitchPer = Util::deg2rad(50.f * DeltaTime);
 		}
 		if (DownKey && UpKey) {
 			PitchPer = Util::deg2rad(0.f * DeltaTime);
 		}
-		Util::Easing(&m_PtichPer, PitchPer * (m_Speed / GetSpeedMax()), 0.9f);
+		Util::Easing(&m_PtichPer, PitchPer * (m_Speed / GetSpeedMax()), 0.95f);
 	}
 	{
 		float RollPer = 0.f;
@@ -74,7 +76,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		if (LeftKey && RightKey) {
 			RollPer = Util::deg2rad(0.f * DeltaTime);
 		}
-		Util::Easing(&m_RollPer, RollPer * (m_Speed / GetSpeedMax()), 0.9f);
+		Util::Easing(&m_RollPer, RollPer * (m_Speed / GetSpeedMax()), 0.95f);
 	}
 	// 左右回転
 	{
@@ -108,6 +110,11 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		auto Y = this->m_Rot.zvec2().y;
 		if (std::fabsf(Y) > 0.1f) {
 			this->m_SpeedTarget -= DeltaTime * ((std::fabsf(Y) - 0.1f) * (Y > 0.f ? 1.f : -1.f));
+
+			float Speedkmh = GetSpeed() / GetSpeedMax();
+			if ((Speedkmh < 200.f / 200.f)) {
+				this->m_SpeedTarget += DeltaTime * 0.15f;
+			}
 		}
 		else {
 			float Speedkmh = GetSpeed() / GetSpeedMax();
@@ -128,7 +135,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 
 		this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() / 2.f, GetSpeedMax() * 3.f / 2.f);
 	}
-	Util::Easing(&m_Speed, this->m_SpeedTarget, 0.9f);
+	Util::Easing(&m_Speed, this->m_SpeedTarget, 0.95f);
 
 	// 移動ベクトルを加算した仮座標を作成
 	Util::VECTOR3D PosBefore = GetTargetPos();
@@ -152,6 +159,12 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	);
 	//
 	this->m_AnimPer[static_cast<size_t>(CharaAnim::Stand)] = 1.f;
+
+	this->m_AnimPer[static_cast<size_t>(CharaAnim::Roll)] = -std::clamp(m_RollPer, Util::deg2rad(-100.f * DeltaTime), Util::deg2rad(100.f * DeltaTime)) / Util::deg2rad(100.f * DeltaTime);
+	this->m_AnimPer[static_cast<size_t>(CharaAnim::Pitch)] = -std::clamp(m_PtichPer, Util::deg2rad(-50.f * DeltaTime), Util::deg2rad(50.f * DeltaTime)) / Util::deg2rad(50.f * DeltaTime);
+	this->m_AnimPer[static_cast<size_t>(CharaAnim::Yaw)] = std::clamp(m_YawPer, Util::deg2rad(-20.f * DeltaTime), Util::deg2rad(20.f * DeltaTime)) / Util::deg2rad(20.f * DeltaTime);
+
+
 	//アニメアップデート
 	for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
 		SetAnim(loop).SetPer(this->m_AnimPer[loop]);
@@ -345,8 +358,10 @@ void EnemyPlane::CheckDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	this->m_AimPoint = GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Center)).pos();
 	auto Pos2D = ConvWorldPosToScreenPos(this->m_AimPoint.get());
-	this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
-	this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+	}
 }
 
 void EnemyPlane::Update_Chara(void) noexcept {
@@ -357,7 +372,7 @@ void EnemyPlane::Update_Chara(void) noexcept {
 
 	for (auto& c : PlayerManager::Instance()->SetPlane()) {
 		int index = static_cast<int>(&c - &PlayerManager::Instance()->SetPlane().front());
-		if (this->PlayerID == index) { continue; }
+		if (GetPlayerID() == index) { continue; }
 		auto Vec = (c->GetMat().pos() - GetMat().pos());
 		if (Vec.magnitude() < (10.f * Scale3DRate)) {
 			TargetPos = (GetMat().pos() + Vec);
@@ -433,6 +448,7 @@ void Ammo::Update_Sub(void) noexcept {
 				);
 			}
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(Target, 500.f * Scale3DRate);
+			c->SetDamage();
 			break;
 		}
 	}

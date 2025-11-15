@@ -696,7 +696,7 @@ namespace Draw {
 				Draw::Camera3DInfo tmp_cam = CameraParts->GetCameraForDraw();
 
 				// 影の結果を出力
-				tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 0.01f * Scale3DRate, 30.f * Scale3DRate);
+				tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 0.01f * Scale3DRate, 3000.f * Scale3DRate);
 				this->m_BaseShadowHandle.SetDraw_Screen();
 				tmp_cam.FlipCamInfo();
 				{
@@ -710,6 +710,7 @@ namespace Draw {
 					this->m_Shader.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_Shader.Draw_lamda(doing);
 
+					this->m_BaseShadowHandle.SetUseTextureToShader(0);
 					this->m_DepthScreenHandle.SetUseTextureToShader(1);
 					this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
 					this->m_ShaderRigid.SetPixelParam(3, ShadowLevel, this->m_Scale * 45000.f, 0.f, 0.f);
@@ -717,6 +718,7 @@ namespace Draw {
 					this->m_ShaderRigid.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_ShaderRigid.Draw_lamda(doing_rigid);
 				}
+				DxLib::SetUseTextureToShader(0, InvalidID);				// 使用テクスチャの設定を解除
 				DxLib::SetUseTextureToShader(1, InvalidID);				// 使用テクスチャの設定を解除
 				DxLib::SetUseTextureToShader(2, InvalidID);				// 使用テクスチャの設定を解除
 				// 後処理
@@ -839,10 +841,6 @@ namespace Draw {
 		char		padding[2]{};
 		Draw::ScreenHandle			m_BufferScreen;	// 描画スクリーン
 
-		Draw::ScreenHandle			m_DepthColorScreen;	// 描画スクリーン
-		Draw::ScreenHandle			m_DepthNormalScreen;	// 描画スクリーン
-		Draw::ScreenHandle			m_DepthBufferScreen;	// 描画スクリーン
-		Draw::ScreenHandle			m_DepthBufferScreen2;	// 描画スクリーン
 		Gbuffer						m_Gbuffer;
 		Util::Matrix4x4				m_CamViewMat{};
 		Util::Matrix4x4				m_CamProjectionMat{};
@@ -854,9 +852,6 @@ namespace Draw {
 		float						m_DistortionPer{ 120.f };
 		GodRayParam					m_GodRayParam{};
 		Util::VECTOR3D				m_AmbientLightVec{};
-		Draw::ScreenHandle			m_DepthDiff;
-		Shader2DController			m_Shader;
-		Shader2DController			m_Shader3D;
 	public:
 		const auto&		GetBufferScreen(void) const noexcept { return this->m_BufferScreen; }
 		const auto&		GetAmbientLightVec(void) const noexcept { return this->m_AmbientLightVec; }
@@ -915,15 +910,7 @@ namespace Draw {
 			this->m_ShadowDraw = std::make_unique<ShadowDraw>();
 		}
 		void		Dispose(void) noexcept {
-			this->m_DepthColorScreen.Dispose();
-			this->m_DepthNormalScreen.Dispose();
-			this->m_DepthBufferScreen.Dispose();
-			this->m_DepthBufferScreen2.Dispose();
-			this->m_DepthDiff.Dispose();
 			this->m_BufferScreen.Dispose();
-
-			this->m_Shader.Dispose();
-			m_Shader3D.Dispose();
 
 			PostPassScreenBufferPool::Release();
 			// ポストエフェクト
@@ -993,133 +980,6 @@ namespace Draw {
 			// 影画像の用意
 			this->m_ShadowDraw->SetDraw(setshadowdoing_rigid, setshadowdoing);
 		}
-		void		SetDepthDraw(std::function<void()> done) noexcept {
-			return;
-			auto* pOption = Util::OptionParam::Instance();
-			if (!pOption->GetParam(pOption->GetOptionType(Util::OptionType::Silhouette))->IsActive()) { return; }
-			if (DxLib::GetUseDirect3DVersion() != DX_DIRECT3D_11) { return; }
-			this->m_DepthBufferScreen.SetDraw_Screen();
-			this->m_DepthBufferScreen.FillGraph(0, 0, 0);
-			auto* CameraParts = Camera::Camera3D::Instance();
-			// カラーバッファを描画対象0に、法線バッファを描画対象1に設定
-			this->m_DepthColorScreen.SetRenderTargetToShader(0);
-			this->m_DepthNormalScreen.SetRenderTargetToShader(1);
-			this->m_DepthBufferScreen.SetRenderTargetToShader(2);
-			DxLib::ClearDrawScreenZBuffer();
-			CameraParts->GetCameraForDraw().FlipCamInfo();
-			DxLib::SetCameraNearFar(0.1f * Scale3DRate, 50.f * Scale3DRate);
-			{
-				done();
-			}
-			DxLib::SetRenderTargetToShader(0, InvalidID);
-			DxLib::SetRenderTargetToShader(1, InvalidID);
-			DxLib::SetRenderTargetToShader(2, InvalidID);
-		}
-		void		SetDepthDraw(std::function<void(int layer)> done) noexcept {
-			if (GetUseDirect3DVersion() == DX_DIRECT3D_11) {
-				{
-					this->m_DepthBufferScreen.SetDraw_Screen();
-					this->m_DepthBufferScreen.FillGraph(0, 0, 0);
-					this->m_DepthColorScreen.SetDraw_Screen();
-					this->m_DepthColorScreen.SetRenderTargetToShader(0);
-					this->m_DepthNormalScreen.SetRenderTargetToShader(1);
-					this->m_DepthBufferScreen.SetRenderTargetToShader(2);
-					{
-						auto* CameraParts = Camera::Camera3D::Instance();
-						Draw::Camera3DInfo tmp_cam = CameraParts->GetCameraForDraw();
-						tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 1.f * Scale3DRate, 3000000.f * Scale3DRate);
-						tmp_cam.FlipCamInfo();
-						done(0);
-					}
-					SetRenderTargetToShader(0, InvalidID);
-					SetRenderTargetToShader(1, InvalidID);
-					SetRenderTargetToShader(2, InvalidID);
-				}
-				{
-					this->m_DepthBufferScreen2.SetDraw_Screen();
-					this->m_DepthBufferScreen2.FillGraph(0, 0, 0);
-					this->m_DepthColorScreen.SetDraw_Screen();
-					this->m_DepthColorScreen.SetRenderTargetToShader(0);
-					this->m_DepthNormalScreen.SetRenderTargetToShader(1);
-					this->m_DepthBufferScreen2.SetRenderTargetToShader(2);
-					{
-						auto* CameraParts = Camera::Camera3D::Instance();
-						Draw::Camera3DInfo tmp_cam = CameraParts->GetCameraForDraw();
-						tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 1.f * Scale3DRate, 3000000.f * Scale3DRate);
-						tmp_cam.FlipCamInfo();
-						done(1);
-					}
-					SetRenderTargetToShader(0, InvalidID);
-					SetRenderTargetToShader(1, InvalidID);
-					SetRenderTargetToShader(2, InvalidID);
-				}
-				{
-					this->m_DepthColorScreen.SetDraw_Screen();
-					{
-						this->m_DepthBufferScreen2.SetUseTextureToShader(0);
-						this->m_Gbuffer.GetDepthBuffer().SetRenderTargetToShader(1);
-
-						auto* DrawerMngr = Draw::MainDraw::Instance();
-						int xsize = DrawerMngr->GetRenderDispWidth();
-						int ysize = DrawerMngr->GetRenderDispHeight();
-
-						m_Shader3D.SetDispSize(xsize, ysize);
-						m_Shader3D.Draw();
-
-						SetUseTextureToShader(0, InvalidID);
-						SetUseTextureToShader(1, InvalidID);
-					}
-					GetBufferScreen().SetDraw_Screen(false);
-					{
-						SetDrawBright(255, 255, 0);
-						this->m_DepthColorScreen.DrawGraph(0, 0, true);
-						SetDrawBright(255, 255, 255);
-					}
-				}
-				/*
-				for (int loop = 0; loop < 2; ++loop) {
-					this->m_DepthBufferScreen.SetDraw_Screen();
-					this->m_DepthBufferScreen.FillGraph(0, 0, 0);
-					this->m_DepthColorScreen.SetDraw_Screen();
-					this->m_DepthColorScreen.SetRenderTargetToShader(0);
-					this->m_DepthNormalScreen.SetRenderTargetToShader(1);
-					this->m_DepthBufferScreen.SetRenderTargetToShader(2);
-					{
-						auto* CameraParts = Camera::Camera3D::Instance();
-						Draw::Camera3DInfo tmp_cam = CameraParts->GetCameraForDraw();
-						tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 1.f * Scale3DRate, 30000.f * Scale3DRate);
-						tmp_cam.FlipCamInfo();
-						done(loop);
-					}
-					SetRenderTargetToShader(0, InvalidID);
-					SetRenderTargetToShader(1, InvalidID);
-					SetRenderTargetToShader(2, InvalidID);
-
-					this->m_DepthColorScreen.SetDraw_Screen();
-					{
-						m_Gbuffer.GetDepthBuffer().SetUseTextureToShader(0);
-						this->m_DepthBufferScreen.SetUseTextureToShader(1);
-
-						auto* DrawerMngr = Draw::MainDraw::Instance();
-						int xsize = DrawerMngr->GetRenderDispWidth();
-						int ysize = DrawerMngr->GetRenderDispHeight();
-
-						m_Shader3D.SetDispSize(xsize, ysize);
-						m_Shader3D.Draw();
-
-						SetUseTextureToShader(0, InvalidID);
-						SetUseTextureToShader(1, InvalidID);
-					}
-					GetBufferScreen().SetDraw_Screen(false);
-					{
-						SetDrawBright(255, 255, 0);
-						this->m_DepthColorScreen.DrawGraph(0, 0, true);
-						SetDrawBright(255, 255, 255);
-					}
-				}
-				//*/
-			}
-		}
 		//
 		void		StartDraw(void) noexcept {
 			// リセット
@@ -1171,38 +1031,6 @@ namespace Draw {
 					P->SetEffect(&this->m_BufferScreen, &this->m_Gbuffer);
 				}
 			}
-			//深度による描画
-			{
-				if (!pOption->GetParam(pOption->GetOptionType(Util::OptionType::Silhouette))->IsActive()) { return; }
-				if (DxLib::GetUseDirect3DVersion() != DX_DIRECT3D_11) { return; }
-				auto* DrawerMngr = Draw::MainDraw::Instance();
-				static const int EXTEND = 4;
-
-				int xsizeEx = DrawerMngr->GetRenderDispWidth();
-				int ysizeEx = DrawerMngr->GetRenderDispHeight();
-
-				this->m_DepthBufferScreen2.GraphFilterBlt(this->m_Gbuffer.GetDepthBuffer(), DX_GRAPH_FILTER_DOWN_SCALE, EXTEND);
-
-				this->m_DepthDiff.SetDraw_Screen();
-				this->m_DepthBufferScreen.SetUseTextureToShader(0);
-				this->m_DepthBufferScreen2.SetUseTextureToShader(1);
-				{
-					this->m_Shader.SetDispSize(xsizeEx, ysizeEx);
-					this->m_Shader.Draw();
-				}
-				DxLib::SetUseTextureToShader(0, InvalidID);				// 使用テクスチャの設定を解除
-				DxLib::SetUseTextureToShader(1, InvalidID);				// 使用テクスチャの設定を解除
-				this->m_DepthDiff.GraphFilter(DX_GRAPH_FILTER_GAUSS, 16, 1000);
-				//pScreenBuffer->GraphFilter(DX_GRAPH_FILTER_BILATERAL_BLUR);
-				this->m_BufferScreen.SetDraw_Screen(false);
-				{
-					SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
-					DxLib::SetDrawBright(0, 128, 0);
-					this->m_DepthDiff.DrawExtendGraph(0, 0, DrawerMngr->GetRenderDispWidth(), DrawerMngr->GetRenderDispHeight(), true);
-					DxLib::SetDrawBright(255, 255, 255);
-					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-				}
-			}
 		}
 	public:
 		void		Reset(void) noexcept {
@@ -1226,34 +1054,6 @@ namespace Draw {
 				this->m_BufferScreen.Make(DrawerMngr->GetRenderDispWidth(), DrawerMngr->GetRenderDispHeight(), true);
 				DxLib::SetCreateDrawValidGraphZBufferBitDepth(Prev);
 			}
-
-			this->m_DepthColorScreen.Dispose();
-			this->m_DepthNormalScreen.Dispose();
-			this->m_DepthBufferScreen.Dispose();
-			this->m_DepthBufferScreen2.Dispose();
-			this->m_DepthDiff.Dispose();
-			this->m_Shader.Dispose();
-
-			//auto* pOption = Util::OptionParam::Instance();
-			//if (pOption->GetParam(pOption->GetOptionType(Util::OptionType::Silhouette))->IsActive()) 
-			{
-				static const int EXTEND = 1;
-
-				int xsizeEx = DrawerMngr->GetRenderDispWidth() / EXTEND;
-				int ysizeEx = DrawerMngr->GetRenderDispHeight() / EXTEND;
-				auto Prev = DxLib::GetCreateDrawValidGraphZBufferBitDepth();
-				DxLib::SetCreateDrawValidGraphZBufferBitDepth(24);
-				this->m_DepthColorScreen.Make(xsizeEx, ysizeEx, true);
-				this->m_DepthNormalScreen.Make(xsizeEx, ysizeEx);
-				this->m_DepthBufferScreen.MakeDepth(xsizeEx, ysizeEx);
-				this->m_DepthBufferScreen2.MakeDepth(xsizeEx, ysizeEx);
-				this->m_DepthDiff.Make(DrawerMngr->GetRenderDispWidth(), DrawerMngr->GetRenderDispHeight(), true);
-				DxLib::SetCreateDrawValidGraphZBufferBitDepth(Prev);
-				this->m_Shader.Init("CommonData/shader/PS_Depth.pso");
-			}
-
-			m_Shader3D.Dispose();
-			m_Shader3D.Init("CommonData/shader/PS_Depth.pso");
 		}
 	};
 };

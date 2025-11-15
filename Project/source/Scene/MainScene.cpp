@@ -10,12 +10,7 @@ void MainScene::Load_Sub(void) noexcept {
 
 	PlayerManager::Instance()->Load();
 
-	m_StandGraph = Draw::GraphPool::Instance()->Get("data/Image/Body.png")->Get();
-	m_SquatGraph = Draw::GraphPool::Instance()->Get("data/Image/BodyC.png")->Get();
-	m_ProneGraph = Draw::GraphPool::Instance()->Get("data/Image/BodyP.png")->Get();
-	m_Watch = Draw::GraphPool::Instance()->Get("data/Image/Watch.png")->Get();
 	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
-	m_Lock = Draw::GraphPool::Instance()->Get("data/Image/Lock.png")->Get();
 }
 void MainScene::Init_Sub(void) noexcept {
 	BackGround::Instance()->Init();
@@ -26,7 +21,7 @@ void MainScene::Init_Sub(void) noexcept {
 
 	Player->SetPos(Util::VECTOR3D::vget(0.f, 0.f, 0.f));
 	for (int index = 1; index < 5; ++index) {
-		((std::shared_ptr<EnemyPlane>&)PlayerManager::Instance()->SetPlane().at(index))->SetPos(Util::VECTOR3D::vget(static_cast<float>(index) * 10.f * Scale3DRate, 0.f, 0.f));
+		((std::shared_ptr<EnemyPlane>&)PlayerManager::Instance()->SetPlane().at(static_cast<size_t>(index)))->SetPos(Util::VECTOR3D::vget(static_cast<float>(index) * 10.f * Scale3DRate, 0.f, 0.f));
 	}
 	//
 	this->m_Exit = false;
@@ -158,6 +153,14 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
+	m_DamagePer = std::max(m_DamagePer - DeltaTime, 0.f);
+	if (m_DamagePer == 0.f) {
+		CameraParts->SetCamShake(1.f, std::fabsf(Player->GetSpeed() - Player->GetSpeedMax()) / (Player->GetSpeedMax() * 2.f) * Scale3DRate);
+		if (Player->GetDamageSwitch()) {
+			CameraParts->SetCamShake(0.2f, 5.f * Scale3DRate);
+			m_DamagePer = 0.2f;
+		}
+	}
 
 	ObjectManager::Instance()->UpdateObject();
 	//更新
@@ -186,8 +189,8 @@ void MainScene::Update_Sub(void) noexcept {
 		CamUp1 = EyeMat.yvec();
 
 		//*
-		CamTarget1 = EyeMat.pos() + m_EyeRotFree.yvec() * (1.f * Scale3DRate);
-		CamPosition1 = CamTarget1 - m_EyeRotFree.zvec() * (-2.f * Scale3DRate);
+		CamTarget1 = EyeMat.pos() - EyeMat.zvec() * (100.f * Scale3DRate);
+		CamPosition1 = EyeMat.pos() + m_EyeRotFree.yvec() * (1.f * Scale3DRate) - m_EyeRotFree.zvec() * (-2.f * Scale3DRate);
 		CamUp1 = m_EyeRotFree.yvec();
 		//*/
 	}
@@ -227,17 +230,9 @@ void MainScene::Update_Sub(void) noexcept {
 
 	//
 	{
-		PostPassParts->SetScopeParam().m_IsActive = this->m_UseLens;
-		PostPassParts->SetScopeParam().m_Radius = (this->m_LensSize - this->m_LensPos).magnitude();
-		PostPassParts->SetScopeParam().m_Zoom = 4.f;
-		PostPassParts->SetScopeParam().m_Xpos = this->m_LensPos.x;
-		PostPassParts->SetScopeParam().m_Ypos = static_cast<float>(DrawerMngr->GetDispHeight()) - this->m_LensPos.y;
-
-		PostPassParts->SetScopeParam().m_Radius = PostPassParts->SetScopeParam().m_Radius / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth()));
-		PostPassParts->SetScopeParam().m_Xpos = PostPassParts->SetScopeParam().m_Xpos / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth()));
-		PostPassParts->SetScopeParam().m_Ypos = PostPassParts->SetScopeParam().m_Ypos / (static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight()));
+		PostPassParts->SetScopeParam().m_IsActive = false;
 	}
-	this->m_UseLens = false;
+	this->m_AimPointDraw = false;
 }
 void MainScene::BGDraw_Sub(void) noexcept {
 	BackGround::Instance()->BGDraw();
@@ -252,7 +247,18 @@ void MainScene::SetShadowDraw_Sub(void) noexcept {
 void MainScene::Draw_Sub(void) noexcept {
 	auto Pos = PlayerManager::Instance()->SetPlane().at(0)->GetMat().pos();
 	for (int index = 1; index < 5; ++index) {
-		DrawLine3D(Pos.get(), PlayerManager::Instance()->SetPlane().at(index)->GetMat().pos().get(), ColorPalette::Red);
+		DrawLine3D(Pos.get(), PlayerManager::Instance()->SetPlane().at(static_cast<size_t>(index))->GetMat().pos().get(), ColorPalette::Red);
+	}
+
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+
+	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+
+	auto Pos2D = ConvWorldPosToScreenPos((Player->GetMat().pos() + Player->GetMat().zvec2()*(100.f*Scale3DRate)).get());
+	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+		this->m_AimPointDraw = true;
+		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
 	}
 
 	BackGround::Instance()->Draw();
@@ -264,10 +270,6 @@ void MainScene::DrawFront_Sub(void) noexcept {
 void MainScene::DepthDraw_Sub(void) noexcept {
 	ObjectManager::Instance()->Draw_Depth();
 }
-void MainScene::DepthDraw_Sub(int layer) noexcept {
-	BackGround::Instance()->DepthDraw(layer);
-}
-
 void MainScene::ShadowDrawFar_Sub(void) noexcept {
 	BackGround::Instance()->ShadowDrawFar();
 }
@@ -281,6 +283,11 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	auto* Localize = Util::LocalizePool::Instance();
 
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+	if(this->m_AimPointDraw) {
+		SetDrawBright(0, 255, 0);
+		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y), 1.f, 0.f, true);
+		SetDrawBright(255, 255, 255);
+	}
 	{
 		int xpos = DrawerMngr->GetDispWidth() / 2;
 		int ypos = DrawerMngr->GetDispHeight() * 3 / 4;

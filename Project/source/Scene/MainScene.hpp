@@ -22,12 +22,7 @@ class MainScene : public Util::SceneBase {
 	char		padding[4]{};
 	float							m_CharaStyleChange{};
 	float							m_CharaStyleChangeR{};
-	const Draw::GraphHandle*		m_StandGraph{};
-	const Draw::GraphHandle*		m_SquatGraph{};
-	const Draw::GraphHandle*		m_ProneGraph{};
-	const Draw::GraphHandle*		m_Watch{};
 	const Draw::GraphHandle*		m_Cursor{};
-	const Draw::GraphHandle*		m_Lock{};
 	Util::VECTOR3D					m_CamOffset{};
 	Util::VECTOR3D					m_CamVec{};
 	float							m_FPSPer{ 0.f };
@@ -36,14 +31,16 @@ class MainScene : public Util::SceneBase {
 	float							m_CamCheckTimer{};
 	float							m_Fade{ 1.f };
 	float							m_ShotFov{ 0.f };
-	char		padding3[4]{};
+	float							m_DamagePer{ 0.f };
+	//char		padding3[4]{};
 	Sound::SoundUniqueID			m_cursorID{ InvalidID };
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
 	Sound::SoundUniqueID			m_EnviID{ InvalidID };
-	bool							m_UseLens{ false };
+	bool							m_AimPointDraw{ false };
 	char		padding4[3]{};
 	Util::VECTOR2D					m_LensPos{};
 	Util::VECTOR2D					m_LensSize{};
+	Util::VECTOR2D					m_AimPoint2D;
 	char		padding5[4]{};
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
@@ -62,7 +59,6 @@ protected:
 	void Draw_Sub(void) noexcept override;
 	void DrawFront_Sub(void) noexcept override;
 	void DepthDraw_Sub(void) noexcept override;
-	void DepthDraw_Sub(int layer) noexcept override;
 	void ShadowDrawFar_Sub(void) noexcept override;
 	void ShadowDraw_Sub(void) noexcept override;
 	void UIDraw_Sub(void) noexcept override;

@@ -120,6 +120,7 @@ public:
 		DrawPolygonIndexed3D_UseVertexBuffer(this->m_VerBuf, this->m_IndexBuf, this->m_pic.get(), TRUE);
 	}
 	void			DrawShader(void) const noexcept {
+		this->m_pic.SetUseTextureToShader(0);
 		DrawPolygonIndexed3DToShader_UseVertexBuffer(this->m_VerBuf, this->m_IndexBuf);
 	}
 	
@@ -544,18 +545,6 @@ public:
 			LimitID.DrawModel();
 			SetUseLighting(true);
 		}
-	}
-	void DepthDraw(int layer) noexcept {
-		return;
-		auto Prev = GetUseBackCulling();
-		if (layer == 0) {
-			SetUseBackCulling(DX_CULLING_RIGHT);//背面
-		}
-		else {
-			SetUseBackCulling(DX_CULLING_LEFT);
-		}
-		m_Grass.Draw();
-		SetUseBackCulling(Prev);
 	}
 	void ShadowDrawFar(void) const noexcept {
 		auto Prev = GetUseBackCulling();
