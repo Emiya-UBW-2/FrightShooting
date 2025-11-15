@@ -311,6 +311,7 @@ private:
 	float				m_YawPer{};
 	float				m_PtichPer{};
 	float				m_RollPer{};
+	char		padding4[4]{};
 
 	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
 	int													m_ShotEffectID{};
@@ -331,8 +332,10 @@ private:
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID								m_ShotID{ InvalidID };
 	int PlayerID{ InvalidID };
-	bool DamageSwitch{};
-	char		padding4[3]{};
+	int DamageID{};
+
+	bool		m_ShotSwitch{};
+	char		padding5[7]{};
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -348,10 +351,11 @@ public:
 		PlayerID = ID;
 	}
 	int				GetPlayerID(void) const noexcept { return PlayerID; }
-	void SetDamage() noexcept {
-		DamageSwitch = true;
+	void SetDamage(int ID) noexcept {
+		DamageID = ID;
 	}
-	bool				GetDamageSwitch(void) const noexcept { return DamageSwitch; }
+	int				GetDamageID(void) const noexcept { return DamageID; }
+	bool			GetShotSwitch(void) const noexcept { return m_ShotSwitch; }
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
@@ -386,7 +390,7 @@ public:
 		Init_Chara();
 	}
 	void Update_Sub(void) noexcept override {
-		DamageSwitch = false;
+		//DamageID = InvalidID;
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
 		Update_Chara();

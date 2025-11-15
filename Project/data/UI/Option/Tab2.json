@@ -237,20 +237,6 @@
 				}
 			]
 		}
-		,
-		{
-			"Name":"Column18",
-			"Type":"Json",
-			"OfsNoRad":[0,765],
-			"BaseColor":[255,255,255,0],
-			"FilePath":"data/UI/Option/TabChild001.json",
-			"Override":[
-				{
-					"Target":"String1",
-					"FontID":217
-				}
-			]
-		}
 	],
 	"Anim":[
 		{
@@ -355,12 +341,6 @@
 				},
 				{
 					"Target":"Column17",
-					"Color":[255,255,255,255],
-					"StartFrame":0,
-					"EndFrame":12
-				},
-				{
-					"Target":"Column18",
 					"Color":[255,255,255,255],
 					"StartFrame":0,
 					"EndFrame":12

@@ -102,12 +102,6 @@
 			"DefaultValue" : "True"
 		},
 		{
-			"Type":"Silhouette",
-			"SelectType": "Select",
-			"SelectType" : "Bool",
-			"DefaultValue" : "True"
-		},
-		{
 			"Type":"MasterVolume",
 			"SelectType" : "Int",
 			"Value" : [0,100],
@@ -128,13 +122,13 @@
 		{
 			"Type":"XSensing",
 			"SelectType" : "Int",
-			"Value" : [0,200],
+			"Value" : [1,300],
 			"DefaultValue" : 100
 		},
 		{
 			"Type":"YSensing",
 			"SelectType" : "Int",
-			"Value" : [0,200],
+			"Value" : [1,300],
 			"DefaultValue" : 100
 		},
 		{

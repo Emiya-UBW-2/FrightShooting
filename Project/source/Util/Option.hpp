@@ -45,7 +45,6 @@ namespace Util {
 		GodRay,
 		Distortion,
 		MotionBlur,
-		Silhouette,
 
 		MasterVolume,
 		BGMVolume,
@@ -77,7 +76,6 @@ namespace Util {
 		"GodRay",
 		"Distortion",
 		"MotionBlur",
-		"Silhouette",
 
 		"MasterVolume",
 		"BGMVolume",

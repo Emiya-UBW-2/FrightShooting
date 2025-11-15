@@ -121,6 +121,9 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 			if ((Speedkmh < 200.f / 200.f)) {
 				this->m_SpeedTarget += DeltaTime * 0.5f;
 			}
+			else if ((Speedkmh > 200.f / 200.f)) {
+				this->m_SpeedTarget -= DeltaTime * 0.5f;
+			}
 		}
 
 		if (std::fabsf(m_YawPer / Util::deg2rad(200.f * DeltaTime)) > 0.1f) {
@@ -184,6 +187,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		}
 	}
 
+	m_ShotSwitch = false;
 	if (!AtrtackKey) {
 		m_ShootTimer = 0.2f * 0.f;
 		m_ShootTimer2 = 0.2f * 0.5f;
@@ -200,6 +204,8 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
 
 			m_ShootTimer = 0.2f;
+
+			m_ShotSwitch = true;
 		}
 		m_ShootTimer = std::max(m_ShootTimer - DeltaTime, 0.f);
 		//
@@ -213,6 +219,8 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
 
 			m_ShootTimer2 = 0.2f;
+
+			m_ShotSwitch = true;
 		}
 		m_ShootTimer2 = std::max(m_ShootTimer2 - DeltaTime, 0.f);
 	}
@@ -240,8 +248,11 @@ void Plane::Update_Chara(void) noexcept {
 	int MX = DrawerMngr->GetMousePositionX();
 	int MY = DrawerMngr->GetMousePositionY();
 	DxLib::GetMousePoint(&MX, &MY);
-	LookX = MX - DrawerMngr->GetWindowDrawWidth() / 2;
-	LookY = MY - DrawerMngr->GetWindowDrawHeight() / 2;
+
+	auto* pOption = Util::OptionParam::Instance();
+	LookX = (MX - DrawerMngr->GetWindowDrawWidth() / 2) * pOption->GetParam(pOption->GetOptionType(Util::OptionType::XSensing))->GetSelect() / 100;
+	LookY = (MY - DrawerMngr->GetWindowDrawHeight() / 2)* pOption->GetParam(pOption->GetOptionType(Util::OptionType::YSensing))->GetSelect() / 100;
+
 	DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 	{
 
@@ -448,7 +459,7 @@ void Ammo::Update_Sub(void) noexcept {
 				);
 			}
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(Target, 500.f * Scale3DRate);
-			c->SetDamage();
+			c->SetDamage(Shooter);
 			break;
 		}
 	}

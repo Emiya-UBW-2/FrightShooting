@@ -15,7 +15,6 @@ AntiAliasing=True
 GodRay=True
 Distortion=False
 MotionBlur=False
-Silhouette=False
 MasterVolume=100
 BGMVolume=50
 SEVolume=50

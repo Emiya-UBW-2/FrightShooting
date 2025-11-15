@@ -11,6 +11,7 @@ void MainScene::Load_Sub(void) noexcept {
 	PlayerManager::Instance()->Load();
 
 	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
+	m_Lock = Draw::GraphPool::Instance()->Get("data/Image/Lock.png")->Get();
 }
 void MainScene::Init_Sub(void) noexcept {
 	BackGround::Instance()->Init();
@@ -97,16 +98,16 @@ void MainScene::Update_Sub(void) noexcept {
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::Tab), Localize->Get(333));
 
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::W), "");
-				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::S), "");
+				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::S), Localize->Get(334));
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::A), "");
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::D), Localize->Get(334));
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Q), "");
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::E), Localize->Get(335));
-				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Run), Localize->Get(308));
-				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Walk), Localize->Get(309));
+				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Run), "");
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Jump), Localize->Get(312));
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Attack), Localize->Get(336));
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Aim), Localize->Get(338));
+				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Walk), Localize->Get(309));
 				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Squat), Localize->Get(310));
 				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Prone), Localize->Get(311));
 				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::ChangeWeapon), Localize->Get(315));
@@ -124,9 +125,9 @@ void MainScene::Update_Sub(void) noexcept {
 		}
 	);
 	//
-	CameraParts->SetCamInfo(Util::Lerp(Util::deg2rad(45),
+	CameraParts->SetCamInfo(
 		CameraParts->GetCamera().GetCamFov() - this->m_ShotFov * Util::deg2rad(5),
-		this->m_FPSPer), CameraParts->GetCamera().GetCamNear(), CameraParts->GetCamera().GetCamFar());
+		CameraParts->GetCamera().GetCamNear(), CameraParts->GetCamera().GetCamFar());
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	//ポーズメニュー
@@ -156,15 +157,27 @@ void MainScene::Update_Sub(void) noexcept {
 	m_DamagePer = std::max(m_DamagePer - DeltaTime, 0.f);
 	if (m_DamagePer == 0.f) {
 		CameraParts->SetCamShake(1.f, std::fabsf(Player->GetSpeed() - Player->GetSpeedMax()) / (Player->GetSpeedMax() * 2.f) * Scale3DRate);
-		if (Player->GetDamageSwitch()) {
+		if (Player->GetDamageID() != InvalidID) {
 			CameraParts->SetCamShake(0.2f, 5.f * Scale3DRate);
 			m_DamagePer = 0.2f;
 		}
 	}
+	for (auto& a : m_AtackPer) {
+		a = std::max(a - DeltaTime, 0.f);
+	}
+	for (auto& c : PlayerManager::Instance()->SetPlane()) {
+		if (c->GetDamageID() == 0) {
+			m_AtackPer.at(m_AttackNow) = 1.f;
+			++m_AttackNow %= m_AtackPer.size();
+		}
+	}
+	for (auto& c : PlayerManager::Instance()->SetPlane()) {
+		c->SetDamage(InvalidID);
+	}
 
 	ObjectManager::Instance()->UpdateObject();
 	//更新
-	auto* DrawerMngr = Draw::MainDraw::Instance();
+	//auto* DrawerMngr = Draw::MainDraw::Instance();
 	//float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
 	//float YPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionY() - DrawerMngr->GetDispHeight() / 2) / static_cast<float>(DrawerMngr->GetDispHeight() / 2), -1.f, 1.f);
 
@@ -207,7 +220,7 @@ void MainScene::Update_Sub(void) noexcept {
 
 	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
 
-	if (false) {
+	if (Player->GetShotSwitch() && Player->IsFPSView()) {
 		this->m_ShotFov = 1.f;
 	}
 	else {
@@ -286,6 +299,14 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	if(this->m_AimPointDraw) {
 		SetDrawBright(0, 255, 0);
 		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y), 1.f, 0.f, true);
+		for (auto& a : m_AtackPer) {
+			if (a > 0.f) {
+				SetDrawBright(255, 0, 0);
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * (1.f - std::fabsf(a - 0.7f) / 0.3f)), 0, 255));
+				m_Lock->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y), 1.f + std::powf(a, 2.f), 0.f, true);
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+			}
+		}
 		SetDrawBright(255, 255, 255);
 	}
 	{
