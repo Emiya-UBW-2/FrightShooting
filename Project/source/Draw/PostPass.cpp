@@ -347,13 +347,13 @@ namespace Draw {
 					float Power = 1.f;
 					switch (pOption->GetParam(pOption->GetOptionType(Util::OptionType::Shadow))->GetSelect()) {
 					case 1:
-						Power = 15.f;
+						Power = 50.f;
 						break;
 					case 2:
-						Power = 20.f;
+						Power = 100.f;
 						break;
 					case 3:
-						Power = 35.f;
+						Power = 150.f;
 						break;
 					default:
 						break;

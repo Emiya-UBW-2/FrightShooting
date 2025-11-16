@@ -36,7 +36,6 @@ void MainScene::Init_Sub(void) noexcept {
 	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(0.02f, -1.f, 0.02f).normalized();
 
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
-	PostPassParts->SetShadowScale(30.f);
 	PostPassParts->SetAmbientLight(LightVec);
 
 	SetLightEnable(false);
@@ -83,6 +82,7 @@ void MainScene::Update_Sub(void) noexcept {
 	auto* CameraParts = Camera::Camera3D::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
+	PostPassParts->SetShadowScale(30.f);
 
 	KeyGuideParts->ChangeGuide(
 		[this]() {

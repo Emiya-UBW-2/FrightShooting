@@ -38,30 +38,14 @@ PS_OUTPUT main(PS_INPUT PSInput)
 	PSOutput.Color0.rgb = 0.f;
 	PSOutput.Color0.a = 1.f;
 
+    float Threshold = g_param.z;
+    float Threshold2 = g_param.w;
 
 	// 深度バッファテクスチャから深度を取得( +補正値 )
 	{
         float LightDepth = PSInput.LPPosition.z;
-		comp = 0;
+        comp = 0;
         if ((int) g_param.x == 3)
-        {
-            const int xs = 5;
-    		[fastopt]
-            for (int x = -xs; x <= xs; x++)
-            {
-			[fastopt]
-                for (int y = -xs; y <= xs; y++)
-                {
-                        float TextureDepth2 = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.LPPosition.xy, int2(x, y)).r;
-                        if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + 1.f))
-                        {
-                            comp++;
-                        }
-                }
-            }
-            PSOutput.Color0.r = comp / ((xs * 2 + 1) * (xs * 2 + 1));
-        }
-        if ((int) g_param.x == 2)
         {
             const int xs = 3;
     		[fastopt]
@@ -70,12 +54,30 @@ PS_OUTPUT main(PS_INPUT PSInput)
 			[fastopt]
                 for (int y = -xs; y <= xs; y++)
                 {
-                        float TextureDepth2 = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.LPPosition.xy, int2(x, y)).r;
-                        if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + 1.f))
-                        {
-                            comp++;
-                        }
-                        total++;
+                    float TextureDepth2 = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.LPPosition.xy, int2(x, y)).r;
+                    if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + Threshold))
+                    {
+                        comp++;
+                    }
+                }
+            }
+            PSOutput.Color0.r = comp / ((xs * 2 + 1) * (xs * 2 + 1));
+        }
+        if ((int) g_param.x == 2)
+        {
+            const int xs = 2;
+    		[fastopt]
+            for (int x = -xs; x <= xs; x++)
+            {
+			[fastopt]
+                for (int y = -xs; y <= xs; y++)
+                {
+                    float TextureDepth2 = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.LPPosition.xy, int2(x, y)).r;
+                    if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + Threshold))
+                    {
+                        comp++;
+                    }
+                    total++;
                 }
             }
             PSOutput.Color0.r = comp / ((xs * 2 + 1) * (xs * 2 + 1));
@@ -89,11 +91,11 @@ PS_OUTPUT main(PS_INPUT PSInput)
 			[fastopt]
                 for (int y = -xs; y <= xs; y++)
                 {
-                        float TextureDepth2 = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.LPPosition.xy, int2(x, y)).r;
-                        if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + 1.f))
-                        {
-                            comp++;
-                        }
+                    float TextureDepth2 = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.LPPosition.xy, int2(x, y)).r;
+                    if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + Threshold))
+                    {
+                        comp++;
+                    }
                 }
             }
             PSOutput.Color0.r = comp / ((xs * 2 + 1) * (xs * 2 + 1));
@@ -108,22 +110,19 @@ PS_OUTPUT main(PS_INPUT PSInput)
             float LightDepth = PSInput.LPPosition2.z;
             comp = 0;
             total = 0;
-            const int xs = 5;
+            const int xs = 3;
 	    	[fastopt]
             for (int x = -xs; x <= xs; x++)
             {
 			[fastopt]
                 for (int y = -xs; y <= xs; y++)
                 {
-                    if (abs(x) < (int) g_param.x && abs(y) < (int) g_param.x)
+                    float TextureDepth2 = g_DepthMapTexture2.Sample(g_DepthMapSampler2, PSInput.LPPosition2.xy, int2(x, y)).r;
+                    if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + Threshold2))
                     {
-                        float TextureDepth2 = g_DepthMapTexture2.Sample(g_DepthMapSampler2, PSInput.LPPosition2.xy, int2(x, y)).r;
-                        if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + 1.5f))
-                        {
-                            comp++;
-                        }
-                        total++;
+                        comp++;
                     }
+                    total++;
                 }
             }
             PSOutput.Color0.r = max(PSOutput.Color0.r, comp / total);
@@ -133,22 +132,19 @@ PS_OUTPUT main(PS_INPUT PSInput)
             float LightDepth = PSInput.LPPosition2.z;
             comp = 0;
             total = 0;
-            const int xs = 3;
+            const int xs = 2;
 	    	[fastopt]
             for (int x = -xs; x <= xs; x++)
             {
 			[fastopt]
                 for (int y = -xs; y <= xs; y++)
                 {
-                    if (abs(x) < (int) g_param.x && abs(y) < (int) g_param.x)
+                    float TextureDepth2 = g_DepthMapTexture2.Sample(g_DepthMapSampler2, PSInput.LPPosition2.xy, int2(x, y)).r;
+                    if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + Threshold2))
                     {
-                        float TextureDepth2 = g_DepthMapTexture2.Sample(g_DepthMapSampler2, PSInput.LPPosition2.xy, int2(x, y)).r;
-                        if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + 1.5f))
-                        {
-                            comp++;
-                        }
-                        total++;
+                        comp++;
                     }
+                    total++;
                 }
             }
             PSOutput.Color0.r = max(PSOutput.Color0.r, comp / total);
@@ -165,15 +161,12 @@ PS_OUTPUT main(PS_INPUT PSInput)
 			[fastopt]
                 for (int y = -xs; y <= xs; y++)
                 {
-                    if (abs(x) < (int) g_param.x && abs(y) < (int) g_param.x)
+                    float TextureDepth2 = g_DepthMapTexture2.Sample(g_DepthMapSampler2, PSInput.LPPosition2.xy, int2(x, y)).r;
+                    if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + Threshold2))
                     {
-                        float TextureDepth2 = g_DepthMapTexture2.Sample(g_DepthMapSampler2, PSInput.LPPosition2.xy, int2(x, y)).r;
-                        if ((TextureDepth2 > 0.f) && LightDepth > (TextureDepth2 + 1.5f))
-                        {
-                            comp++;
-                        }
-                        total++;
+                        comp++;
                     }
+                    total++;
                 }
             }
             PSOutput.Color0.r = max(PSOutput.Color0.r, comp / total);

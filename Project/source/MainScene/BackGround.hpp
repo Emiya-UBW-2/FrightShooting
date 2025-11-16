@@ -21,6 +21,9 @@ static float GetRandf(float arg) noexcept { return -arg + static_cast<float>(Get
 //インスタシング
 class Model_Instance {
 private:
+	std::vector<VERTEX3DSHADER>	m_VertexS;				//
+	int						m_VerBufS{ -1 };			//
+
 	std::vector<VERTEX3D>	m_Vertex;				//
 	std::vector<DWORD>		m_Index;				//
 	int						m_VerBuf{ -1 };			//
@@ -50,6 +53,8 @@ public:
 		this->m_Count = 0;
 		this->m_vnum = 0;
 		this->m_pnum = 0;
+		this->m_VertexS.clear();								//頂点データとインデックスデータを格納するメモリ領域の確保
+		this->m_VertexS.reserve(2000);						//頂点データとインデックスデータを格納するメモリ領域の確保
 		this->m_Vertex.clear();								//頂点データとインデックスデータを格納するメモリ領域の確保
 		this->m_Vertex.reserve(2000);						//頂点データとインデックスデータを格納するメモリ領域の確保
 		this->m_Index.clear();								//頂点データとインデックスデータを格納するメモリ領域の確保
@@ -69,6 +74,7 @@ public:
 		this->m_Count = value;
 		int Num = this->m_RefMesh.VertexNum * this->m_Count;
 		this->m_Vertex.resize(static_cast<size_t>(Num));			//頂点データとインデックスデータを格納するメモリ領域の確保
+		this->m_VertexS.resize(static_cast<size_t>(Num));			//頂点データとインデックスデータを格納するメモリ領域の確保
 		Num = this->m_RefMesh.PolygonNum * 3 * this->m_Count;
 		this->m_Index.resize(static_cast<size_t>(Num));		//頂点データとインデックスデータを格納するメモリ領域の確保
 	}
@@ -76,16 +82,36 @@ public:
 		this->m_obj.SetMatrix(mat);
 		Init_one();
 		for (size_t j = 0; j < size_t(this->m_RefMesh.VertexNum); ++j) {
-			auto& g = this->m_Vertex[j + this->m_vnum];
 			const auto& r = this->m_RefMesh.Vertexs[j];
-			g.pos = r.Position;
-			g.norm = r.Normal;
-			g.dif = r.DiffuseColor;
-			g.spc = r.SpecularColor;
-			g.u = r.TexCoord[0].u;
-			g.v = r.TexCoord[0].v;
-			g.su = r.TexCoord[1].u;
-			g.sv = r.TexCoord[1].v;
+			{
+				auto& g = this->m_Vertex[j + this->m_vnum];
+				g.pos = r.Position;
+				g.norm = r.Normal;
+				g.dif = r.DiffuseColor;
+				g.spc = r.SpecularColor;
+				g.u = r.TexCoord[0].u;
+				g.v = r.TexCoord[0].v;
+				g.su = r.TexCoord[1].u;
+				g.sv = r.TexCoord[1].v;
+			}
+			{
+				auto& g = this->m_VertexS[j + this->m_vnum];
+
+				g.pos = r.Position;
+				g.spos.x = r.Position.x;
+				g.spos.y = r.Position.y;
+				g.spos.z = r.Position.z;
+				g.spos.w = 1.f;
+				g.norm = r.Normal;
+				g.tan = r.Normal;							// 接線
+				g.binorm = r.Normal;						// 従法線
+				g.dif = r.DiffuseColor;
+				g.spc = r.SpecularColor;
+				g.u = r.TexCoord[0].u;
+				g.v = r.TexCoord[0].v;
+				g.su = r.TexCoord[1].u;
+				g.sv = r.TexCoord[1].v;
+			}
 		}
 		for (size_t j = 0; j < size_t(this->m_RefMesh.PolygonNum); ++j) {
 			for (size_t k = 0; k < std::size(this->m_RefMesh.Polygons[j].VIndex); ++k) {
@@ -115,17 +141,21 @@ public:
 		this->m_IndexBuf = CreateIndexBuffer((int)this->m_Index.size(), DX_INDEX_TYPE_32BIT);
 		SetVertexBufferData(0, this->m_Vertex.data(), (int)this->m_Vertex.size(), this->m_VerBuf);
 		SetIndexBufferData(0, this->m_Index.data(), (int)this->m_Index.size(), this->m_IndexBuf);
+
+		this->m_VerBufS = CreateVertexBuffer((int)this->m_VertexS.size(), DX_VERTEX_TYPE_SHADER_3D);
+		SetVertexBufferData(0, this->m_VertexS.data(), (int)this->m_VertexS.size(), this->m_VerBufS);
 	}
 	void			Draw(void) const noexcept {
 		DrawPolygonIndexed3D_UseVertexBuffer(this->m_VerBuf, this->m_IndexBuf, this->m_pic.get(), TRUE);
 	}
 	void			DrawShader(void) const noexcept {
 		this->m_pic.SetUseTextureToShader(0);
-		DrawPolygonIndexed3DToShader_UseVertexBuffer(this->m_VerBuf, this->m_IndexBuf);
+		DrawPolygonIndexed3DToShader_UseVertexBuffer(this->m_VerBufS, this->m_IndexBuf);
 	}
 	
 	void			Dispose(void) noexcept {
 		this->m_Vertex.clear();
+		this->m_VertexS.clear();
 		this->m_Index.clear();
 		this->m_obj.Dispose();
 		this->m_pic.Dispose();
@@ -148,7 +178,7 @@ class Grass {
 		char		padding[7]{};
 	public:
 		void Init(int total) {
-			this->m_Inst.Init("data/model/Cloud/tex.png", "data/model/Cloud/model2.mv1", -1);
+			this->m_Inst.Init("data/model/Cloud/tex.png", "data/model/Cloud/model2.mqoz", -1);
 			this->m_Inst.Reset();
 			this->m_Inst.Set_start(total);
 		}
@@ -191,7 +221,7 @@ public:
 	static const int grassDiv{ 12 };//^2;
 	const float size{ 30.f };
 private:
-	const int grasss = 120;						/*grassの数*/
+	const int grasss = 400;						/*grassの数*/
 	int Flag = 0;
 	char		padding[4]{};
 	std::array<grass_t, grassDiv>grass__;
@@ -368,25 +398,44 @@ public:
 				if (grasss != 0) {
 					auto& tgt_g = grass__[static_cast<size_t>(ID)];
 					tgt_g.Init(grasss);
+					Util::VECTOR3D basePos = Util::VECTOR3D::zero();
+					Util::VECTOR3D tmpPos = Util::VECTOR3D::zero();
 					for (int i = 0; i < grasss; ++i) {
-						float x1 = xmid + GetRandf(xmid);
-						float z1 = zmid + GetRandf(zmid);
-						while (true) {
-							int CCC = GetColorSoftImage(softimage,
-								(int)(((grassPosMin[static_cast<size_t>(ID)].x + x1) - MINX) / (MAXX - MINX) * float(sizex)),
-								(int)(((grassPosMin[static_cast<size_t>(ID)].z + z1) - MINZ) / (MAXZ - MINZ) * float(sizey))
-							);
-							if (CCC != 0) {
+						for (int loop = 0; loop < 300; ++loop) {
+							float x1 = xmid + GetRandf(xmid);
+							float z1 = zmid + GetRandf(zmid);
+							while (true) {
+								int CCC = GetColorSoftImage(softimage,
+									(int)(((grassPosMin[static_cast<size_t>(ID)].x + x1) - MINX) / (MAXX - MINX) * float(sizex)),
+									(int)(((grassPosMin[static_cast<size_t>(ID)].z + z1) - MINZ) / (MAXZ - MINZ) * float(sizey))
+								);
+								if (CCC != 0) {
+									break;
+								}
+								x1 = xmid + GetRandf(xmid);
+								z1 = zmid + GetRandf(zmid);
+							}
+							if (loop == 0) {
+								tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, -30.f + GetRandf(30.f), z1 - zmid) * (Scale3DRate * 4.5f);
+							}
+							else if (loop == 300 - 1) {
+								tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, -10.f + GetRandf(20.f), z1 - zmid) * (Scale3DRate * 4.5f);
+							}
+							else {
+								tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 50.f + GetRandf(100.f), z1 - zmid) * (Scale3DRate * 4.5f);
+							}
+							if (basePos == Util::VECTOR3D::zero()) {
+								basePos = tmpPos;
 								break;
 							}
-							x1 = xmid + GetRandf(xmid);
-							z1 = zmid + GetRandf(zmid);
+							else {
+								if ((basePos - tmpPos).magnitude() < 300.f * Scale3DRate) {
+									break;
+								}
+							}
 						}
 
-						auto tmpvect = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 0.f, z1 - zmid) * (Scale3DRate * 7.5f) +
-							Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f) + 
-							Util::VECTOR3D::vget(0.f, GetRandf(1250.f) * Scale3DRate, 0.f);
-						tgt_g.Set_one(Util::Matrix4x4::Mtrans(tmpvect));
+						tgt_g.Set_one(Util::Matrix4x4::Mtrans(tmpPos));
 					}
 					tgt_g.put();
 				}
@@ -431,7 +480,7 @@ public:
 	void Draw(void) const noexcept {
 		SetUseZBuffer3D(true);
 		SetWriteZBufferFlag(true);
-		SetUseHalfLambertLighting(true);
+		SetUseLightAngleAttenuation(false);
 		for (int ID = 0; ID < grassDiv; ID++) {
 #ifdef DEBUG
 			//DrawCube3D(grassPosMin[static_cast<size_t>(ID)].get(), grassPosMax[static_cast<size_t>(ID)].get(), GetColor(0, 0, 0), GetColor(0, 0, 0), FALSE);
@@ -440,7 +489,7 @@ public:
 				grass__[static_cast<size_t>(ID)].Draw();
 			}
 		}
-		SetUseHalfLambertLighting(false);
+		SetUseLightAngleAttenuation(true);
 		SetWriteZBufferFlag(false);
 	}
 };
@@ -548,7 +597,7 @@ public:
 	}
 	void ShadowDrawFar(void) const noexcept {
 		auto Prev = GetUseBackCulling();
-		SetUseBackCulling(DX_CULLING_NONE);
+		SetUseBackCulling(DX_CULLING_LEFT);
 		m_Grass.Draw();
 		SetUseBackCulling(Prev);
 	}

@@ -701,11 +701,27 @@ namespace Draw {
 				tmp_cam.FlipCamInfo();
 				{
 					auto* pOption = Util::OptionParam::Instance();
-					const float ShadowLevel = static_cast<float>(pOption->GetParam(pOption->GetOptionType(Util::OptionType::Shadow))->GetSelect());
+					float ShadowLevel = 1.f;
+					switch (pOption->GetParam(pOption->GetOptionType(Util::OptionType::Shadow))->GetSelect()) {
+					case 0:
+						ShadowLevel = 0.f;
+						break;
+					case 1:
+						ShadowLevel = 1.f;
+						break;
+					case 2:
+						ShadowLevel = 2.f;
+						break;
+					case 3:
+						ShadowLevel = 3.f;
+						break;
+					default:
+						break;
+					}
 					this->m_BaseShadowHandle.SetUseTextureToShader(0);
 					this->m_DepthScreenHandle.SetUseTextureToShader(1);
 					this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
-					this->m_Shader.SetPixelParam(3, ShadowLevel, this->m_Scale * 450.f, 0.f, 0.f);
+					this->m_Shader.SetPixelParam(3, ShadowLevel, this->m_Scale * 4500.f, Scale3DRate * 1.f, Scale3DRate * 25.f);
 					this->m_Shader.SetVertexCameraMatrix(4, GetCamViewMatrix(false), GetCamProjectionMatrix(false));
 					this->m_Shader.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_Shader.Draw_lamda(doing);
@@ -713,7 +729,7 @@ namespace Draw {
 					this->m_BaseShadowHandle.SetUseTextureToShader(0);
 					this->m_DepthScreenHandle.SetUseTextureToShader(1);
 					this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
-					this->m_ShaderRigid.SetPixelParam(3, ShadowLevel, this->m_Scale * 45000.f, 0.f, 0.f);
+					this->m_ShaderRigid.SetPixelParam(3, ShadowLevel, this->m_Scale * 4500.f, Scale3DRate * 1.f, Scale3DRate * 25.f);
 					this->m_ShaderRigid.SetVertexCameraMatrix(4, GetCamViewMatrix(false), GetCamProjectionMatrix(false));
 					this->m_ShaderRigid.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_ShaderRigid.Draw_lamda(doing_rigid);
