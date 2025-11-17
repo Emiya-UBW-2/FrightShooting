@@ -32,8 +32,7 @@ void MainScene::Init_Sub(void) noexcept {
 	this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
 	this->m_EnviID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/Envi.wav", false);
 
-	//Util::VECTOR3D LightVec = Util::VECTOR3D::vget(-0.3f, -0.7f, 0.3f).normalized();
-	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(0.02f, -1.f, 0.02f).normalized();
+	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(-0.3f, -0.7f, 0.3f).normalized();
 
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
 	PostPassParts->SetAmbientLight(LightVec);
@@ -82,7 +81,7 @@ void MainScene::Update_Sub(void) noexcept {
 	auto* CameraParts = Camera::Camera3D::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
-	PostPassParts->SetShadowScale(30.f);
+	PostPassParts->SetShadowScale(40.f);
 
 	KeyGuideParts->ChangeGuide(
 		[this]() {

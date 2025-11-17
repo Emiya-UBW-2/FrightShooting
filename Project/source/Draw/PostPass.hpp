@@ -644,7 +644,7 @@ namespace Draw {
 			void SetupCam(Util::VECTOR3D Center, float scale) const noexcept {
 				DxLib::ClearDrawScreen();
 				DxLib::SetupCamera_Ortho(30.f * scale);						// カメラのタイプを正射影タイプにセット、描画範囲も指定
-				DxLib::SetCameraNearFar(0.05f * scale, 60.f * scale);		// 描画する奥行き範囲をセット
+				DxLib::SetCameraNearFar(0.05f * scale, 100.f * scale);		// 描画する奥行き範囲をセット
 				// カメラの位置と注視点はステージ全体が見渡せる位置
 				auto Vec = this->m_ShadowVec;
 				if (Vec.x == 0.f && Vec.z == 0.f) {
@@ -696,7 +696,7 @@ namespace Draw {
 				Draw::Camera3DInfo tmp_cam = CameraParts->GetCameraForDraw();
 
 				// 影の結果を出力
-				tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 0.01f * Scale3DRate, 3000.f * Scale3DRate);
+				tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 1.f * Scale3DRate, 3000.f * Scale3DRate);
 				this->m_BaseShadowHandle.SetDraw_Screen();
 				tmp_cam.FlipCamInfo();
 				{

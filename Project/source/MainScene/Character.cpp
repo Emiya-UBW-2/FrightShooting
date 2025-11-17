@@ -280,7 +280,7 @@ void Plane::Update_Chara(void) noexcept {
 	if (
 		(GetMat().pos().x > 2000.f * Scale3DRate) ||
 		(GetMat().pos().x < -2000.f * Scale3DRate) ||
-		(GetMat().pos().y > 1000.f * Scale3DRate) ||
+		(GetMat().pos().y > 500.f * Scale3DRate) ||
 		(GetMat().pos().y < -1000.f * Scale3DRate) ||
 		(GetMat().pos().z > 2000.f * Scale3DRate) ||
 		(GetMat().pos().z < -2000.f * Scale3DRate)
@@ -399,7 +399,7 @@ void EnemyPlane::Update_Chara(void) noexcept {
 	if (
 		(GetMat().pos().x > 2000.f * Scale3DRate) ||
 		(GetMat().pos().x < -2000.f * Scale3DRate) ||
-		(GetMat().pos().y > 1000.f * Scale3DRate) ||
+		(GetMat().pos().y > 500.f * Scale3DRate) ||
 		(GetMat().pos().y < -1000.f * Scale3DRate) ||
 		(GetMat().pos().z > 2000.f * Scale3DRate) ||
 		(GetMat().pos().z < -2000.f * Scale3DRate)
