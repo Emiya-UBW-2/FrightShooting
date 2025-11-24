@@ -19,7 +19,8 @@ class MainScene : public Util::SceneBase {
 	bool							m_IsSceneEnd{ false };
 	bool							m_IsPauseActive{ false };
 	bool							m_IsChangeEquip{ false };
-	char		padding[4]{};
+	bool							m_IsResetMouse{ false };
+	char		padding[3]{};
 	float							m_CharaStyleChange{};
 	float							m_CharaStyleChangeR{};
 	const Draw::GraphHandle*		m_Cursor{};

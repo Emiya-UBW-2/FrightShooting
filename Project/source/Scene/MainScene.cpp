@@ -75,6 +75,7 @@ void MainScene::Init_Sub(void) noexcept {
 	KeyGuideParts->SetGuideFlip();
 
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->Play(DX_PLAYTYPE_LOOP, TRUE);
+	m_IsResetMouse = true;
 }
 void MainScene::Update_Sub(void) noexcept {
 	auto* KeyMngr = Util::KeyParam::Instance();
@@ -149,6 +150,7 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	if (this->m_IsPauseActive) {
 		DxLib::SetMouseDispFlag(true);
+		m_IsResetMouse = true;
 		return;
 	}
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
@@ -174,9 +176,14 @@ void MainScene::Update_Sub(void) noexcept {
 		c->SetDamage(InvalidID);
 	}
 
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+	if (m_IsResetMouse) {
+		m_IsResetMouse = false;
+		DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
+	}
+
 	ObjectManager::Instance()->UpdateObject();
 
-	auto* DrawerMngr = Draw::MainDraw::Instance();
 	DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 	//更新
 	//float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
