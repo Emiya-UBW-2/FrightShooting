@@ -23,6 +23,7 @@ class Model_Instance {
 private:
 	std::vector<VERTEX3DSHADER>	m_VertexS;				//
 	int						m_VerBufS{ -1 };			//
+	char		padding[4]{};
 
 	std::vector<VERTEX3D>	m_Vertex;				//
 	std::vector<DWORD>		m_Index;				//
@@ -217,17 +218,24 @@ class Grass {
 		int X_PosMax = 0;
 		int Y_PosMax = 0;
 	};
+
+	struct PosCloud {
+		Util::VECTOR3D	Pos{};
+		float			Scale{};
+	};
 public:
-	static const int grassDiv{ 12 };//^2;
-	const float size{ 30.f };
+	static constexpr int grassDiv{ 12 };//^2;
+	static constexpr int grasss = 200;						/*grassの数*/
+	static constexpr float size{ 30.f };
 private:
-	const int grasss = 200;						/*grassの数*/
-	int Flag = 0;
+	int			Flag = 0;
 	char		padding[4]{};
 	std::array<grass_t, grassDiv>grass__;
 	std::array<Util::VECTOR3D, grassDiv>grassPosMin;
 	std::array<Util::VECTOR3D, grassDiv>grassPosMax;
 	std::array<GrassPos, grassDiv> grassPos;
+	std::array<PosCloud, grassDiv * grasss> m_PosCloud;
+
 public:
 	Grass(void) noexcept {}
 	Grass(const Grass&) = delete;
@@ -235,6 +243,10 @@ public:
 	Grass& operator=(const Grass&) = delete;
 	Grass& operator=(Grass&&) = delete;
 	virtual ~Grass(void) noexcept {}
+public:
+	auto& GetClouds() const noexcept {
+		return m_PosCloud;
+	}
 private:
 	int GetColorSoftImage(int softimage, int x_, int y_) {
 		int _r_, _g_, _b_;
@@ -307,6 +319,7 @@ private:
 			//ok
 		}
 	}
+
 public:
 	void Init(int softimage) {
 		float MAPX = 300.f * Scale3DRate;
@@ -395,59 +408,57 @@ public:
 				grassPosMax[static_cast<size_t>(ID)] = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(xsize, 1.f, zsize);
 				float xmid = xsize / 2.f;
 				float zmid = zsize / 2.f;
-				if (grasss != 0) {
-					auto& tgt_g = grass__[static_cast<size_t>(ID)];
-					tgt_g.Init(grasss);
-					Util::VECTOR3D basePos = Util::VECTOR3D::zero();
-					Util::VECTOR3D tmpPos = Util::VECTOR3D::zero();
-					for (int i = 0; i < grasss; ++i) {
-						for (int loop = 0; loop < 300; ++loop) {
-							float x1 = xmid + GetRandf(xmid);
-							float z1 = zmid + GetRandf(zmid);
-							while (true) {
-								int CCC = GetColorSoftImage(softimage,
-									(int)(((grassPosMin[static_cast<size_t>(ID)].x + x1) - MINX) / (MAXX - MINX) * float(sizex)),
-									(int)(((grassPosMin[static_cast<size_t>(ID)].z + z1) - MINZ) / (MAXZ - MINZ) * float(sizey))
-								);
-								if (CCC != 0) {
-									break;
-								}
-								x1 = xmid + GetRandf(xmid);
-								z1 = zmid + GetRandf(zmid);
-							}
-							if (loop == 0) {
-								tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, -30.f + GetRandf(30.f), z1 - zmid) * (Scale3DRate * 4.5f);
-							}
-							else if (loop == 300 - 1) {
-								tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, -10.f + GetRandf(20.f), z1 - zmid) * (Scale3DRate * 4.5f);
-							}
-							else {
-								tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 50.f + GetRandf(100.f), z1 - zmid) * (Scale3DRate * 4.5f);
-							}
-							if (basePos == Util::VECTOR3D::zero()) {
-								basePos = tmpPos;
+				auto& tgt_g = grass__[static_cast<size_t>(ID)];
+				tgt_g.Init(grasss);
+				Util::VECTOR3D basePos = Util::VECTOR3D::zero();
+				Util::VECTOR3D tmpPos = Util::VECTOR3D::zero();
+				for (int i = 0; i < grasss; ++i) {
+					for (int loop = 0; loop < 300; ++loop) {
+						float x1 = xmid + GetRandf(xmid);
+						float z1 = zmid + GetRandf(zmid);
+						while (true) {
+							int CCC = GetColorSoftImage(softimage,
+								(int)(((grassPosMin[static_cast<size_t>(ID)].x + x1) - MINX) / (MAXX - MINX) * float(sizex)),
+								(int)(((grassPosMin[static_cast<size_t>(ID)].z + z1) - MINZ) / (MAXZ - MINZ) * float(sizey))
+							);
+							if (CCC != 0) {
 								break;
 							}
-							else {
-								if ((basePos - tmpPos).magnitude() < 300.f * Scale3DRate) {
-									break;
-								}
+							x1 = xmid + GetRandf(xmid);
+							z1 = zmid + GetRandf(zmid);
+						}
+						if (loop == 0) {
+							tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, -30.f + GetRandf(30.f), z1 - zmid) * (Scale3DRate * 4.5f);
+						}
+						else if (loop == 300 - 1) {
+							tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, -10.f + GetRandf(20.f), z1 - zmid) * (Scale3DRate * 4.5f);
+						}
+						else {
+							tmpPos = grassPosMin[static_cast<size_t>(ID)] + Util::VECTOR3D::vget(x1 - xmid, 50.f + GetRandf(100.f), z1 - zmid) * (Scale3DRate * 4.5f);
+						}
+						if (basePos == Util::VECTOR3D::zero()) {
+							basePos = tmpPos;
+							break;
+						}
+						else {
+							if ((basePos - tmpPos).magnitude() < 300.f * Scale3DRate) {
+								break;
 							}
 						}
-
-						tgt_g.Set_one(Util::Matrix4x4::GetScale(Util::VECTOR3D::one() * (1.25f+GetRandf(0.5f))) * Util::Matrix4x4::Mtrans(tmpPos));
 					}
-					tgt_g.put();
+					auto& pc = m_PosCloud.at(static_cast<size_t>(ID * grasss + i));
+					pc.Pos = tmpPos;
+					pc.Scale = (1.25f + GetRandf(0.5f));
+					tgt_g.Set_one(Util::Matrix4x4::GetScale(Util::VECTOR3D::one() * pc.Scale) * Util::Matrix4x4::Mtrans(pc.Pos));
 				}
+				tgt_g.put();
 			}
 			//
 		}
 	}
 	void Dispose(void) noexcept {
 		for (int ID = 0; ID < grassDiv; ID++) {
-			if (grasss != 0) {
-				grass__[static_cast<size_t>(ID)].Dispose();
-			}
+			this->grass__[static_cast<size_t>(ID)].Dispose();
 		}
 	}
 	void DrawShadow(void) noexcept {
@@ -457,9 +468,7 @@ public:
 #ifdef DEBUG
 			//DrawCube3D(grassPosMin[static_cast<size_t>(ID)].get(), grassPosMax[static_cast<size_t>(ID)].get(), GetColor(0, 0, 0), GetColor(0, 0, 0), FALSE);
 #endif
-			if (grasss != 0) {
-				this->grass__[static_cast<size_t>(ID)].Check_CameraViewClip(grassPosMin[static_cast<size_t>(ID)], grassPosMax[static_cast<size_t>(ID)]);
-			}
+			this->grass__[static_cast<size_t>(ID)].Check_CameraViewClip(grassPosMin[static_cast<size_t>(ID)], grassPosMax[static_cast<size_t>(ID)]);
 		}
 	}
 	void DrawShader(void) const noexcept {
@@ -470,9 +479,7 @@ public:
 #ifdef DEBUG
 			//DrawCube3D(grassPosMin[static_cast<size_t>(ID)].get(), grassPosMax[static_cast<size_t>(ID)].get(), GetColor(0, 0, 0), GetColor(0, 0, 0), FALSE);
 #endif
-			if (grasss != 0) {
-				grass__[static_cast<size_t>(ID)].DrawShader();
-			}
+			this->grass__[static_cast<size_t>(ID)].DrawShader();
 		}
 		SetUseHalfLambertLighting(false);
 		SetWriteZBufferFlag(false);
@@ -485,9 +492,7 @@ public:
 #ifdef DEBUG
 			//DrawCube3D(grassPosMin[static_cast<size_t>(ID)].get(), grassPosMax[static_cast<size_t>(ID)].get(), GetColor(0, 0, 0), GetColor(0, 0, 0), FALSE);
 #endif
-			if (grasss != 0) {
-				grass__[static_cast<size_t>(ID)].Draw();
-			}
+			this->grass__[static_cast<size_t>(ID)].Draw();
 		}
 		SetUseLightAngleAttenuation(true);
 		SetWriteZBufferFlag(false);
@@ -512,6 +517,9 @@ public:
 	BackGround& operator=(BackGround&&) = delete;
 	virtual ~BackGround(void) noexcept { Dispose(); }
 public:
+	auto& GetClouds() const noexcept {
+		return m_Grass.GetClouds();
+	}
 public:
 	void Load() noexcept {
 		Draw::MV1::Load("data/model/Sky/model.mv1", &SkyBoxID);
@@ -560,10 +568,18 @@ public:
 		MapID.DrawModel();
 		SetFogEnable(false);
 
+		SetFogEnable(true);
+		SetFogMode(DX_FOGMODE_LINEAR);
+		SetFogStartEnd(50.f * Scale3DRate, 1000.f * Scale3DRate);
+		SetFogColor(222, 222, 222);
+
 		auto Prev = GetUseBackCulling();
 		SetUseBackCulling(DX_CULLING_NONE);
 		m_Grass.Draw();
 		SetUseBackCulling(Prev);
+
+		SetFogEnable(false);
+
 
 		Util::VECTOR3D CamPos = GetCameraPosition();
 		if (

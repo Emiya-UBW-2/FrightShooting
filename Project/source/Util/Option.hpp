@@ -233,7 +233,7 @@ namespace Util {
 
 		std::vector<Param>									m_ParamList;
 		std::array<int, static_cast<int>(OptionType::Max)>	m_OptionID;
-		char		padding[4]{};
+		//char		padding[4]{};
 	private:
 		//コンストラクタ
 		OptionParam(void) noexcept {

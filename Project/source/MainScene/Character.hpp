@@ -15,6 +15,7 @@
 #include "../File/FileStream.hpp"
 
 #include "BaseObject.hpp"
+#include <thread>
 
 
 enum class CharaAnim {
@@ -288,9 +289,83 @@ public:
 	}
 };
 
+//スレッド実行処理
+class ThreadJobs {
+	std::thread						m_Job;//作業スレッド
+	bool							m_JobEnd{};//ジョブ終了通知
+	bool							m_isDoing{ false };//
+	bool							m_IsDoEnd{};//ジョブ終了後作業終了通知
+	char		padding[5]{};
+	std::function<void()>			m_Doing{ nullptr };//ジョブ
+	std::function<void()>			m_EndDoing{ nullptr };//ジョブ終了後作業
+public:
+	ThreadJobs(void) noexcept {}
+	ThreadJobs(const ThreadJobs&) = delete;
+	ThreadJobs(ThreadJobs&&) = delete;
+	ThreadJobs& operator=(const ThreadJobs&) = delete;
+	ThreadJobs& operator=(ThreadJobs&&) = delete;
+	virtual ~ThreadJobs(void) noexcept {}
+public:
+	void JobStart(void) noexcept {
+		if (!this->m_isDoing) {
+			this->m_isDoing = true;
+			this->m_JobEnd = true;
+			this->m_IsDoEnd = false;
+		}
+	}
+public:
+	void Init(std::function<void()> Doing, std::function<void()> EndDoing) noexcept {
+		this->m_Doing = Doing;
+		this->m_EndDoing = EndDoing;
+
+		//JobStart();
+		this->m_isDoing = true;
+		this->m_JobEnd = true;
+		this->m_IsDoEnd = true;
+	}
+	void Update(bool isActive) noexcept {
+		if (isActive) {
+			if (this->m_JobEnd) {
+				this->m_JobEnd = false;
+				if (this->m_IsDoEnd) {
+					this->m_IsDoEnd = false;
+					if (this->m_EndDoing) {
+						this->m_EndDoing();
+					}
+				}
+				this->m_isDoing = true;
+				if (this->m_isDoing) {
+					if (this->m_Job.joinable()) {
+						this->m_Job.detach();
+					}
+					std::thread tmp([&]() {
+						if (this->m_Doing) {
+							this->m_Doing();
+						}
+						this->m_JobEnd = true;
+						this->m_isDoing = false;
+						this->m_IsDoEnd = true;
+						});
+					this->m_Job.swap(tmp);
+					//強制待機
+					//this->m_Job.join();
+				}
+			}
+		}
+	}
+	void Dispose(void) noexcept {
+		if (this->m_Job.joinable()) {
+			this->m_Job.join();
+			//this->m_Job.detach();
+		}
+		this->m_Doing = nullptr;
+		this->m_EndDoing = nullptr;
+	}
+};
 
 class PlaneCommon :public BaseObject {
 protected:
+	ThreadJobs			m_Jobs;
 private:
 	std::array<float, static_cast<int>(CharaAnim::Max)>		m_AnimPer{};
 
@@ -334,8 +409,10 @@ private:
 	int PlayerID{ InvalidID };
 	int DamageID{};
 
+	int			m_CanWatchBitField{};
 	bool		m_ShotSwitch{};
-	char		padding5[7]{};
+	bool		m_IsInCloud{};
+	char		padding5[2]{};
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -356,6 +433,10 @@ public:
 	}
 	int				GetDamageID(void) const noexcept { return DamageID; }
 	bool			GetShotSwitch(void) const noexcept { return m_ShotSwitch; }
+
+	bool			GetCanWatchPlane(int index) const noexcept {
+		return (m_CanWatchBitField & (1 << index)) != 0;
+	}
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
@@ -367,38 +448,24 @@ public:
 		ObjectManager::Instance()->LoadModel("data/model/FireEffect/");
 		Load_Chara();
 	}
-	void Init_Sub(void) noexcept override {
-		this->m_SpeedTarget = GetSpeedMax();
-		this->m_Speed = this->m_SpeedTarget;
-		this->m_TotalAmmo = this->m_CanHaveAmmo;
-
-		for (auto& s : this->m_ShotEffect) {
-			s = std::make_shared<ShotEffect>();
-			ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
-		}
-		for (auto& s : this->m_ShotEffect2) {
-			s = std::make_shared<ShotEffect>();
-			ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
-		}
-		for (auto& s : this->m_AmmoPer) {
-			s = std::make_shared<Ammo>();
-			ObjectManager::Instance()->InitObject(s);
-		}
-		m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
-		m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
-
-		Init_Chara();
-	}
+	void Init_Sub(void) noexcept override;
 	void Update_Sub(void) noexcept override {
 		//DamageID = InvalidID;
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
+		m_Jobs.Update(true);
 		Update_Chara();
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
 	}
 	void Draw_Sub(void) const noexcept override {
+		if (m_IsInCloud) {
+			SetFogEnable(true);
+			SetFogMode(DX_FOGMODE_LINEAR);
+			SetFogStartEnd(3.f * Scale3DRate, 10.f * Scale3DRate);
+			SetFogColor(222, 222, 222);
+		}
 		//hitbox描画
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (!GetModel().GetMeshSemiTransState(loop)) {
@@ -406,18 +473,29 @@ public:
 			}
 		}
 		Draw_Chara();
+
+		SetFogEnable(false);
 	}
 	void DrawFront_Sub(void) const noexcept override {
+		if (m_IsInCloud) {
+			SetFogEnable(true);
+			SetFogMode(DX_FOGMODE_LINEAR);
+			SetFogStartEnd(3.f * Scale3DRate, 10.f * Scale3DRate);
+			SetFogColor(222, 222, 222);
+		}
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (GetModel().GetMeshSemiTransState(loop)) {
 				GetModel().DrawMesh(loop);
 			}
 		}
+
+		SetFogEnable(false);
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
+		m_Jobs.Dispose();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
 
@@ -462,7 +540,6 @@ class Plane :public PlaneCommon {
 	Util::VECTOR2D		m_RadAdd = Util::VECTOR2D::zero();
 	Util::VECTOR2D		m_RadR = Util::VECTOR2D::zero();
 	bool				m_IsFreeView{ false };
-	bool				m_PrevIsFPSView{};
 	bool				m_IsFPS{ false };
 	char		padding[1]{};
 	Util::VECTOR3D											m_AimPoint;

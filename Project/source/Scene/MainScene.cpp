@@ -175,8 +175,10 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 
 	ObjectManager::Instance()->UpdateObject();
+
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+	DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 	//更新
-	//auto* DrawerMngr = Draw::MainDraw::Instance();
 	//float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
 	//float YPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionY() - DrawerMngr->GetDispHeight() / 2) / static_cast<float>(DrawerMngr->GetDispHeight() / 2), -1.f, 1.f);
 
@@ -184,7 +186,9 @@ void MainScene::Update_Sub(void) noexcept {
 	Util::VECTOR3D CamTarget;
 	Util::VECTOR3D CamUp;
 
-	this->m_FPSPer = std::clamp(this->m_FPSPer + (Player->IsFPSView() ? 1.f : -1.f) * DeltaTime / 0.25f, 0.f, 1.f);
+	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+
+	this->m_FPSPer = std::clamp(this->m_FPSPer + (Watch->IsFPSView() ? 1.f : -1.f) * DeltaTime / 0.25f, 0.f, 1.f);
 
 	Util::VECTOR3D CamPosition1;
 	Util::VECTOR3D CamTarget1;
@@ -193,9 +197,9 @@ void MainScene::Update_Sub(void) noexcept {
 	Util::VECTOR3D CamTarget2;
 	Util::VECTOR3D CamUp2;
 
-	Util::Easing(&m_EyeRotFree, Player->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye)), 0.9f);
+	Util::Easing(&m_EyeRotFree, Watch->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye)), 0.9f);
 	if (this->m_FPSPer != 0.f) {
-		Util::Matrix4x4 EyeMat = Player->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye));
+		Util::Matrix4x4 EyeMat = Watch->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye));
 		CamPosition1 = EyeMat.pos();
 		CamTarget1 = CamPosition1 + EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp1 = EyeMat.yvec();
@@ -207,7 +211,7 @@ void MainScene::Update_Sub(void) noexcept {
 		//*/
 	}
 	if (this->m_FPSPer != 1.f) {
-		Util::Matrix4x4 EyeMat = Player->GetEyeMatrix();
+		Util::Matrix4x4 EyeMat = Watch->GetEyeMatrix();
 		CamTarget2 = EyeMat.pos() + EyeMat.yvec() * (2.f * Scale3DRate);
 		CamPosition2 = CamTarget2 - EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp2 = EyeMat.yvec();
@@ -219,7 +223,7 @@ void MainScene::Update_Sub(void) noexcept {
 
 	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
 
-	if (Player->GetShotSwitch() && Player->IsFPSView()) {
+	if (Watch->GetShotSwitch() && Watch->IsFPSView()) {
 		this->m_ShotFov = 1.f;
 	}
 	else {
@@ -259,14 +263,17 @@ void MainScene::SetShadowDraw_Sub(void) noexcept {
 void MainScene::Draw_Sub(void) noexcept {
 	auto Pos = PlayerManager::Instance()->SetPlane().at(0)->GetMat().pos();
 	for (int index = 1; index < 5; ++index) {
-		DrawLine3D(Pos.get(), PlayerManager::Instance()->SetPlane().at(static_cast<size_t>(index))->GetMat().pos().get(), ColorPalette::Red);
+		auto& C = PlayerManager::Instance()->SetPlane().at(static_cast<size_t>(index));
+		if (C->GetCanWatchPlane(0)) {
+			DrawLine3D(Pos.get(), C->GetMat().pos().get(), ColorPalette::Red);
+		}
 	}
 
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 
-	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	auto Pos2D = ConvWorldPosToScreenPos((Player->GetMat().pos() + Player->GetMat().zvec2()*(100.f*Scale3DRate)).get());
+	auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2()*(100.f*Scale3DRate)).get());
 	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
 		this->m_AimPointDraw = true;
 		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
@@ -294,7 +301,8 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* Localize = Util::LocalizePool::Instance();
 
-	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+
 	if(this->m_AimPointDraw) {
 		SetDrawBright(0, 255, 0);
 		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y), 1.f, 0.f, true);
@@ -324,7 +332,7 @@ void MainScene::UIDraw_Sub(void) noexcept {
 			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->DrawString(
 				Draw::FontXCenter::MIDDLE, Draw::FontYCenter::TOP,
 				xpos, ypos + 18,
-				ColorPalette::White, ColorPalette::Black, "%05.2f km/h", Player->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime));
+				ColorPalette::White, ColorPalette::Black, "%05.2f km/h", Watch->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime));
 			ypos += 52;
 		}
 	}

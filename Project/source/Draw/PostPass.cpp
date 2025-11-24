@@ -967,7 +967,6 @@ namespace Draw {
 		this->m_PostPass[now] = std::make_unique<PostPassSSR>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassSSAO>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassGodRay>(); ++now;
-		this->m_PostPass[now] = std::make_unique<PostPassDistortion>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassMotionBlur>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassVignette>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassCornerBlur>(); ++now;
@@ -975,5 +974,6 @@ namespace Draw {
 		this->m_PostPass[now] = std::make_unique<PostPassAberration>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassScope>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassBlackout>(); ++now;
+		this->m_PostPass[now] = std::make_unique<PostPassDistortion>(); ++now;
 	}
 };

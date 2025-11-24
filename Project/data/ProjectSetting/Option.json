@@ -27,7 +27,7 @@
 			"Type":"DrawScale",
 			"SelectType" : "Int",
 			"Value" : [50,100],
-			"DefaultValue" : 100
+			"DefaultValue" : 50
 		},
 		{
 			"Type":"ObjectLevel",

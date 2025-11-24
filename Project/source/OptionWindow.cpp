@@ -265,50 +265,46 @@ void OptionWindow::Update(void) noexcept {
 						if (OptType == Util::OptionType::GraphicsPreset) {
 							switch (pOption->GetParam(Type)->GetSelect()) {
 							case 0:
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DrawScale), 50);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DoF), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Bloom), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Shadow), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::SSAO), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ScreenEffect), 0);
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 0);
+								//pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::AntiAliasing), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::GodRay), 0);
 								break;
 							case 1:
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DrawScale), 100);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DoF), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Bloom), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Shadow), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::SSAO), 0);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ScreenEffect), 1);
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 1);
+								//pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::AntiAliasing), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::GodRay), 1);
 								break;
 							case 2:
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DrawScale), 100);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel), 2);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DoF), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Bloom), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Shadow), 2);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::SSAO), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ScreenEffect), 1);
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 2);
+								//pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 2);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::AntiAliasing), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::GodRay), 1);
 								break;
 							case 3:
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DrawScale), 100);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel), 2);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::DoF), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Bloom), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Shadow), 3);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::SSAO), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::ScreenEffect), 1);
-								pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 3);
+								//pOption->SetParam(pOption->GetOptionType(Util::OptionType::Reflection), 3);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::AntiAliasing), 1);
 								pOption->SetParam(pOption->GetOptionType(Util::OptionType::GodRay), 1);
 								break;

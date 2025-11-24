@@ -1,16 +1,63 @@
 ﻿#include "Character.hpp"
 #include "PlayerManager.hpp"
 
-void Plane::CheckDraw_Sub(void) noexcept {
-	auto* DrawerMngr = Draw::MainDraw::Instance();
-	this->m_AimPoint = GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Center)).pos();
-	auto Pos2D = ConvWorldPosToScreenPos(this->m_AimPoint.get());
-	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
-		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
-	}
-}
+void PlaneCommon::Init_Sub(void) noexcept {
+	this->m_SpeedTarget = GetSpeedMax();
+	this->m_Speed = this->m_SpeedTarget;
+	this->m_TotalAmmo = this->m_CanHaveAmmo;
 
+	for (auto& s : this->m_ShotEffect) {
+		s = std::make_shared<ShotEffect>();
+		ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
+	}
+	for (auto& s : this->m_ShotEffect2) {
+		s = std::make_shared<ShotEffect>();
+		ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
+	}
+	for (auto& s : this->m_AmmoPer) {
+		s = std::make_shared<Ammo>();
+		ObjectManager::Instance()->InitObject(s);
+	}
+	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
+	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
+
+	m_Jobs.Init(
+		[&]() {
+			Util::VECTOR3D Pos = GetMat().pos();
+			bool IsInCloud = false;
+			for (auto& c : BackGround::Instance()->GetClouds()) {
+				float length = c.Scale * 626.64f;
+				if ((c.Pos - Pos).sqrMagnitude() < length * length) {
+					IsInCloud = true;
+					break;
+				}
+			}
+			m_IsInCloud = IsInCloud;
+			//
+			int CanWatchBitField = 0;
+			//*
+			for (auto& p : PlayerManager::Instance()->GetPlane()) {
+				if (this->GetObjectID() == p->GetObjectID()) { continue; }
+				int index = static_cast<int>(&p - &PlayerManager::Instance()->GetPlane().front());
+				Util::VECTOR3D PPos = p->GetMat().pos();
+				bool CanWatch = true;
+				for (auto& c : BackGround::Instance()->GetClouds()) {
+					float length = c.Scale * 626.64f;
+					if (Util::GetMinLenSegmentToPoint(Pos, PPos, c.Pos) < length) {
+						CanWatch = false;
+						break;
+					}
+				}
+				if (CanWatch) {
+					CanWatchBitField |= 1 << index;
+				}
+			}
+			//*/
+			m_CanWatchBitField = CanWatchBitField;
+		},
+		[&]() {});
+	Init_Chara();
+}
 inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool AccelKey, bool BrakeKey, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept {
 	bool LeftKey = a;
 	bool RightKey = d;
@@ -226,6 +273,15 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	}
 }
 
+void Plane::CheckDraw_Sub(void) noexcept {
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+	this->m_AimPoint = GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Center)).pos();
+	auto Pos2D = ConvWorldPosToScreenPos(this->m_AimPoint.get());
+	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+	}
+}
 void Plane::Update_Chara(void) noexcept {
 	auto* KeyMngr = Util::KeyParam::Instance();
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -238,13 +294,6 @@ void Plane::Update_Chara(void) noexcept {
 	int LookX = 0;
 	int LookY = 0;
 
-	if (IsFPSView()) {
-		if (this->m_PrevIsFPSView != IsFPSView()) {
-			DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
-		}
-	}
-	this->m_PrevIsFPSView = IsFPSView();
-
 	int MX = DrawerMngr->GetMousePositionX();
 	int MY = DrawerMngr->GetMousePositionY();
 	DxLib::GetMousePoint(&MX, &MY);
@@ -252,8 +301,6 @@ void Plane::Update_Chara(void) noexcept {
 	auto* pOption = Util::OptionParam::Instance();
 	LookX = (MX - DrawerMngr->GetWindowDrawWidth() / 2) * pOption->GetParam(pOption->GetOptionType(Util::OptionType::XSensing))->GetSelect() / 100;
 	LookY = (MY - DrawerMngr->GetWindowDrawHeight() / 2)* pOption->GetParam(pOption->GetOptionType(Util::OptionType::YSensing))->GetSelect() / 100;
-
-	DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 	{
 
 
@@ -374,7 +421,6 @@ void EnemyPlane::CheckDraw_Sub(void) noexcept {
 		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
 	}
 }
-
 void EnemyPlane::Update_Chara(void) noexcept {
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
@@ -392,8 +438,10 @@ void EnemyPlane::Update_Chara(void) noexcept {
 	}
 
 	m_TargetMat = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - TargetPos).normalized());
-
-	//m_TargetMat = GetMat().rotation();
+	if (!GetCanWatchPlane(0)) {
+		m_TargetMat = GetMat().rotation();
+		m_AutoTimer = 0.f;
+	}
 	bool IsOut = false;
 	auto Matt = m_TargetMat;
 	if (
@@ -431,7 +479,7 @@ void EnemyPlane::Update_Chara(void) noexcept {
 		IsShot,
 		m_Accel,
 		m_Brake,
-		IsOut || (m_AutoTimer > 2.5f), Matt);
+		IsOut || (m_AutoTimer < 2.5f), Matt);
 
 }
 
