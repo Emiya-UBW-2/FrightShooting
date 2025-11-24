@@ -178,10 +178,7 @@ public:
 		//*/
 		SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
 	}
-	void SetShadowDraw_Sub(void) const noexcept override {
-		if (this->Timer == 0.f) { return; }
-		GetModel().DrawModel();
-	}
+	void SetShadowDraw_Sub(void) const noexcept override {}
 	void CheckDraw_Sub(void) noexcept override {
 	}
 	void Draw_Sub(void) const noexcept override {
@@ -286,6 +283,81 @@ public:
 		for (auto& ae : this->m_AmmoEffectPer) {
 			ae.reset();
 		}
+	}
+};
+
+class DamageEffect : public BaseObject {
+public:
+	DamageEffect(void) noexcept {}
+	DamageEffect(const DamageEffect&) = delete;
+	DamageEffect(DamageEffect&&) = delete;
+	DamageEffect& operator=(const DamageEffect&) = delete;
+	DamageEffect& operator=(DamageEffect&&) = delete;
+	virtual ~DamageEffect(void) noexcept {}
+private:
+	int				GetFrameNum(void) noexcept override { return 0; }
+	const char* GetFrameStr(int) noexcept override { return nullptr; }
+private:
+	const Draw::GraphHandle* m_SmokeGraph{};
+	Util::VECTOR3D Vector{};
+	float YVecAdd{};
+	float Timer{};
+	char		padding[4]{};
+public:
+	void Set(const Util::VECTOR3D& Pos, const Util::VECTOR3D& Normal) noexcept {
+		SetMatrix(Util::Matrix4x4::Mtrans(Pos));
+		this->Vector = Normal;
+		this->Vector =
+			Util::Matrix4x4::Vtrans(this->Vector,
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::forward(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f))) *
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::up(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f)))
+			) *
+			(static_cast<float>(250 + GetRand(100)) / 100.f * Scale3DRate * DeltaTime);
+		this->YVecAdd = 0.f;
+		this->Timer = 1.f;
+
+	}
+public:
+	void Load_Sub(void) noexcept override {
+		this->m_SmokeGraph = Draw::GraphPool::Instance()->Get("data/Image/Smoke.png")->Get();
+	}
+	void Init_Sub(void) noexcept override {
+	}
+	void Update_Sub(void) noexcept override {
+		if (this->Timer == 0.f) { return; }
+		this->Timer = std::max(this->Timer - DeltaTime, 0.f);
+		Util::VECTOR3D Target = GetMat().pos() + this->Vector;
+		Util::VECTOR3D Normal;
+		SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
+	}
+	void SetShadowDraw_Sub(void) const noexcept override {
+		if (this->Timer == 0.f) { return; }
+	}
+	void CheckDraw_Sub(void) noexcept override {
+	}
+	void Draw_Sub(void) const noexcept override {
+		if (this->Timer == 0.f) { return; }
+		DxLib::SetUseLighting(FALSE);
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->Timer), 0, 255));
+		SetDrawBright(64 * 2, 32 * 2, 16 * 2);
+		DxLib::DrawBillboard3D(
+			GetMat().pos().get(),
+			0.5f,
+			0.5f,
+			1.6f * Scale3DRate,
+			Util::deg2rad(0.f),
+			this->m_SmokeGraph->get(),
+			true
+		);
+		DxLib::SetUseLighting(TRUE);
+		SetDrawBright(255, 255, 255);
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+	}
+	void DrawFront_Sub(void) const noexcept override {
+	}
+	void ShadowDraw_Sub(void) const noexcept override {
+	}
+	void Dispose_Sub(void) noexcept override {
 	}
 };
 
@@ -413,6 +485,13 @@ private:
 	bool		m_ShotSwitch{};
 	bool		m_IsInCloud{};
 	char		padding5[2]{};
+
+	std::array<std::shared_ptr<DamageEffect>, 30>	m_DamageEffect{};
+	size_t		m_DamageEffectNow{};
+	float		m_DamageEffectTimer{};
+
+	static constexpr int			m_HitPointMax{ 100 };
+	int			m_HitPoint{ m_HitPointMax };
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -424,12 +503,17 @@ private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(CharaFrame::Max); }
 	const char*		GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
 public:
+	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
+
 	void SetPlayerID(int ID) noexcept {
 		PlayerID = ID;
 	}
 	int				GetPlayerID(void) const noexcept { return PlayerID; }
 	void SetDamage(int ID) noexcept {
 		DamageID = ID;
+		if (DamageID != InvalidID) {
+			m_HitPoint = std::clamp(m_HitPoint - 10, 0, m_HitPointMax);
+		}
 	}
 	int				GetDamageID(void) const noexcept { return DamageID; }
 	bool			GetShotSwitch(void) const noexcept { return m_ShotSwitch; }
@@ -454,6 +538,18 @@ public:
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
 		m_Jobs.Update(true);
+
+		m_DamageEffectTimer += DeltaTime;
+		if (m_DamageEffectTimer > 2.f / 60.f) {
+			m_DamageEffectTimer -= 2.f / 60.f;
+			if (m_HitPoint < m_HitPointMax * 3 / 10) {
+				m_DamageEffect.at(m_DamageEffectNow)->Set(
+					GetMat().pos(),
+					GetMat().zvec2()
+				);
+				++m_DamageEffectNow %= m_DamageEffect.size();
+			}
+		}
 		Update_Chara();
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
@@ -495,6 +591,9 @@ public:
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
+		for (auto& ae : this->m_DamageEffect) {
+			ae.reset();
+		}
 		m_Jobs.Dispose();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
@@ -541,7 +640,7 @@ class Plane :public PlaneCommon {
 	Util::VECTOR2D		m_RadR = Util::VECTOR2D::zero();
 	bool				m_IsFreeView{ false };
 	bool				m_IsFPS{ false };
-	char		padding[1]{};
+	char		padding[2]{};
 	Util::VECTOR3D											m_AimPoint;
 	Util::VECTOR2D											m_AimPoint2D;
 public:

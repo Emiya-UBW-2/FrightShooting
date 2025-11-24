@@ -448,7 +448,7 @@ public:
 					}
 					auto& pc = m_PosCloud.at(static_cast<size_t>(ID * grasss + i));
 					pc.Pos = tmpPos;
-					pc.Scale = (1.25f + GetRandf(0.5f));
+					pc.Scale = (1.25f + GetRandf(1.f));
 					tgt_g.Set_one(Util::Matrix4x4::GetScale(Util::VECTOR3D::one() * pc.Scale) * Util::Matrix4x4::Mtrans(pc.Pos));
 				}
 				tgt_g.put();

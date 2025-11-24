@@ -18,6 +18,10 @@ void PlaneCommon::Init_Sub(void) noexcept {
 		s = std::make_shared<Ammo>();
 		ObjectManager::Instance()->InitObject(s);
 	}
+	for (auto& ae : this->m_DamageEffect) {
+		ae = std::make_shared<DamageEffect>();
+		ObjectManager::Instance()->InitObject(ae);
+	}
 	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 
@@ -322,6 +326,7 @@ void Plane::Update_Chara(void) noexcept {
 		}
 	}
 
+	bool IsDeath = false;
 	bool IsOut = false;
 	auto Matt = GetEyeMatrix().rotation();
 	if (
@@ -342,11 +347,16 @@ void Plane::Update_Chara(void) noexcept {
 
 		IsOut = true;
 	}
+	if (GetHitPoint() == 0) {
+		Matt = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - Util::VECTOR3D::vget(0.f, -100000.f, 0.f)).normalized());
+		IsDeath = true;
+		IsOut = true;
+	}
 
 	Update(
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::W) || (m_IsFPS && LookY > 1),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::S) || (m_IsFPS && LookY < -1),
-		KeyMngr->GetBattleKeyPress(Util::EnumBattle::A),
+		KeyMngr->GetBattleKeyPress(Util::EnumBattle::A) || IsDeath,
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::D),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::Q) || (m_IsFPS && LookX < -3),
 		KeyMngr->GetBattleKeyPress(Util::EnumBattle::E) || (m_IsFPS && LookX > 3),
@@ -442,6 +452,7 @@ void EnemyPlane::Update_Chara(void) noexcept {
 		m_TargetMat = GetMat().rotation();
 		m_AutoTimer = 0.f;
 	}
+	bool IsDeath = false;
 	bool IsOut = false;
 	auto Matt = m_TargetMat;
 	if (
@@ -454,6 +465,11 @@ void EnemyPlane::Update_Chara(void) noexcept {
 		) {
 		Matt = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - Util::VECTOR3D::vget(0.f, 0.f, 0.f)).normalized());
 
+		IsOut = true;
+	}
+	if (GetHitPoint() == 0) {
+		Matt = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), (GetMat().pos() - Util::VECTOR3D::vget(0.f, -100000.f, 0.f)).normalized());
+		IsDeath = true;
 		IsOut = true;
 	}
 
@@ -475,7 +491,7 @@ void EnemyPlane::Update_Chara(void) noexcept {
 		m_AutoTimer -= 5.f;
 	}
 	Update(
-		false, false, false, false, false, false,
+		false, false, IsDeath, false, false, false,
 		IsShot,
 		m_Accel,
 		m_Brake,
