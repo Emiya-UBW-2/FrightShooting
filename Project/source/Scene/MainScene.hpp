@@ -46,6 +46,10 @@ class MainScene : public Util::SceneBase {
 	Util::VECTOR2D					m_LensSize{};
 	Util::VECTOR2D					m_AimPoint2D;
 	char		padding5[4]{};
+
+	Util::VECTOR3D CamPosition;
+	Util::VECTOR3D CamTarget;
+	Util::VECTOR3D CamUp;
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

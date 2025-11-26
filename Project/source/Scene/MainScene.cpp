@@ -131,7 +131,7 @@ void MainScene::Update_Sub(void) noexcept {
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	//ポーズメニュー
-	{
+	if(!this->m_Exit){
 		if (KeyMngr->GetMenuKeyTrigger(Util::EnumMenu::Tab)) {
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_OKID)->Play(DX_PLAYTYPE_BACK, TRUE);
 			this->m_IsPauseActive ^= 1;
@@ -143,8 +143,7 @@ void MainScene::Update_Sub(void) noexcept {
 		}
 		this->m_PauseUI.Update();
 		if (this->m_IsSceneEnd && this->m_PauseUI.IsEnd()) {
-			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
-			SceneBase::SetEndScene();
+			this->m_Exit = true;
 		}
 		this->m_OptionWindow.Update();
 	}
@@ -189,10 +188,6 @@ void MainScene::Update_Sub(void) noexcept {
 	//float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
 	//float YPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionY() - DrawerMngr->GetDispHeight() / 2) / static_cast<float>(DrawerMngr->GetDispHeight() / 2), -1.f, 1.f);
 
-	Util::VECTOR3D CamPosition;
-	Util::VECTOR3D CamTarget;
-	Util::VECTOR3D CamUp;
-
 	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
 	this->m_FPSPer = std::clamp(this->m_FPSPer + (Watch->IsFPSView() ? 1.f : -1.f) * DeltaTime / 0.25f, 0.f, 1.f);
@@ -223,10 +218,14 @@ void MainScene::Update_Sub(void) noexcept {
 		CamPosition2 = CamTarget2 - EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp2 = EyeMat.yvec();
 	}
-
-	CamPosition = Util::Lerp(CamPosition2, CamPosition1, this->m_FPSPer);
-	CamTarget = Util::Lerp(CamTarget2, CamTarget1, this->m_FPSPer);
-	CamUp = Util::Lerp(CamUp2, CamUp1, this->m_FPSPer);
+	if (Watch->GetHitPoint() != 0) {
+		CamPosition = Util::Lerp(CamPosition2, CamPosition1, this->m_FPSPer);
+		CamTarget = Util::Lerp(CamTarget2, CamTarget1, this->m_FPSPer);
+		CamUp = Util::Lerp(CamUp2, CamUp1, this->m_FPSPer);
+	}
+	else {
+		this->m_Exit = true;
+	}
 
 	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
 
@@ -246,8 +245,8 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	else {
 		if (this->m_Fade >= 1.f) {
-			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
-			Util::SceneBase::SetEndScene();
+			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
+			SceneBase::SetEndScene();
 		}
 	}
 
