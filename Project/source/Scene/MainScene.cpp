@@ -12,6 +12,9 @@ void MainScene::Load_Sub(void) noexcept {
 
 	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
 	m_Lock = Draw::GraphPool::Instance()->Get("data/Image/Lock.png")->Get();
+	m_Alt = Draw::GraphPool::Instance()->Get("data/Image/alt.png")->Get();
+	m_Speed = Draw::GraphPool::Instance()->Get("data/Image/speed.png")->Get();
+	m_Meter = Draw::GraphPool::Instance()->Get("data/Image/meter.png")->Get();
 }
 void MainScene::Init_Sub(void) noexcept {
 	BackGround::Instance()->Init();
@@ -323,22 +326,32 @@ void MainScene::UIDraw_Sub(void) noexcept {
 		SetDrawBright(255, 255, 255);
 	}
 	{
+		float speed = Watch->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime);
+
+		Util::Easing(&this->m_SpeedPer, 90.f + speed * 3.f + GetRandf(3.f), 0.9f);
+
+		int X = 1920 / 2 + 765, Y = 1080 - 128 - 64;
+		m_Speed->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
+		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_SpeedPer), true);
+	}
+	{
+		float alt = Watch->GetMat().pos().y / Scale3DRate;
+
+		Util::Easing(&this->m_AltPer, -alt / 500.f * 90.f + GetRandf(3.f), 0.9f);
+
+		int X = 1920 / 2 - 765, Y = 1080 - 128 - 64;
+		m_Alt->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
+		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_AltPer), true);
+	}
+	{
 		int xpos = DrawerMngr->GetDispWidth() / 2;
 		int ypos = DrawerMngr->GetDispHeight() * 3 / 4;
-
-		if (true) {
+		if (false) {
 			KeyGuideParts->DrawButton(xpos - 24 / 2, ypos - 24 / 2, DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Reload));
 			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->DrawString(
 				Draw::FontXCenter::MIDDLE, Draw::FontYCenter::TOP,
 				xpos, ypos + 18,
 				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8(Localize->Get(316)));
-			ypos += 52;
-		}
-		{
-			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->DrawString(
-				Draw::FontXCenter::MIDDLE, Draw::FontYCenter::TOP,
-				xpos, ypos + 18,
-				ColorPalette::White, ColorPalette::Black, "%05.2f km/h", Watch->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime));
 			ypos += 52;
 		}
 	}

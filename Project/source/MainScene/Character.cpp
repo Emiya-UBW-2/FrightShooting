@@ -187,7 +187,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 			this->m_SpeedTarget -= DeltaTime * (std::fabsf(m_RollPer / Util::deg2rad(200.f * DeltaTime)) - 0.1f) * 0.5f;
 		}
 
-		this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() / 2.f, GetSpeedMax() * 3.f / 2.f);
+		this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() * 3.f / 4.f, GetSpeedMax() * 3.f / 2.f);
 	}
 	Util::Easing(&m_Speed, this->m_SpeedTarget, 0.95f);
 

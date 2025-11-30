@@ -25,6 +25,9 @@ class MainScene : public Util::SceneBase {
 	float							m_CharaStyleChangeR{};
 	const Draw::GraphHandle*		m_Cursor{};
 	const Draw::GraphHandle*		m_Lock{};
+	const Draw::GraphHandle*		m_Alt{};
+	const Draw::GraphHandle*		m_Speed{};
+	const Draw::GraphHandle*		m_Meter{};
 	Util::VECTOR3D					m_CamOffset{};
 	Util::VECTOR3D					m_CamVec{};
 	float							m_FPSPer{ 0.f };
@@ -34,6 +37,8 @@ class MainScene : public Util::SceneBase {
 	float							m_Fade{ 1.f };
 	float							m_ShotFov{ 0.f };
 	float							m_DamagePer{ 0.f };
+	float							m_SpeedPer{ 0.f };
+	float							m_AltPer{ 0.f };
 	std::array<float,5>				m_AtackPer{};
 	char		padding3[4]{};
 	size_t							m_AttackNow{};

@@ -625,7 +625,7 @@ public:
 	auto GetTargetPos() const { return this->m_MyPosTarget; }
 	float GetSpeed() const { return this->m_Speed; }
 	float GetSpeedMax(void) const noexcept {
-		return 200.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime;
+		return 200.f * 2.f / 3.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime;
 	}
 	void SetPos(Util::VECTOR3D MyPos) noexcept {
 		this->m_MyPosTarget = MyPos;
