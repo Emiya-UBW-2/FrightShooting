@@ -490,6 +490,9 @@ private:
 	size_t		m_DamageEffectNow{};
 	float		m_DamageEffectTimer{};
 
+	float		m_HealTimer{};
+	char		padding6[4]{};
+
 	static constexpr int			m_HitPointMax{ 100 };
 	int			m_HitPoint{ m_HitPointMax };
 public:
@@ -504,7 +507,9 @@ private:
 	const char*		GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
 public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
-
+	bool			GetHitPointLow(void) const noexcept { return m_HitPoint < m_HitPointMax * 3 / 10; }
+	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
+	
 	void SetPlayerID(int ID) noexcept {
 		PlayerID = ID;
 	}
@@ -542,7 +547,7 @@ public:
 		m_DamageEffectTimer += DeltaTime;
 		if (m_DamageEffectTimer > 2.f / 60.f) {
 			m_DamageEffectTimer -= 2.f / 60.f;
-			if (m_HitPoint < m_HitPointMax * 3 / 10) {
+			if (GetHitPointLow()) {
 				m_DamageEffect.at(m_DamageEffectNow)->Set(
 					GetMat().pos(),
 					GetMat().zvec2()
@@ -550,6 +555,13 @@ public:
 				++m_DamageEffectNow %= m_DamageEffect.size();
 			}
 		}
+
+		m_HealTimer += DeltaTime;
+		if (m_HealTimer > 6.f / 60.f) {
+			m_HealTimer -= 6.f / 60.f;
+			m_HitPoint = std::clamp(m_HitPoint + 1, 0, m_HitPointMax);
+		}
+
 		Update_Chara();
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {

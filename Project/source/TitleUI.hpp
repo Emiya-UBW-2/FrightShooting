@@ -58,6 +58,7 @@ public:
 	}
 	void		Update(void) noexcept {
 		auto* KeyMngr = Util::KeyParam::Instance();
+		this->m_DrawUI->Update(IsActive());
 		if (IsActive()) {
 			int IsSelect = InvalidID;
 			for (int loop = 0; loop < 4; ++loop) {
@@ -89,7 +90,6 @@ public:
 				}
 			}
 		}
-		this->m_DrawUI->Update(IsActive());
 	}
 	void		Draw(void) noexcept {
 		this->m_DrawUI->Draw();

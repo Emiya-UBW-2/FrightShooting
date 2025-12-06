@@ -64,7 +64,7 @@
 			"Rad":0,
 			"Scale":[2.0,2.0],
 			"Center":[0.5,0.5],
-			"BaseColor":[0,255,0,255],
+			"BaseColor":[0,255,0,0],
 			"IsHitCheck":false,
 			"FontID":10
 		}
@@ -78,7 +78,7 @@
 			"Rad":0,
 			"Scale":[1.0,1.0],
 			"Center":[0.5,0.5],
-			"BaseColor":[255,255,255,255],
+			"BaseColor":[255,255,255,0],
 			"IsHitCheck":false,
 			"FontID":11
 		}

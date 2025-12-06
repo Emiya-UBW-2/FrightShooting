@@ -15,6 +15,7 @@ void MainScene::Load_Sub(void) noexcept {
 	m_Alt = Draw::GraphPool::Instance()->Get("data/Image/alt.png")->Get();
 	m_Speed = Draw::GraphPool::Instance()->Get("data/Image/speed.png")->Get();
 	m_Meter = Draw::GraphPool::Instance()->Get("data/Image/meter.png")->Get();
+	m_Damage = Draw::GraphPool::Instance()->Get("data/Image/damage.png")->Get();
 }
 void MainScene::Init_Sub(void) noexcept {
 	BackGround::Instance()->Init();
@@ -27,9 +28,12 @@ void MainScene::Init_Sub(void) noexcept {
 	for (int index = 1; index < 5; ++index) {
 		((std::shared_ptr<EnemyPlane>&)PlayerManager::Instance()->SetPlane().at(static_cast<size_t>(index)))->SetPos(Util::VECTOR3D::vget(static_cast<float>(index) * 10.f * Scale3DRate, 0.f, 0.f));
 	}
+	for (auto& c : PlayerManager::Instance()->SetPlane()) {
+		c->SetDamage(InvalidID);
+	}
 	//
 	this->m_Exit = false;
-	this->m_Fade = 1.f;
+	this->m_Fade = 2.f;
 
 	this->m_cursorID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/cursor.wav", false);
 	this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
@@ -158,11 +162,16 @@ void MainScene::Update_Sub(void) noexcept {
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
 	m_DamagePer = std::max(m_DamagePer - DeltaTime, 0.f);
+	m_DamageWatch = std::max(m_DamageWatch - DeltaTime, 1.f - Player->GetHitPointPer());
 	if (m_DamagePer == 0.f) {
 		CameraParts->SetCamShake(1.f, std::fabsf(Player->GetSpeed() - Player->GetSpeedMax()) / (Player->GetSpeedMax() * 2.f) * Scale3DRate);
+		if (Player->GetHitPointLow()) {
+			CameraParts->SetCamShake(1.f, 0.25f * Scale3DRate);
+		}
 		if (Player->GetDamageID() != InvalidID) {
 			CameraParts->SetCamShake(0.2f, 5.f * Scale3DRate);
 			m_DamagePer = 0.2f;
+			m_DamageWatch = 2.f;
 		}
 	}
 	for (auto& a : m_AtackPer) {
@@ -183,9 +192,9 @@ void MainScene::Update_Sub(void) noexcept {
 		m_IsResetMouse = false;
 		DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 	}
-
-	ObjectManager::Instance()->UpdateObject();
-
+	if (this->m_Fade <= 1.f) {
+		ObjectManager::Instance()->UpdateObject();
+	}
 	DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
 	//更新
 	//float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
@@ -243,11 +252,11 @@ void MainScene::Update_Sub(void) noexcept {
 
 	BackGround::Instance()->Update();
 
-	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DeltaTime, 0.f, 1.f);
+	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DeltaTime, 0.f, 2.f);
 	if (!m_Exit) {
 	}
 	else {
-		if (this->m_Fade >= 1.f) {
+		if (this->m_Fade >= 2.f) {
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
 			SceneBase::SetEndScene();
 		}
@@ -309,6 +318,7 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* Localize = Util::LocalizePool::Instance();
+	auto* CameraParts = Camera::Camera3D::Instance();
 
 	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
@@ -325,12 +335,17 @@ void MainScene::UIDraw_Sub(void) noexcept {
 		}
 		SetDrawBright(255, 255, 255);
 	}
+	if (std::clamp(static_cast<int>(255.f * m_DamageWatch * 0.5f), 0, 255) > 10) {
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * m_DamageWatch*0.5f), 0, 255));
+		m_Damage->DrawExtendGraph(0, 0, 1920, 1080, true);
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+	}
 	{
 		float speed = Watch->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime);
 
 		Util::Easing(&this->m_SpeedPer, 90.f + speed * 3.f + GetRandf(3.f), 0.9f);
 
-		int X = 1920 / 2 + 765, Y = 1080 - 128 - 64;
+		int X = 1920 / 2 + 765 + static_cast<int>(CameraParts->GetShake().x * 10.f), Y = 1080 - 128 - 64 + static_cast<int>(CameraParts->GetShake().y * 10.f);
 		m_Speed->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
 		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_SpeedPer), true);
 	}
@@ -339,7 +354,7 @@ void MainScene::UIDraw_Sub(void) noexcept {
 
 		Util::Easing(&this->m_AltPer, -alt / 500.f * 90.f + GetRandf(3.f), 0.9f);
 
-		int X = 1920 / 2 - 765, Y = 1080 - 128 - 64;
+		int X = 1920 / 2 - 765 + static_cast<int>(CameraParts->GetShake().z * 10.f), Y = 1080 - 128 - 64 + static_cast<int>(CameraParts->GetShake().y * 10.f);
 		m_Alt->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
 		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_AltPer), true);
 	}

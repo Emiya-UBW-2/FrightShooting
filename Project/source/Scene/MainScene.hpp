@@ -28,6 +28,7 @@ class MainScene : public Util::SceneBase {
 	const Draw::GraphHandle*		m_Alt{};
 	const Draw::GraphHandle*		m_Speed{};
 	const Draw::GraphHandle*		m_Meter{};
+	const Draw::GraphHandle*		m_Damage{};
 	Util::VECTOR3D					m_CamOffset{};
 	Util::VECTOR3D					m_CamVec{};
 	float							m_FPSPer{ 0.f };
@@ -37,10 +38,10 @@ class MainScene : public Util::SceneBase {
 	float							m_Fade{ 1.f };
 	float							m_ShotFov{ 0.f };
 	float							m_DamagePer{ 0.f };
+	float							m_DamageWatch{ 0.f };
 	float							m_SpeedPer{ 0.f };
 	float							m_AltPer{ 0.f };
 	std::array<float,5>				m_AtackPer{};
-	char		padding3[4]{};
 	size_t							m_AttackNow{};
 	Sound::SoundUniqueID			m_cursorID{ InvalidID };
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
@@ -55,6 +56,7 @@ class MainScene : public Util::SceneBase {
 	Util::VECTOR3D CamPosition;
 	Util::VECTOR3D CamTarget;
 	Util::VECTOR3D CamUp;
+	char		padding3[4]{};
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

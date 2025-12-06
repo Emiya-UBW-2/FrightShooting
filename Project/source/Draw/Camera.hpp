@@ -22,6 +22,7 @@ namespace Camera {
 		Draw::Camera3DInfo			m_CameraForDraw{};
 	public:
 		const auto& GetCamera(void) const noexcept { return this->m_Camera; }
+		const auto& GetShake(void) const noexcept { return this->m_Shake2; }
 		const auto& GetCameraForDraw(void) const noexcept { return this->m_CameraForDraw; }
 	public:
 		void			SetCamPos(const Util::VECTOR3D& cam_pos, const Util::VECTOR3D& cam_vec, const Util::VECTOR3D& cam_up) noexcept {
