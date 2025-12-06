@@ -24,6 +24,8 @@ void PlaneCommon::Init_Sub(void) noexcept {
 	}
 	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(0);
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
 
 	m_Jobs.Init(
 		[&]() {
@@ -45,11 +47,16 @@ void PlaneCommon::Init_Sub(void) noexcept {
 				int index = static_cast<int>(&p - &PlayerManager::Instance()->GetPlane().front());
 				Util::VECTOR3D PPos = p->GetMat().pos();
 				bool CanWatch = true;
-				for (auto& c : BackGround::Instance()->GetClouds()) {
-					float length = c.Scale * 626.64f;
-					if (Util::GetMinLenSegmentToPoint(Pos, PPos, c.Pos) < length) {
-						CanWatch = false;
-						break;
+				if (CanWatch) {
+					CanWatch = (Pos - PPos).magnitude() < 1000.f * Scale3DRate;
+				}
+				if (CanWatch) {
+					for (auto& c : BackGround::Instance()->GetClouds()) {
+						float length = c.Scale * 626.64f;
+						if (Util::GetMinLenSegmentToPoint(Pos, PPos, c.Pos) < length) {
+							CanWatch = false;
+							break;
+						}
 					}
 				}
 				if (CanWatch) {
@@ -477,6 +484,9 @@ void EnemyPlane::Update_Chara(void) noexcept {
 	if (!IsOut) {
 		float angle = Util::VECTOR3D::Angle((Player->GetMat().pos() - GetMat().pos()).normalized(), GetMat().zvec2());
 		IsShot = angle < Util::deg2rad(5);
+		if (IsShot) {
+			IsShot = (Player->GetMat().pos() - GetMat().pos()).magnitude() < (300.f * Scale3DRate);
+		}
 	}
 
 	m_AccelTimer += DeltaTime;

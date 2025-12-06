@@ -542,6 +542,8 @@ public:
 		//DamageID = InvalidID;
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(128);
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
 		m_Jobs.Update(true);
 
 		m_DamageEffectTimer += DeltaTime;
@@ -556,10 +558,12 @@ public:
 			}
 		}
 
-		m_HealTimer += DeltaTime;
-		if (m_HealTimer > 6.f / 60.f) {
-			m_HealTimer -= 6.f / 60.f;
-			m_HitPoint = std::clamp(m_HitPoint + 1, 0, m_HitPointMax);
+		if (m_HitPoint != 0) {
+			m_HealTimer += DeltaTime;
+			if (m_HealTimer > 6.f / 60.f) {
+				m_HealTimer -= 6.f / 60.f;
+				m_HitPoint = std::clamp(m_HitPoint + 1, 0, m_HitPointMax);
+			}
 		}
 
 		Update_Chara();
@@ -639,9 +643,9 @@ public:
 	float GetSpeedMax(void) const noexcept {
 		return 200.f * 2.f / 3.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime;
 	}
-	void SetPos(Util::VECTOR3D MyPos) noexcept {
+	void SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
 		this->m_MyPosTarget = MyPos;
-		MyMat = Util::Matrix4x4::Mtrans(GetTargetPos());
+		MyMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(GetTargetPos());
 		m_Rot = Util::Matrix3x3::Get33DX(MyMat);
 	}
 };

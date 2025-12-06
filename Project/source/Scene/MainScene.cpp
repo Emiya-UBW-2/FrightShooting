@@ -24,9 +24,10 @@ void MainScene::Init_Sub(void) noexcept {
 
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 0.f, 0.f));
-	for (int index = 1; index < 5; ++index) {
-		((std::shared_ptr<EnemyPlane>&)PlayerManager::Instance()->SetPlane().at(static_cast<size_t>(index)))->SetPos(Util::VECTOR3D::vget(static_cast<float>(index) * 10.f * Scale3DRate, 0.f, 0.f));
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 300.f * Scale3DRate, 500.f*Scale3DRate), Util::deg2rad(0));
+	for (size_t index = 1; index < PlayerManager::Instance()->GetPlane().size(); ++index) {
+		((std::shared_ptr<EnemyPlane>&)PlayerManager::Instance()->SetPlane().at(index))->SetPos(
+			Util::VECTOR3D::vget((static_cast<float>(index) - static_cast<float>(PlayerManager::Instance()->GetPlane().size() - 1 - 1) / 2.f) * 20.f * Scale3DRate, 300.f * Scale3DRate, -500.f * Scale3DRate), Util::deg2rad(90));
 	}
 	for (auto& c : PlayerManager::Instance()->SetPlane()) {
 		c->SetDamage(InvalidID);
