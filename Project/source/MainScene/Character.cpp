@@ -70,6 +70,8 @@ void PlaneCommon::Init_Sub(void) noexcept {
 	Init_Chara();
 }
 inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool AccelKey, bool BrakeKey, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept {
+	auto* pOption = Util::OptionParam::Instance();
+
 	bool LeftKey = a;
 	bool RightKey = d;
 	bool UpKey = w;
@@ -227,24 +229,29 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 
 
 	//アニメアップデート
-	for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
-		SetAnim(loop).SetPer(this->m_AnimPer[loop]);
+	bool IsUpdateAnim = true;
+	switch (pOption->GetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel))->GetSelect()) {
+	case 0:
+		IsUpdateAnim = false;
+		break;
+	case 1:
+		IsUpdateAnim = true;
+		break;
+	case 2:
+		IsUpdateAnim = true;
+		break;
+	default:
+		break;
 	}
-	SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
-	SetModel().FlipAnimAll();
 
+	if (IsUpdateAnim) {
+		for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
+			SetAnim(loop).SetPer(this->m_AnimPer[loop]);
+		}
+		SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
+		SetModel().FlipAnimAll();
+	}
 	//射撃
-	{
-		for (auto& se : this->m_ShotEffect) {
-			se->SetMuzzleMat(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-		}
-	}
-	{
-		for (auto& se : this->m_ShotEffect2) {
-			se->SetMuzzleMat(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)));
-		}
-	}
-
 	m_ShotSwitch = false;
 	if (!AtrtackKey) {
 		m_ShootTimer = 0.2f * 0.f;
@@ -253,9 +260,10 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	else {
 		//
 		if (m_ShootTimer == 0.f) {
-			this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-			++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
-
+			if (IsUpdateAnim) {
+				this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+				++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
+			}
 			this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), PlayerID);
 			++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 
@@ -268,9 +276,10 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 		m_ShootTimer = std::max(m_ShootTimer - DeltaTime, 0.f);
 		//
 		if (m_ShootTimer2 == 0.f) {
-			this->m_ShotEffect2.at(static_cast<size_t>(this->m_ShotEffect2ID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)));
-			++m_ShotEffect2ID %= static_cast<int>(this->m_ShotEffect2.size());
-
+			if (IsUpdateAnim) {
+				this->m_ShotEffect2.at(static_cast<size_t>(this->m_ShotEffect2ID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)));
+				++m_ShotEffect2ID %= static_cast<int>(this->m_ShotEffect2.size());
+			}
 			this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), PlayerID);
 			++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 
@@ -313,8 +322,6 @@ void Plane::Update_Chara(void) noexcept {
 	LookX = (MX - DrawerMngr->GetWindowDrawWidth() / 2) * pOption->GetParam(pOption->GetOptionType(Util::OptionType::XSensing))->GetSelect() / 100;
 	LookY = (MY - DrawerMngr->GetWindowDrawHeight() / 2)* pOption->GetParam(pOption->GetOptionType(Util::OptionType::YSensing))->GetSelect() / 100;
 	{
-
-
 		{
 			this->m_RadAdd.y = Util::deg2rad(static_cast<float>(LookX) / 30.f);
 			this->m_RadAdd.x = Util::deg2rad(static_cast<float>(-LookY) / 30.f);

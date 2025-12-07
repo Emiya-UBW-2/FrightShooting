@@ -472,29 +472,29 @@ private:
 	int													m_AmmoID{};
 	char		padding3[4]{};
 
-	size_t	m_PropellerIndex{};
-	size_t	m_EngineIndex{};
+	size_t				m_PropellerIndex{};
+	size_t				m_EngineIndex{};
 
 	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
-	Sound::SoundUniqueID								m_ShotID{ InvalidID };
-	int PlayerID{ InvalidID };
-	int DamageID{};
+	Sound::SoundUniqueID	m_ShotID{ InvalidID };
+	int					PlayerID{ InvalidID };
+	int					DamageID{};
 
-	int			m_CanWatchBitField{};
-	bool		m_ShotSwitch{};
-	bool		m_IsInCloud{};
+	int					m_CanWatchBitField{};
+	bool				m_ShotSwitch{};
+	bool				m_IsInCloud{};
 	char		padding5[2]{};
 
 	std::array<std::shared_ptr<DamageEffect>, 30>	m_DamageEffect{};
-	size_t		m_DamageEffectNow{};
-	float		m_DamageEffectTimer{};
+	size_t				m_DamageEffectNow{};
+	float				m_DamageEffectTimer{};
 
-	float		m_HealTimer{};
+	float				m_HealTimer{};
 	char		padding6[4]{};
 
+	int					m_HitPoint{ m_HitPointMax };
 	static constexpr int			m_HitPointMax{ 100 };
-	int			m_HitPoint{ m_HitPointMax };
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -509,12 +509,9 @@ public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	bool			GetHitPointLow(void) const noexcept { return m_HitPoint < m_HitPointMax * 3 / 10; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
-	
-	void SetPlayerID(int ID) noexcept {
-		PlayerID = ID;
-	}
+	void			SetPlayerID(int ID) noexcept { PlayerID = ID; }
 	int				GetPlayerID(void) const noexcept { return PlayerID; }
-	void SetDamage(int ID) noexcept {
+	void			SetDamage(int ID) noexcept {
 		DamageID = ID;
 		if (DamageID != InvalidID) {
 			m_HitPoint = std::clamp(m_HitPoint - 10, 0, m_HitPointMax);
@@ -522,10 +519,7 @@ public:
 	}
 	int				GetDamageID(void) const noexcept { return DamageID; }
 	bool			GetShotSwitch(void) const noexcept { return m_ShotSwitch; }
-
-	bool			GetCanWatchPlane(int index) const noexcept {
-		return (m_CanWatchBitField & (1 << index)) != 0;
-	}
+	bool			GetCanWatchPlane(int index) const noexcept { return (m_CanWatchBitField & (1 << index)) != 0; }
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
@@ -545,11 +539,26 @@ public:
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(128);
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
 		m_Jobs.Update(true);
+		if (GetHitPointLow()) {
+			float UpdateTime = 2.f / 60.f;
+			auto* pOption = Util::OptionParam::Instance();
+			switch (pOption->GetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel))->GetSelect()) {
+			case 0:
+				UpdateTime = 6.f / 60.f;
+				break;
+			case 1:
+				UpdateTime = 4.f / 60.f;
+				break;
+			case 2:
+				UpdateTime = 2.f / 60.f;
+				break;
+			default:
+				break;
+			}
 
-		m_DamageEffectTimer += DeltaTime;
-		if (m_DamageEffectTimer > 2.f / 60.f) {
-			m_DamageEffectTimer -= 2.f / 60.f;
-			if (GetHitPointLow()) {
+			m_DamageEffectTimer += DeltaTime;
+			if (m_DamageEffectTimer > UpdateTime) {
+				m_DamageEffectTimer -= UpdateTime;
 				m_DamageEffect.at(m_DamageEffectNow)->Set(
 					GetMat().pos(),
 					GetMat().zvec2()
@@ -557,11 +566,13 @@ public:
 				++m_DamageEffectNow %= m_DamageEffect.size();
 			}
 		}
-
+		else {
+			m_DamageEffectTimer = 0.f;
+		}
 		if (m_HitPoint != 0) {
 			m_HealTimer += DeltaTime;
-			if (m_HealTimer > 6.f / 60.f) {
-				m_HealTimer -= 6.f / 60.f;
+			if (m_HealTimer > 24.f / 60.f) {
+				m_HealTimer -= 24.f / 60.f;
 				m_HitPoint = std::clamp(m_HitPoint + 1, 0, m_HitPointMax);
 			}
 		}
@@ -678,14 +689,11 @@ public:
 public:
 	bool IsPlayer(void) noexcept override { return true; }
 
-	void Load_Chara(void) noexcept override {
-	}
-	void Init_Chara(void) noexcept override {
-	}
+	void Load_Chara(void) noexcept override {}
+	void Init_Chara(void) noexcept override {}
 	void Update_Chara(void) noexcept override;
 	void Draw_Chara(void) const noexcept override {}
-	void Dispose_Chara(void) noexcept override {
-	}
+	void Dispose_Chara(void) noexcept override {}
 };
 
 class EnemyPlane :public PlaneCommon {
@@ -709,12 +717,9 @@ public:
 public:
 	bool IsPlayer(void) noexcept override { return false; }
 
-	void Load_Chara(void) noexcept override {
-	}
-	void Init_Chara(void) noexcept override {
-	}
+	void Load_Chara(void) noexcept override {}
+	void Init_Chara(void) noexcept override {}
 	void Update_Chara(void) noexcept override;
 	void Draw_Chara(void) const noexcept override {}
-	void Dispose_Chara(void) noexcept override {
-	}
+	void Dispose_Chara(void) noexcept override {}
 };
