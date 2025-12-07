@@ -71,6 +71,7 @@ void PlaneCommon::Init_Sub(void) noexcept {
 }
 inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool AccelKey, bool BrakeKey, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept {
 	auto* pOption = Util::OptionParam::Instance();
+	auto* DrawerMngr = Draw::MainDraw::Instance();
 
 	bool LeftKey = a;
 	bool RightKey = d;
@@ -85,56 +86,56 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	{
 		float YawPer = 0.f;
 		if (IsAuto) {
-			YawPer = -Mat.zvec2().x * Util::deg2rad(20.f * DeltaTime);
+			YawPer = -Mat.zvec2().x * Util::deg2rad(20.f * DrawerMngr->GetDeltaTime());
 		}
 		if (QKey && !EKey) {
-			YawPer = Util::deg2rad(-20.f * DeltaTime);
+			YawPer = Util::deg2rad(-20.f * DrawerMngr->GetDeltaTime());
 		}
 		if (EKey && !QKey) {
-			YawPer = Util::deg2rad(20.f * DeltaTime);
+			YawPer = Util::deg2rad(20.f * DrawerMngr->GetDeltaTime());
 		}
 		if (QKey && EKey) {
-			YawPer = Util::deg2rad(0.f * DeltaTime);
+			YawPer = Util::deg2rad(0.f * DrawerMngr->GetDeltaTime());
 		}
 		Util::Easing(&m_YawPer, YawPer * (m_Speed / GetSpeedMax()), 0.95f);
 	}
 	{
 		float PitchPer = 0.f;
 		if (IsAuto) {
-			PitchPer = Mat.zvec2().y * Util::deg2rad(50.f * DeltaTime);
+			PitchPer = Mat.zvec2().y * Util::deg2rad(50.f * DrawerMngr->GetDeltaTime());
 		}
 		if (UpKey && !DownKey) {
-			PitchPer = Util::deg2rad(-50.f * DeltaTime);
+			PitchPer = Util::deg2rad(-50.f * DrawerMngr->GetDeltaTime());
 		}
 		if (DownKey && !UpKey) {
-			PitchPer = Util::deg2rad(50.f * DeltaTime);
+			PitchPer = Util::deg2rad(50.f * DrawerMngr->GetDeltaTime());
 		}
 		if (DownKey && UpKey) {
-			PitchPer = Util::deg2rad(0.f * DeltaTime);
+			PitchPer = Util::deg2rad(0.f * DrawerMngr->GetDeltaTime());
 		}
 		Util::Easing(&m_PtichPer, PitchPer * (m_Speed / GetSpeedMax()), 0.95f);
 	}
 	{
 		float RollPer = 0.f;
 		if (IsAuto) {
-			if (m_PtichPer <= Util::deg2rad(-5.f * DeltaTime)) {
-				RollPer = Util::deg2rad(100.f * DeltaTime) * std::clamp(m_YawPer / Util::deg2rad(20.f * DeltaTime), -1.f, 1.f);
+			if (m_PtichPer <= Util::deg2rad(-5.f * DrawerMngr->GetDeltaTime())) {
+				RollPer = Util::deg2rad(100.f * DrawerMngr->GetDeltaTime()) * std::clamp(m_YawPer / Util::deg2rad(20.f * DrawerMngr->GetDeltaTime()), -1.f, 1.f);
 			}
-			if (std::fabsf(m_YawPer) >= Util::deg2rad(2.f * DeltaTime)) {
-				RollPer = Util::deg2rad(100.f * DeltaTime) * std::clamp(m_YawPer / Util::deg2rad(20.f * DeltaTime), -1.f, 1.f);
+			if (std::fabsf(m_YawPer) >= Util::deg2rad(2.f * DrawerMngr->GetDeltaTime())) {
+				RollPer = Util::deg2rad(100.f * DrawerMngr->GetDeltaTime()) * std::clamp(m_YawPer / Util::deg2rad(20.f * DrawerMngr->GetDeltaTime()), -1.f, 1.f);
 			}
-			if (std::fabsf(m_PtichPer) <= Util::deg2rad(5.f * DeltaTime) && std::fabsf(m_YawPer) <= Util::deg2rad(2.f * DeltaTime)) {
-				RollPer = Util::deg2rad(-100.f * DeltaTime) * std::clamp(Mat.yvec().x / 1.f, -1.f, 1.f);
+			if (std::fabsf(m_PtichPer) <= Util::deg2rad(5.f * DrawerMngr->GetDeltaTime()) && std::fabsf(m_YawPer) <= Util::deg2rad(2.f * DrawerMngr->GetDeltaTime())) {
+				RollPer = Util::deg2rad(-100.f * DrawerMngr->GetDeltaTime()) * std::clamp(Mat.yvec().x / 1.f, -1.f, 1.f);
 			}
 		}
 		if (LeftKey && !RightKey) {
-			RollPer = Util::deg2rad(-100.f * DeltaTime);
+			RollPer = Util::deg2rad(-100.f * DrawerMngr->GetDeltaTime());
 		}
 		if (RightKey && !LeftKey) {
-			RollPer = Util::deg2rad(100.f * DeltaTime);
+			RollPer = Util::deg2rad(100.f * DrawerMngr->GetDeltaTime());
 		}
 		if (LeftKey && RightKey) {
-			RollPer = Util::deg2rad(0.f * DeltaTime);
+			RollPer = Util::deg2rad(0.f * DrawerMngr->GetDeltaTime());
 		}
 		Util::Easing(&m_RollPer, RollPer * (m_Speed / GetSpeedMax()), 0.95f);
 	}
@@ -142,17 +143,17 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	{
 		//ヨー
 		{
-			float Per = std::clamp(m_YawPer, Util::deg2rad(-20.f * DeltaTime), Util::deg2rad(20.f * DeltaTime));
+			float Per = std::clamp(m_YawPer, Util::deg2rad(-20.f * DrawerMngr->GetDeltaTime()), Util::deg2rad(20.f * DrawerMngr->GetDeltaTime()));
 			this->m_Rot *= Util::Matrix3x3::RotAxis(this->m_Rot.yvec(), Per);
 		}
 		//ピッチ
 		{
-			float Per = std::clamp(m_PtichPer, Util::deg2rad(-50.f * DeltaTime), Util::deg2rad(50.f * DeltaTime));
+			float Per = std::clamp(m_PtichPer, Util::deg2rad(-50.f * DrawerMngr->GetDeltaTime()), Util::deg2rad(50.f * DrawerMngr->GetDeltaTime()));
 			this->m_Rot *= Util::Matrix3x3::RotAxis(this->m_Rot.xvec(), Per);
 		}
 		//ロール
 		{
-			float Per = std::clamp(m_RollPer, Util::deg2rad(-100.f * DeltaTime), Util::deg2rad(100.f * DeltaTime));
+			float Per = std::clamp(m_RollPer, Util::deg2rad(-100.f * DrawerMngr->GetDeltaTime()), Util::deg2rad(100.f * DrawerMngr->GetDeltaTime()));
 			this->m_Rot *= Util::Matrix3x3::RotAxis(this->m_Rot.zvec(), Per);
 		}
 	}
@@ -160,40 +161,40 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	// 進行方向に前進
 	{
 		if (AccelKey) {
-			this->m_SpeedTarget += DeltaTime;
+			this->m_SpeedTarget += DrawerMngr->GetDeltaTime();
 		}
 		if (BrakeKey) {
-			this->m_SpeedTarget -= DeltaTime;
+			this->m_SpeedTarget -= DrawerMngr->GetDeltaTime();
 		}
 
 
 		auto Y = this->m_Rot.zvec2().y;
 		if (std::fabsf(Y) > 0.1f) {
-			this->m_SpeedTarget -= DeltaTime * ((std::fabsf(Y) - 0.1f) * (Y > 0.f ? 1.f : -1.f));
+			this->m_SpeedTarget -= DrawerMngr->GetDeltaTime() * ((std::fabsf(Y) - 0.1f) * (Y > 0.f ? 1.f : -1.f));
 
 			float Speedkmh = GetSpeed() / GetSpeedMax();
 			if ((Speedkmh < 200.f / 200.f)) {
-				this->m_SpeedTarget += DeltaTime * 0.15f;
+				this->m_SpeedTarget += DrawerMngr->GetDeltaTime() * 0.15f;
 			}
 		}
 		else {
 			float Speedkmh = GetSpeed() / GetSpeedMax();
 			if ((Speedkmh < 200.f / 200.f)) {
-				this->m_SpeedTarget += DeltaTime * 0.5f;
+				this->m_SpeedTarget += DrawerMngr->GetDeltaTime() * 0.5f;
 			}
 			else if ((Speedkmh > 200.f / 200.f)) {
-				this->m_SpeedTarget -= DeltaTime * 0.5f;
+				this->m_SpeedTarget -= DrawerMngr->GetDeltaTime() * 0.5f;
 			}
 		}
 
-		if (std::fabsf(m_YawPer / Util::deg2rad(200.f * DeltaTime)) > 0.1f) {
-			this->m_SpeedTarget -= DeltaTime * (std::fabsf(m_YawPer / Util::deg2rad(200.f * DeltaTime)) - 0.1f) * 0.5f;
+		if (std::fabsf(m_YawPer / Util::deg2rad(200.f * DrawerMngr->GetDeltaTime())) > 0.1f) {
+			this->m_SpeedTarget -= DrawerMngr->GetDeltaTime() * (std::fabsf(m_YawPer / Util::deg2rad(200.f * DrawerMngr->GetDeltaTime())) - 0.1f) * 0.5f;
 		}
-		if (std::fabsf(m_PtichPer / Util::deg2rad(200.f * DeltaTime)) > 0.1f) {
-			this->m_SpeedTarget -= DeltaTime * (std::fabsf(m_PtichPer / Util::deg2rad(200.f * DeltaTime)) - 0.1f) * 0.5f;
+		if (std::fabsf(m_PtichPer / Util::deg2rad(200.f * DrawerMngr->GetDeltaTime())) > 0.1f) {
+			this->m_SpeedTarget -= DrawerMngr->GetDeltaTime() * (std::fabsf(m_PtichPer / Util::deg2rad(200.f * DrawerMngr->GetDeltaTime())) - 0.1f) * 0.5f;
 		}
-		if (std::fabsf(m_RollPer / Util::deg2rad(200.f * DeltaTime)) > 0.1f) {
-			this->m_SpeedTarget -= DeltaTime * (std::fabsf(m_RollPer / Util::deg2rad(200.f * DeltaTime)) - 0.1f) * 0.5f;
+		if (std::fabsf(m_RollPer / Util::deg2rad(200.f * DrawerMngr->GetDeltaTime())) > 0.1f) {
+			this->m_SpeedTarget -= DrawerMngr->GetDeltaTime() * (std::fabsf(m_RollPer / Util::deg2rad(200.f * DrawerMngr->GetDeltaTime())) - 0.1f) * 0.5f;
 		}
 
 		this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() * 3.f / 4.f, GetSpeedMax() * 3.f / 2.f);
@@ -204,7 +205,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	Util::VECTOR3D PosBefore = GetTargetPos();
 	Util::VECTOR3D PosAfter;
 	{
-		PosAfter = PosBefore + Util::Matrix3x3::Vtrans(Util::VECTOR3D::forward() * -this->m_Speed, this->m_Rot);
+		PosAfter = PosBefore + Util::Matrix3x3::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), this->m_Rot);
 	}
 	//ヒット判定
 	//TODO
@@ -223,9 +224,9 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 	//
 	this->m_AnimPer[static_cast<size_t>(CharaAnim::Stand)] = 1.f;
 
-	this->m_AnimPer[static_cast<size_t>(CharaAnim::Roll)] = -std::clamp(m_RollPer, Util::deg2rad(-100.f * DeltaTime), Util::deg2rad(100.f * DeltaTime)) / Util::deg2rad(100.f * DeltaTime);
-	this->m_AnimPer[static_cast<size_t>(CharaAnim::Pitch)] = -std::clamp(m_PtichPer, Util::deg2rad(-50.f * DeltaTime), Util::deg2rad(50.f * DeltaTime)) / Util::deg2rad(50.f * DeltaTime);
-	this->m_AnimPer[static_cast<size_t>(CharaAnim::Yaw)] = std::clamp(m_YawPer, Util::deg2rad(-20.f * DeltaTime), Util::deg2rad(20.f * DeltaTime)) / Util::deg2rad(20.f * DeltaTime);
+	this->m_AnimPer[static_cast<size_t>(CharaAnim::Roll)] = -std::clamp(m_RollPer, Util::deg2rad(-100.f * DrawerMngr->GetDeltaTime()), Util::deg2rad(100.f * DrawerMngr->GetDeltaTime())) / Util::deg2rad(100.f * DrawerMngr->GetDeltaTime());
+	this->m_AnimPer[static_cast<size_t>(CharaAnim::Pitch)] = -std::clamp(m_PtichPer, Util::deg2rad(-50.f * DrawerMngr->GetDeltaTime()), Util::deg2rad(50.f * DrawerMngr->GetDeltaTime())) / Util::deg2rad(50.f * DrawerMngr->GetDeltaTime());
+	this->m_AnimPer[static_cast<size_t>(CharaAnim::Yaw)] = std::clamp(m_YawPer, Util::deg2rad(-20.f * DrawerMngr->GetDeltaTime()), Util::deg2rad(20.f * DrawerMngr->GetDeltaTime())) / Util::deg2rad(20.f * DrawerMngr->GetDeltaTime());
 
 
 	//アニメアップデート
@@ -273,7 +274,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 
 			m_ShotSwitch = true;
 		}
-		m_ShootTimer = std::max(m_ShootTimer - DeltaTime, 0.f);
+		m_ShootTimer = std::max(m_ShootTimer - DrawerMngr->GetDeltaTime(), 0.f);
 		//
 		if (m_ShootTimer2 == 0.f) {
 			if (IsUpdateAnim) {
@@ -289,7 +290,7 @@ inline void PlaneCommon::Update(bool w, bool s, bool a, bool d, bool q, bool e, 
 
 			m_ShotSwitch = true;
 		}
-		m_ShootTimer2 = std::max(m_ShootTimer2 - DeltaTime, 0.f);
+		m_ShootTimer2 = std::max(m_ShootTimer2 - DrawerMngr->GetDeltaTime(), 0.f);
 	}
 }
 
@@ -399,7 +400,7 @@ void Plane::Update_Chara(void) noexcept {
 			}
 			if (std::fabsf(Per) > 0.01f) {
 				float Power = 0.5f;
-				this->m_Rad.y += Per * Power * Util::deg2rad(720.f) * DeltaTime;
+				this->m_Rad.y += Per * Power * Util::deg2rad(720.f) * DrawerMngr->GetDeltaTime();
 			}
 			else {
 				this->m_Rad.y = this->m_RadR.y;
@@ -427,7 +428,7 @@ void Plane::Update_Chara(void) noexcept {
 			}
 			if (std::fabsf(Per) > 0.01f) {
 				float Power = 0.5f;
-				this->m_Rad.x += Per * Power * Util::deg2rad(720.f) * DeltaTime;
+				this->m_Rad.x += Per * Power * Util::deg2rad(720.f) * DrawerMngr->GetDeltaTime();
 			}
 			else {
 				this->m_Rad.x = this->m_RadR.x;
@@ -446,6 +447,8 @@ void EnemyPlane::CheckDraw_Sub(void) noexcept {
 	}
 }
 void EnemyPlane::Update_Chara(void) noexcept {
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
 	auto TargetPos = Player->GetMat().pos();
@@ -496,14 +499,14 @@ void EnemyPlane::Update_Chara(void) noexcept {
 		}
 	}
 
-	m_AccelTimer += DeltaTime;
+	m_AccelTimer += DrawerMngr->GetDeltaTime();
 	if (m_AccelTimer > 5.f) {
 		m_AccelTimer -= 5.f;
 		float Speedkmh = GetSpeed() / GetSpeedMax();
 		m_Accel = (Speedkmh < 170.f / 200.f);
 		m_Brake = (Speedkmh > 250.f / 200.f);
 	}
-	m_AutoTimer += DeltaTime;
+	m_AutoTimer += DrawerMngr->GetDeltaTime();
 	if (m_AutoTimer > 5.f) {
 		m_AutoTimer -= 5.f;
 	}
@@ -517,11 +520,13 @@ void EnemyPlane::Update_Chara(void) noexcept {
 }
 
 void Ammo::Update_Sub(void) noexcept {
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+
 	if (this->DrawTimer == 0.f) { return; }
-	this->DrawTimer = std::max(this->DrawTimer - DeltaTime, 0.f);
+	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
 	if (this->Timer == 0.f) { return; }
-	this->Timer = std::max(this->Timer - DeltaTime, 0.f);
-	//this->YVecAdd -= GravAccel;
+	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
+	//this->YVecAdd -= DrawerMngr->GetGravAccel();
 	this->Vector.y += this->YVecAdd;
 	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
 	//if (BackGround::Instance()->CheckLine(GetMat().pos(), &Target)) 
@@ -545,6 +550,6 @@ void Ammo::Update_Sub(void) noexcept {
 		}
 	}
 	SetMatrix(GetMat().rotation() *
-		Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(this->Vector, GetMat().zvec()).normalized(), Util::deg2rad(1800.f) * DeltaTime) *
+		Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(this->Vector, GetMat().zvec()).normalized(), Util::deg2rad(1800.f) * DrawerMngr->GetDeltaTime()) *
 		Util::Matrix4x4::Mtrans(Target));
 }

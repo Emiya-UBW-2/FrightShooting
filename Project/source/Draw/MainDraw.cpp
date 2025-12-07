@@ -92,7 +92,7 @@ namespace Draw {
 
 	void MainDraw::Update(void) noexcept {
 		LONGLONG WaitTime = DxLib::GetNowHiPerformanceCount() - this->m_TickTime;
-		LONGLONG EndFrame = 1000LL * 1000LL / static_cast<LONGLONG>(this->m_CalculateTick);
+		LONGLONG EndFrame = 1000LL * 1000LL / static_cast<LONGLONG>(GetFrameRate());
 		if (WaitTime > EndFrame) {
 			this->m_UpdateTickCount = static_cast<int>(WaitTime / EndFrame);
 			//this->m_UpdateTickCount = std::min(this->m_UpdateTickCount, 30);//3回(20FPS)未満は処理落ちさせる

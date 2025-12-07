@@ -107,6 +107,9 @@
     <ClCompile Include="source\MainScene\PlayerManager.cpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClCompile>
+    <ClCompile Include="source\Util\Algorithm.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\File\json.hpp">

@@ -3,9 +3,6 @@
 
 static constexpr float		Scale3DRate{ 12.5f };							/*1mに相当する3D空間上の長さ*/
 static constexpr int		InvalidID{ -1 };								/*共通の無効値*/
-static constexpr float		FrameRate{ 60.f };								/*フレームレート*/
-static constexpr float		DeltaTime{ 1.f / FrameRate };					/*1F単位の経過時間*/
-static constexpr float		GravAccel{ 1.f / 2.f * (9.8f * Scale3DRate) / (FrameRate * FrameRate) };	/*1F単位の重力加速度*/
 
 enum class EnumScene :size_t {
 	Title,

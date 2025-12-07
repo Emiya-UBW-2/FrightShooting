@@ -87,6 +87,7 @@ void MainScene::Init_Sub(void) noexcept {
 }
 void MainScene::Update_Sub(void) noexcept {
 	auto* KeyMngr = Util::KeyParam::Instance();
+	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* CameraParts = Camera::Camera3D::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
@@ -139,7 +140,7 @@ void MainScene::Update_Sub(void) noexcept {
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	//ポーズメニュー
-	if(!this->m_Exit){
+	if(!this->m_Exit && (this->m_Fade <= 1.f)){
 		if (KeyMngr->GetMenuKeyTrigger(Util::EnumMenu::Tab)) {
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_OKID)->Play(DX_PLAYTYPE_BACK, TRUE);
 			this->m_IsPauseActive ^= 1;
@@ -162,8 +163,8 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	m_DamagePer = std::max(m_DamagePer - DeltaTime, 0.f);
-	m_DamageWatch = std::max(m_DamageWatch - DeltaTime, 1.f - Player->GetHitPointPer());
+	m_DamagePer = std::max(m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
+	m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 1.f - Player->GetHitPointPer());
 	if (m_DamagePer == 0.f) {
 		CameraParts->SetCamShake(1.f, std::fabsf(Player->GetSpeed() - Player->GetSpeedMax()) / (Player->GetSpeedMax() * 2.f) * Scale3DRate);
 		if (Player->GetHitPointLow()) {
@@ -176,7 +177,7 @@ void MainScene::Update_Sub(void) noexcept {
 		}
 	}
 	for (auto& a : m_AtackPer) {
-		a = std::max(a - DeltaTime, 0.f);
+		a = std::max(a - DrawerMngr->GetDeltaTime(), 0.f);
 	}
 	for (auto& c : PlayerManager::Instance()->SetPlane()) {
 		if (c->GetDamageID() == 0) {
@@ -188,7 +189,6 @@ void MainScene::Update_Sub(void) noexcept {
 		c->SetDamage(InvalidID);
 	}
 
-	auto* DrawerMngr = Draw::MainDraw::Instance();
 	if (m_IsResetMouse) {
 		m_IsResetMouse = false;
 		DxLib::SetMousePoint(DrawerMngr->GetWindowDrawWidth() / 2, DrawerMngr->GetWindowDrawHeight() / 2);
@@ -203,7 +203,7 @@ void MainScene::Update_Sub(void) noexcept {
 
 	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	this->m_FPSPer = std::clamp(this->m_FPSPer + (Watch->IsFPSView() ? 1.f : -1.f) * DeltaTime / 0.25f, 0.f, 1.f);
+	this->m_FPSPer = std::clamp(this->m_FPSPer + (Watch->IsFPSView() ? 1.f : -1.f) * DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
 
 	Util::VECTOR3D CamPosition1;
 	Util::VECTOR3D CamTarget1;
@@ -253,7 +253,7 @@ void MainScene::Update_Sub(void) noexcept {
 
 	BackGround::Instance()->Update();
 
-	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DeltaTime, 0.f, 2.f);
+	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
 	if (!m_Exit) {
 	}
 	else {
@@ -342,7 +342,7 @@ void MainScene::UIDraw_Sub(void) noexcept {
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 	}
 	{
-		float speed = Watch->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime);
+		float speed = Watch->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f);
 
 		Util::Easing(&this->m_SpeedPer, 90.f + speed * 3.f + GetRandf(3.f), 0.9f);
 

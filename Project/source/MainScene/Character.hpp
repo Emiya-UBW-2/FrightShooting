@@ -76,8 +76,9 @@ public:
 	void Init_Sub(void) noexcept override {
 	}
 	void Update_Sub(void) noexcept override {
-		this->m_SmokePer = std::clamp(this->m_SmokePer + DeltaTime / 0.5f, 0.f, 1.f);
-		AnimPer = std::clamp(AnimPer + DeltaTime / 0.1f, 0.f, 1.f);
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		this->m_SmokePer = std::clamp(this->m_SmokePer + DrawerMngr->GetDeltaTime() / 0.5f, 0.f, 1.f);
+		AnimPer = std::clamp(AnimPer + DrawerMngr->GetDeltaTime() / 0.1f, 0.f, 1.f);
 		if (0.0f <= AnimPer && AnimPer <= 0.3f) {
 			this->m_FireOpticalPer = Util::Lerp(0.f, 1.f, Util::GetPer01(0.f, 0.3f, AnimPer));
 		}
@@ -145,6 +146,7 @@ private:
 	char		padding[4]{};
 public:
 	void Set(const Util::VECTOR3D& Pos, const Util::VECTOR3D& Normal) noexcept {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		SetMatrix(Util::Matrix4x4::Mtrans(Pos));
 		this->Vector = Normal;
 		this->Vector =
@@ -152,7 +154,7 @@ public:
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::forward(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f))) *
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::up(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f)))
 			) *
-			(static_cast<float>(250 + GetRand(100)) / 100.f * Scale3DRate * DeltaTime);
+			(static_cast<float>(250 + GetRand(100)) / 100.f * Scale3DRate * DrawerMngr->GetDeltaTime());
 		this->YVecAdd = 0.f;
 		this->Timer = 1.f;
 
@@ -164,9 +166,10 @@ public:
 	void Init_Sub(void) noexcept override {
 	}
 	void Update_Sub(void) noexcept override {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		if (this->Timer == 0.f) { return; }
-		this->Timer = std::max(this->Timer - DeltaTime, 0.f);
-		//this->YVecAdd -= GravAccel;
+		this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
+		//this->YVecAdd -= DrawerMngr->GetGravAccel();
 		//this->Vector.y += this->YVecAdd;
 		Util::VECTOR3D Target = GetMat().pos() + this->Vector;
 		Util::VECTOR3D Normal;
@@ -229,8 +232,9 @@ private:
 	char		padding[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID) noexcept {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		SetMatrix(Muzzle);
-		this->Vector = Muzzle.zvec() * -((200.f / 60.f * 1000.f + 1000.f) * Scale3DRate * DeltaTime);
+		this->Vector = Muzzle.zvec() * -((200.f / 60.f * 1000.f + 1000.f) * Scale3DRate * DrawerMngr->GetDeltaTime());
 		this->YVecAdd = 0.f;
 		this->Timer = 5.f;
 		this->DrawTimer = this->Timer + 0.1f;
@@ -305,6 +309,7 @@ private:
 	char		padding[4]{};
 public:
 	void Set(const Util::VECTOR3D& Pos, const Util::VECTOR3D& Normal) noexcept {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		SetMatrix(Util::Matrix4x4::Mtrans(Pos));
 		this->Vector = Normal;
 		this->Vector =
@@ -312,7 +317,7 @@ public:
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::forward(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f))) *
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::up(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f)))
 			) *
-			(static_cast<float>(250 + GetRand(100)) / 100.f * Scale3DRate * DeltaTime);
+			(static_cast<float>(250 + GetRand(100)) / 100.f * Scale3DRate * DrawerMngr->GetDeltaTime());
 		this->YVecAdd = 0.f;
 		this->Timer = 1.f;
 
@@ -324,8 +329,9 @@ public:
 	void Init_Sub(void) noexcept override {
 	}
 	void Update_Sub(void) noexcept override {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		if (this->Timer == 0.f) { return; }
-		this->Timer = std::max(this->Timer - DeltaTime, 0.f);
+		this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
 		Util::VECTOR3D Target = GetMat().pos() + this->Vector;
 		Util::VECTOR3D Normal;
 		SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
@@ -533,6 +539,7 @@ public:
 	}
 	void Init_Sub(void) noexcept override;
 	void Update_Sub(void) noexcept override {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		//DamageID = InvalidID;
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
@@ -540,23 +547,23 @@ public:
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
 		m_Jobs.Update(true);
 		if (GetHitPointLow()) {
-			float UpdateTime = 2.f / 60.f;
+			float UpdateTime = 2.f * DrawerMngr->GetDeltaTime();
 			auto* pOption = Util::OptionParam::Instance();
 			switch (pOption->GetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel))->GetSelect()) {
 			case 0:
-				UpdateTime = 6.f / 60.f;
+				UpdateTime = 6.f * DrawerMngr->GetDeltaTime();
 				break;
 			case 1:
-				UpdateTime = 4.f / 60.f;
+				UpdateTime = 4.f * DrawerMngr->GetDeltaTime();
 				break;
 			case 2:
-				UpdateTime = 2.f / 60.f;
+				UpdateTime = 2.f * DrawerMngr->GetDeltaTime();
 				break;
 			default:
 				break;
 			}
 
-			m_DamageEffectTimer += DeltaTime;
+			m_DamageEffectTimer += DrawerMngr->GetDeltaTime();
 			if (m_DamageEffectTimer > UpdateTime) {
 				m_DamageEffectTimer -= UpdateTime;
 				m_DamageEffect.at(m_DamageEffectNow)->Set(
@@ -570,9 +577,9 @@ public:
 			m_DamageEffectTimer = 0.f;
 		}
 		if (m_HitPoint != 0) {
-			m_HealTimer += DeltaTime;
-			if (m_HealTimer > 24.f / 60.f) {
-				m_HealTimer -= 24.f / 60.f;
+			m_HealTimer += DrawerMngr->GetDeltaTime();
+			if (m_HealTimer > 60.f * DrawerMngr->GetDeltaTime()) {
+				m_HealTimer -= 60.f * DrawerMngr->GetDeltaTime();
 				m_HitPoint = std::clamp(m_HitPoint + 1, 0, m_HitPointMax);
 			}
 		}
@@ -652,7 +659,8 @@ public:
 	auto GetTargetPos() const { return this->m_MyPosTarget; }
 	float GetSpeed() const { return this->m_Speed; }
 	float GetSpeedMax(void) const noexcept {
-		return 200.f * 2.f / 3.f / 60.f / 60.f * 1000.f * Scale3DRate * DeltaTime;
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		return 200.f * 2.f / 3.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
 	void SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
 		this->m_MyPosTarget = MyPos;

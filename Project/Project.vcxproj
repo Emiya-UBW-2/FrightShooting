@@ -40,6 +40,7 @@
     <ClCompile Include="source\Scene\MainScene.cpp" />
     <ClCompile Include="source\Scene\TitleScene.cpp" />
     <ClCompile Include="source\TitleUI.cpp" />
+    <ClCompile Include="source\Util\Algorithm.cpp" />
     <ClCompile Include="source\Util\Key.cpp" />
     <ClCompile Include="source\Util\Localize.cpp" />
     <ClCompile Include="source\Util\Option.cpp" />

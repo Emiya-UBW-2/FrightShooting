@@ -7,6 +7,7 @@
 #pragma warning(disable:5039)
 #pragma warning(disable:5045)
 #pragma warning( push, 3 )
+#include "DxLib.h"
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -760,9 +761,11 @@ namespace Util {
 			Lerp(A.zvec(), B.zvec(), Per).normalized());
 	}
 
+	extern float GetEasingRatio(float ratio) noexcept;
+
 	template <class T>
 	inline void Easing(T* A, const T& B, float Per) noexcept {
-		*A = Util::Lerp(*A, B, 1.f - Per);
+		*A = Util::Lerp(*A, B, GetEasingRatio(Per));
 	}
 
 	inline float GetPer01(float Min, float Max, float Per) noexcept {

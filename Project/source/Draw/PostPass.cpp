@@ -370,7 +370,7 @@ namespace Draw {
 				SetUseTextureToShader(2, InvalidID);
 			}
 			//*
-			this->m_GodRayTime += DeltaTime;
+			this->m_GodRayTime += DrawerMngr->GetDeltaTime();
 			if (this->m_GodRayTime > 0.5f) {
 				this->m_GodRayTime -= 0.5f;
 				if (!this->m_IsUpdateSoftImage) {

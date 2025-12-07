@@ -56,12 +56,6 @@ namespace Camera {
 	public:
 		static float GetRandf(float arg) noexcept { return -arg + static_cast<float>(DxLib::GetRand(static_cast<int>(arg * 2.f * 10000.f))) / 10000.f; }
 
-		void Update(void) noexcept {
-			if (this->m_SendShakeTime == 0.f) { return; }
-			auto RandRange = this->m_Timer / this->m_SendShakeTime * this->m_SendShakePower;
-			Easing(&this->m_Shake1, Util::VECTOR3D::vget(GetRandf(RandRange), GetRandf(RandRange), GetRandf(RandRange)), 0.8f);
-			Easing(&this->m_Shake2, this->m_Shake1, 0.8f);
-			this->m_Timer = std::max(this->m_Timer - DeltaTime, 0.f);
-		}
+		void Update(void) noexcept;
 	};
 }

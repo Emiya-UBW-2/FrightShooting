@@ -2,6 +2,7 @@
 #pragma once
 #include "../Util/Enum.hpp"
 #include "../Util/Util.hpp"
+#include "../Draw/MainDraw.hpp"
 
 #include "ImageDraw.hpp"
 
@@ -102,7 +103,8 @@ namespace Draw {
 				this->m_AllTime = this->m_handle.GetTotalTime();
 			}
 			void			Update(bool loop, float speed) noexcept {
-				this->m_time += speed * 30.f * DeltaTime;
+				auto* DrawerMngr = Draw::MainDraw::Instance();
+				this->m_time += speed * 30.f * DrawerMngr->GetDeltaTime();
 				if (loop) {
 					if (speed >= 0.f) {
 						if (this->m_time >= GetTotalTime()) {
