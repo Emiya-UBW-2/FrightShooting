@@ -179,7 +179,7 @@ class Grass {
 		char		padding[7]{};
 	public:
 		void Init(int total) {
-			this->m_Inst.Init("data/model/Cloud/tex.png", "data/model/Cloud/model2.mqoz", -1);
+			this->m_Inst.Init("data/model/Cloud/tex.png", "data/model/Cloud/model2.mv1", -1);
 			this->m_Inst.Reset();
 			this->m_Inst.Set_start(total);
 		}
