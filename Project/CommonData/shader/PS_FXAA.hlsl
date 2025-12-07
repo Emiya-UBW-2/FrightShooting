@@ -150,8 +150,11 @@ PS_OUTPUT main(PS_INPUT PSInput)
 {
     PS_OUTPUT PSOutput;
 
+    float2 UV = PSInput.TextureCoord0;
+    UV.y = 1.f - UV.y;
+    
     PSOutput.color0 = FxaaPixelShader(
-        PSInput.TextureCoord0,
+        UV,
         0.125,
         0.05
     );

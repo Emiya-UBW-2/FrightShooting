@@ -88,16 +88,19 @@ float3 DisptoProjNorm(float2 screenUV) {
 
 PS_OUTPUT main(PS_INPUT PSInput)
 {
+    float2 UV = PSInput.TextureCoord0;
+    UV.y = 1.f - UV.y;
+
 	PS_OUTPUT PSOutput;
 	//画面サイズを取得しておく
 	g_DepthMapTexture.GetDimensions(dispsize.x, dispsize.y);
 
-    float Depth = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.TextureCoord0).r;
+    float Depth = g_DepthMapTexture.Sample(g_DepthMapSampler, UV).r;
 	if (Depth <= 0.f) {
 		Depth = 100000.f;
 	}
 
-    float3 ViewPositionOne = DisptoProjNorm(PSInput.TextureCoord0);
+    float3 ViewPositionOne = DisptoProjNorm(UV);
 
 	float4 lWorldPosition;
 	float4 LPPosition; // ライトからみた座標( xとyはライトの射影座標、zはビュー座標 )

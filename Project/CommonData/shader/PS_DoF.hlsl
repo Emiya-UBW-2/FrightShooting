@@ -63,10 +63,13 @@ Texture2D g_DepthMapTexture : register(t3); // 深度マップテクスチャ
 
 PS_OUTPUT main(PS_INPUT PSInput)
 {
+    float2 UV = PSInput.TextureCoord0;
+    UV.y = 1.f - UV.y;
+
 	PS_OUTPUT PSOutput;
 
 	float per = 0.f;
-    float Depth = g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.TextureCoord0).r;
+    float Depth = g_DepthMapTexture.Sample(g_DepthMapSampler, UV).r;
 
 	float near_min = caminfo.z;
 	float near_max = caminfo.x;
@@ -76,7 +79,7 @@ PS_OUTPUT main(PS_INPUT PSInput)
 	//無し
 	if (Depth == 0.f) {
 		per = 0.f;
-        PSOutput.color0 = g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, PSInput.TextureCoord0);
+        PSOutput.color0 = g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, UV);
     }
 	//近
 	else if (Depth < near_max) {
@@ -90,14 +93,14 @@ PS_OUTPUT main(PS_INPUT PSInput)
             per = 1.f;
         }
         PSOutput.color0 = lerp(
-		g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, PSInput.TextureCoord0),
-		g_Diffuse2MapTexture.Sample(g_Diffuse2MapSampler, PSInput.TextureCoord0),
+		g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, UV),
+		g_Diffuse2MapTexture.Sample(g_Diffuse2MapSampler, UV),
 		per);
     }
 	//中
 	else if (near_max < Depth && Depth < far_min) {
 		per = 0.f;
-        PSOutput.color0 = g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, PSInput.TextureCoord0);
+        PSOutput.color0 = g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, UV);
     }
 	//遠
 	else if (far_min < Depth) {
@@ -111,13 +114,13 @@ PS_OUTPUT main(PS_INPUT PSInput)
             per = 1.f;
         }
         PSOutput.color0 = lerp(
-		g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, PSInput.TextureCoord0),
-		g_Diffuse3MapTexture.Sample(g_Diffuse3MapSampler, PSInput.TextureCoord0),
+		g_DiffuseMapTexture.Sample(g_DiffuseMapSampler, UV),
+		g_Diffuse3MapTexture.Sample(g_Diffuse3MapSampler, UV),
 		per);
     }
 	else {
 		per = 1.f;
-        PSOutput.color0 = g_Diffuse2MapTexture.Sample(g_Diffuse2MapSampler, PSInput.TextureCoord0);
+        PSOutput.color0 = g_Diffuse2MapTexture.Sample(g_Diffuse2MapSampler, UV);
     }
 
 	return PSOutput;

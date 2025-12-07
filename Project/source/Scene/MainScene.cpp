@@ -281,7 +281,7 @@ void MainScene::SetShadowDraw_Sub(void) noexcept {
 }
 void MainScene::Draw_Sub(void) noexcept {
 	auto Pos = PlayerManager::Instance()->SetPlane().at(0)->GetMat().pos();
-	for (int index = 1; index < PlayerManager::Instance()->GetPlane().size(); ++index) {
+	for (size_t index = 1; index < PlayerManager::Instance()->GetPlane().size(); ++index) {
 		auto& C = PlayerManager::Instance()->SetPlane().at(static_cast<size_t>(index));
 		if (C->GetCanWatchPlane(0)) {
 			DrawLine3D(Pos.get(), C->GetMat().pos().get(), ColorPalette::Red);

@@ -129,17 +129,20 @@ float SSAO(float2 tcoord, float3 pos, float3 normal, float rad)
 
 PS_OUTPUT main(PS_INPUT PSInput)
 {
+    float2 UV = PSInput.TextureCoord0;
+    UV.y = 1.f - UV.y;
+
     PS_OUTPUT PSOutput;
-    float3 normal = g_NormalMapTexture.Sample(g_NormalMapSampler, PSInput.TextureCoord0).xyz;
+    float3 normal = g_NormalMapTexture.Sample(g_NormalMapSampler, UV).xyz;
     normal.x = normal.x * 2.0f - 1.0f;
     normal.y = normal.y * 2.0f - 1.0f;
     normal.z = normal.z * 2.0f - 1.0f;
 
-    float3 pos = DisptoProj(PSInput.TextureCoord0);
+    float3 pos = DisptoProj(UV);
 
     float ao = 1.0;
     float rad = SAMPLE_RAD / pos.z;
-    ao = SSAO(PSInput.TextureCoord0, pos, normal, rad);
+    ao = SSAO(UV, pos, normal, rad);
     
 
     //ao = lerp(ao, 1.0f, abs(normal.x)/1.5f);
@@ -147,7 +150,7 @@ PS_OUTPUT main(PS_INPUT PSInput)
     
     PSOutput.color0 = float4(ao, ao, ao, 1.0f);
     
-    if (g_DepthMapTexture.Sample(g_DepthMapSampler, PSInput.TextureCoord0).r / 100.f < 0.1f)
+    if (g_DepthMapTexture.Sample(g_DepthMapSampler, UV).r / 100.f < 0.1f)
     {
         PSOutput.color0.r = 1.f;
         PSOutput.color0.g = 1.f;
