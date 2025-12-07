@@ -1,0 +1,147 @@
+{
+	"data":[
+		{
+			"Type":"VSync",
+			"SelectType" : "Bool",
+			"DefaultValue" : "False"
+		},
+		{
+			"Type":"FPSLimit",
+			"SelectType": "Select",
+			"Value" : ["30","60","75","90","120","144","240","300","360","1000"],
+			"DefaultValue" : "60"
+		},
+		{
+			"Type":"WindowMode",
+			"SelectType": "Select",
+			"Value" : ["Window","BorderLess"],
+			"DefaultValue" : "Window"
+		},
+		{
+			"Type":"GraphicsPreset",
+			"SelectType": "Select",
+			"Value" : ["Low","Middle","High","Ultra"],
+			"DefaultValue" : "Low"
+		},
+		{
+			"Type":"DrawScale",
+			"SelectType" : "Int",
+			"Value" : [50,100],
+			"DefaultValue" : 50
+		},
+		{
+			"Type":"ObjectLevel",
+			"SelectType": "Select",
+			"Value" : ["Low","Middle","High"],
+			"DefaultValue" : "Low"
+		},
+		{
+			"Type":"DoF",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"Bloom",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"Shadow",
+			"SelectType": "Select",
+			"Value" : ["OFF","Low","Middle","High"],
+			"DefaultValue" : "Low"
+		},
+		{
+			"Type":"SSAO",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"Fov",
+			"SelectType" : "Int",
+			"Value" : [45,180],
+			"DefaultValue" : 90
+		},
+		{
+			"Type":"ScreenEffect",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"Reflection",
+			"SelectType": "Select",
+			"Value" : ["OFF","Low","Middle","High"],
+			"DefaultValue" : "OFF"
+		},
+		{
+			"Type":"AntiAliasing",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"GodRay",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"Distortion",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"MotionBlur",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"MasterVolume",
+			"SelectType" : "Int",
+			"Value" : [0,100],
+			"DefaultValue" : 50
+		},
+		{
+			"Type":"BGMVolume",
+			"SelectType" : "Int",
+			"Value" : [0,100],
+			"DefaultValue" : 50
+		},
+		{
+			"Type":"SEVolume",
+			"SelectType" : "Int",
+			"Value" : [0,100],
+			"DefaultValue" : 50
+		},
+		{
+			"Type":"XSensing",
+			"SelectType" : "Int",
+			"Value" : [1,300],
+			"DefaultValue" : 100
+		},
+		{
+			"Type":"YSensing",
+			"SelectType" : "Int",
+			"Value" : [1,300],
+			"DefaultValue" : 100
+		},
+		{
+			"Type":"HeadBobbing",
+			"SelectType": "Select",
+			"SelectType" : "Bool",
+			"DefaultValue" : "True"
+		},
+		{
+			"Type":"Language",
+			"SelectType": "Select",
+			"Value" : ["JPN","ENG"],
+			"DefaultValue" : "JPN"
+		}
+	]
+}
