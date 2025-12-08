@@ -166,11 +166,13 @@ namespace Draw {
 				ColorPalette::UIGreen, ColorPalette::UIDarkGreen,
 				"Draw %05.2f ms", this->m_DrawTimer);
 
+#if _DEBUG		//デバッグ表示
 			Font->Get(FontType::DIZ_UD_Gothic, 18, 3)->DrawString(
 				FontXCenter::RIGHT, FontYCenter::TOP,
 				this->m_WindowDrawWidth / 2 + this->m_WindowWidth / 2 - 32, this->m_WindowDrawHeight / 2 - this->m_WindowHeight / 2 + 32 + 24 * 3,
 				ColorPalette::UIGreen, ColorPalette::UIDarkGreen,
 				"DrawCall %3d", DxLib::GetDrawCallCount());
+#endif
 		}
 		DxLib::ScreenFlip();
 		if (!this->m_WaitVSync) {
