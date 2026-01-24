@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ソース ファイル\File">
+      <UniqueIdentifier>{d93d487c-a16c-4821-a442-ead0bb8ec975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Scene">
+      <UniqueIdentifier>{3393cfbc-4886-4e09-a050-8af45be236d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Draw">
+      <UniqueIdentifier>{81b8b39a-5431-45a6-953a-11493f41eef7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Util">
+      <UniqueIdentifier>{388ab0f7-01f8-4be7-ab61-37ad835eb231}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MainScene">
+      <UniqueIdentifier>{4d3d0e26-709f-4969-a8ae-7bbe1fac924d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\File\FileStream.cpp">
+      <Filter>ソース ファイル\File</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Scene\TitleScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Scene\MainScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\MainDraw.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Util\SceneManager.cpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Util\Util.cpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Util\Option.cpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Util\Key.cpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\DrawUISystem.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\FontDraw.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\ImageDraw.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Util\Localize.cpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="source\OptionWindow.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TitleUI.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\PostPass.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\Camera.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\Light.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\MV1.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PauseUI.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\KeyGuide.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Draw\Voxel.cpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainScene\BackGround.cpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainScene\Character.cpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Util\Sound.cpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainScene\BaseObject.cpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainScene\PlayerManager.cpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Util\Algorithm.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\File\json.hpp">
+      <Filter>ソース ファイル\File</Filter>
+    </ClInclude>
+    <ClInclude Include="source\File\FileStream.hpp">
+      <Filter>ソース ファイル\File</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Scene\TitleScene.hpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Scene\MainScene.hpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\MainDraw.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\SceneManager.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\Util.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\Enum.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\Option.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\Key.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\DrawUISystem.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\Algorithm.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\FontDraw.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\ImageDraw.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\Localize.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\OptionWindow.hpp">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="source\TitleUI.hpp">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\PostPass.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\Camera.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\Light.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\MV1.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\PauseUI.hpp">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\KeyGuide.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Draw\Voxel.hpp">
+      <Filter>ソース ファイル\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MainScene\BackGround.hpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MainScene\Character.hpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Util\Sound.hpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MainScene\BaseObject.hpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MainScene\PlayerManager.hpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
