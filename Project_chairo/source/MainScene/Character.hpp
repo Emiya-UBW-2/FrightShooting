@@ -289,7 +289,6 @@ public:
 		}
 	}
 };
-
 class DamageEffect : public BaseObject {
 public:
 	DamageEffect(void) noexcept {}
@@ -367,112 +366,24 @@ public:
 	}
 };
 
-//スレッド実行処理
-class ThreadJobs {
-	std::thread						m_Job;//作業スレッド
-	bool							m_JobEnd{};//ジョブ終了通知
-	bool							m_isDoing{ false };//
-	bool							m_IsDoEnd{};//ジョブ終了後作業終了通知
-	char		padding[5]{};
-	std::function<void()>			m_Doing{ nullptr };//ジョブ
-	std::function<void()>			m_EndDoing{ nullptr };//ジョブ終了後作業
-public:
-	ThreadJobs(void) noexcept {}
-	ThreadJobs(const ThreadJobs&) = delete;
-	ThreadJobs(ThreadJobs&&) = delete;
-	ThreadJobs& operator=(const ThreadJobs&) = delete;
-	ThreadJobs& operator=(ThreadJobs&&) = delete;
-	virtual ~ThreadJobs(void) noexcept {}
-public:
-	void JobStart(void) noexcept {
-		if (!this->m_isDoing) {
-			this->m_isDoing = true;
-			this->m_JobEnd = true;
-			this->m_IsDoEnd = false;
-		}
-	}
-public:
-	void Init(std::function<void()> Doing, std::function<void()> EndDoing) noexcept {
-		this->m_Doing = Doing;
-		this->m_EndDoing = EndDoing;
-
-		//JobStart();
-		this->m_isDoing = true;
-		this->m_JobEnd = true;
-		this->m_IsDoEnd = true;
-	}
-	void Update(bool isActive) noexcept {
-		if (isActive) {
-			if (this->m_JobEnd) {
-				this->m_JobEnd = false;
-				if (this->m_IsDoEnd) {
-					this->m_IsDoEnd = false;
-					if (this->m_EndDoing) {
-						this->m_EndDoing();
-					}
-				}
-				this->m_isDoing = true;
-				if (this->m_isDoing) {
-					if (this->m_Job.joinable()) {
-						this->m_Job.detach();
-					}
-					std::thread tmp([&]() {
-						if (this->m_Doing) {
-							this->m_Doing();
-						}
-						this->m_JobEnd = true;
-						this->m_isDoing = false;
-						this->m_IsDoEnd = true;
-						});
-					this->m_Job.swap(tmp);
-					//強制待機
-					//this->m_Job.join();
-				}
-			}
-		}
-	}
-	void Dispose(void) noexcept {
-		if (this->m_Job.joinable()) {
-			this->m_Job.join();
-			//this->m_Job.detach();
-		}
-		this->m_Doing = nullptr;
-		this->m_EndDoing = nullptr;
-	}
-};
-
 class PlaneCommon :public BaseObject {
-protected:
-	ThreadJobs			m_Jobs;
-private:
-	std::array<float, static_cast<int>(CharaAnim::Max)>		m_AnimPer{};
-
+	Util::VECTOR3D		m_AimPoint;
+	Util::VECTOR2D		m_AimPoint2D;
 	Util::VECTOR3D		m_MyPosTarget = Util::VECTOR3D::zero();
 	Util::VECTOR3D		m_Vector = Util::VECTOR3D::zero();
-
 	Util::Matrix3x3		m_Rot;
-
 	int					m_TotalAmmo{ 0 };//予備弾数
 	int					m_CanHaveAmmo{ 17 * 2 };//予備弾数
-	float				m_Speed = 0.f;
-	float				m_SpeedTarget = 0.f;
-	int					m_FootSoundID{};
-
+	float				m_Speed{ 0.f };
+	float				m_SpeedTarget{ 0.f };
 	float				m_ShootTimer{};
-	float				m_ShootTimer2{};
-
 	float				m_YawPer{};
 	float				m_PtichPer{};
 	float				m_RollPer{};
-	char		padding4[4]{};
 
 	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
 	int													m_ShotEffectID{};
-	char		padding[4]{};
-
-	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect2{};
-	int													m_ShotEffect2ID{};
-	char		padding2[4]{};
+	char		padding1[4]{};
 
 	std::array<std::shared_ptr<Ammo>, 60>				m_AmmoPer{};
 	int													m_AmmoID{};
@@ -486,21 +397,12 @@ private:
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 	int					PlayerID{ InvalidID };
 	int					DamageID{};
-
-	int					m_CanWatchBitField{};
-	bool				m_ShotSwitch{};
-	bool				m_IsInCloud{};
-	char		padding5[2]{};
-
-	std::array<std::shared_ptr<DamageEffect>, 30>	m_DamageEffect{};
-	size_t				m_DamageEffectNow{};
-	float				m_DamageEffectTimer{};
-
-	float				m_HealTimer{};
-	char		padding6[4]{};
-
 	int					m_HitPoint{ m_HitPointMax };
 	static constexpr int			m_HitPointMax{ 100 };
+
+	Util::Matrix4x4			BaseMat;
+	Util::VECTOR3D			m_MovePoint;
+	Util::VECTOR3D			m_MovePointAdd;
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -513,7 +415,6 @@ private:
 	const char*		GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
 public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
-	bool			GetHitPointLow(void) const noexcept { return m_HitPoint < m_HitPointMax * 3 / 10; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
 	void			SetPlayerID(int ID) noexcept { PlayerID = ID; }
 	int				GetPlayerID(void) const noexcept { return PlayerID; }
@@ -524,8 +425,19 @@ public:
 		}
 	}
 	int				GetDamageID(void) const noexcept { return DamageID; }
-	bool			GetShotSwitch(void) const noexcept { return m_ShotSwitch; }
-	bool			GetCanWatchPlane(int index) const noexcept { return (m_CanWatchBitField & (1 << index)) != 0; }
+	auto			GetTargetPos() const { return this->m_MyPosTarget; }
+	float			GetSpeed() const { return this->m_Speed; }
+	float			GetSpeedMax(void) const noexcept {
+		return 200.f * 2.f / 3.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
+	}
+	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
+		this->m_MyPosTarget = MyPos;
+		MyMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(GetTargetPos());
+		m_Rot = Util::Matrix3x3::Get33DX(MyMat);
+	}
+	auto			GetEyeMatrix(void) const noexcept {
+		return BaseMat;
+	}
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
@@ -535,100 +447,31 @@ public:
 		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
 
 		ObjectManager::Instance()->LoadModel("data/model/FireEffect/");
-		Load_Chara();
 	}
 	void Init_Sub(void) noexcept override;
-	void Update_Sub(void) noexcept override {
-		auto* DrawerMngr = Draw::MainDraw::Instance();
-		//DamageID = InvalidID;
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(128);
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
-		m_Jobs.Update(true);
-		if (GetHitPointLow()) {
-			float UpdateTime = 2.f * DrawerMngr->GetDeltaTime();
-			auto* pOption = Util::OptionParam::Instance();
-			switch (pOption->GetParam(pOption->GetOptionType(Util::OptionType::ObjectLevel))->GetSelect()) {
-			case 0:
-				UpdateTime = 6.f * DrawerMngr->GetDeltaTime();
-				break;
-			case 1:
-				UpdateTime = 4.f * DrawerMngr->GetDeltaTime();
-				break;
-			case 2:
-				UpdateTime = 2.f * DrawerMngr->GetDeltaTime();
-				break;
-			default:
-				break;
-			}
-
-			m_DamageEffectTimer += DrawerMngr->GetDeltaTime();
-			if (m_DamageEffectTimer > UpdateTime) {
-				m_DamageEffectTimer -= UpdateTime;
-				m_DamageEffect.at(m_DamageEffectNow)->Set(
-					GetMat().pos(),
-					GetMat().zvec2()
-				);
-				++m_DamageEffectNow %= m_DamageEffect.size();
-			}
-		}
-		else {
-			m_DamageEffectTimer = 0.f;
-		}
-		if (m_HitPoint != 0) {
-			m_HealTimer += DrawerMngr->GetDeltaTime();
-			if (m_HealTimer > 60.f * DrawerMngr->GetDeltaTime()) {
-				m_HealTimer -= 60.f * DrawerMngr->GetDeltaTime();
-				m_HitPoint = std::clamp(m_HitPoint + 1, 0, m_HitPointMax);
-			}
-		}
-
-		Update_Chara();
-	}
+	void Update_Sub(void) noexcept override;
 	void SetShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
 	}
+	void CheckDraw_Sub(void) noexcept override;
 	void Draw_Sub(void) const noexcept override {
-		if (m_IsInCloud) {
-			SetFogEnable(true);
-			SetFogMode(DX_FOGMODE_LINEAR);
-			SetFogStartEnd(3.f * Scale3DRate, 10.f * Scale3DRate);
-			SetFogColor(222, 222, 222);
-		}
-		//hitbox描画
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (!GetModel().GetMeshSemiTransState(loop)) {
 				GetModel().DrawMesh(loop);
 			}
 		}
-		Draw_Chara();
-
-		SetFogEnable(false);
 	}
 	void DrawFront_Sub(void) const noexcept override {
-		if (m_IsInCloud) {
-			SetFogEnable(true);
-			SetFogMode(DX_FOGMODE_LINEAR);
-			SetFogStartEnd(3.f * Scale3DRate, 10.f * Scale3DRate);
-			SetFogColor(222, 222, 222);
-		}
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (GetModel().GetMeshSemiTransState(loop)) {
 				GetModel().DrawMesh(loop);
 			}
 		}
-
-		SetFogEnable(false);
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
-		for (auto& ae : this->m_DamageEffect) {
-			ae.reset();
-		}
-		m_Jobs.Dispose();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
 
@@ -637,96 +480,8 @@ public:
 		for (auto& s : this->m_ShotEffect) {
 			s.reset();
 		}
-		for (auto& s : this->m_ShotEffect2) {
-			s.reset();
-		}
 		for (auto& s : this->m_AmmoPer) {
 			s.reset();
 		}
-
-		Dispose_Chara();
 	}
-public:
-	virtual bool IsPlayer(void) noexcept = 0;
-	virtual void Load_Chara(void) noexcept = 0;
-	virtual void Init_Chara(void) noexcept = 0;
-	virtual void Update_Chara(void) noexcept = 0;
-	virtual void Draw_Chara(void) const noexcept = 0;
-	virtual void Dispose_Chara(void) noexcept = 0;
-public:
-	void Update(bool w, bool s, bool a, bool d, bool q, bool e, bool attack, bool AccelKey, bool BrakeKey, bool IsAuto, const Util::Matrix4x4& TargetMat) noexcept;
-public:
-	auto GetTargetPos() const { return this->m_MyPosTarget; }
-	float GetSpeed() const { return this->m_Speed; }
-	float GetSpeedMax(void) const noexcept {
-		return 200.f * 2.f / 3.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
-	}
-	void SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
-		this->m_MyPosTarget = MyPos;
-		MyMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(GetTargetPos());
-		m_Rot = Util::Matrix3x3::Get33DX(MyMat);
-	}
-};
-
-class Plane :public PlaneCommon {
-	Util::VECTOR2D		m_Rad = Util::VECTOR2D::zero();
-	Util::VECTOR2D		m_RadAdd = Util::VECTOR2D::zero();
-	Util::VECTOR2D		m_RadR = Util::VECTOR2D::zero();
-	bool				m_IsFreeView{ false };
-	bool				m_IsFPS{ false };
-	char		padding[2]{};
-	Util::VECTOR3D											m_AimPoint;
-	Util::VECTOR2D											m_AimPoint2D;
-public:
-	Plane(void) noexcept {}
-	Plane(const Plane&) = delete;
-	Plane(Plane&&) = delete;
-	Plane& operator=(const Plane&) = delete;
-	Plane& operator=(Plane&&) = delete;
-	virtual ~Plane(void) noexcept {}
-public:
-	auto GetEyeMatrix(void) const noexcept {
-		return 
-			Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), this->m_Rad.x) * Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), this->m_Rad.y) *
-			Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye)).pos());
-	}
-	bool IsFPSView(void) const noexcept { return this->m_IsFPS; }
-public:
-	void CheckDraw_Sub(void) noexcept override;
-public:
-	bool IsPlayer(void) noexcept override { return true; }
-
-	void Load_Chara(void) noexcept override {}
-	void Init_Chara(void) noexcept override {}
-	void Update_Chara(void) noexcept override;
-	void Draw_Chara(void) const noexcept override {}
-	void Dispose_Chara(void) noexcept override {}
-};
-
-class EnemyPlane :public PlaneCommon {
-	Util::Matrix4x4				m_TargetMat;
-	Util::VECTOR3D											m_AimPoint;
-	Util::VECTOR2D											m_AimPoint2D;
-	float						m_AutoTimer{};
-	float						m_AccelTimer{};
-	bool						m_Accel{ false };
-	bool						m_Brake{ false };
-	char		padding[2]{};
-public:
-	EnemyPlane(void) noexcept {}
-	EnemyPlane(const EnemyPlane&) = delete;
-	EnemyPlane(EnemyPlane&&) = delete;
-	EnemyPlane& operator=(const EnemyPlane&) = delete;
-	EnemyPlane& operator=(EnemyPlane&&) = delete;
-	virtual ~EnemyPlane(void) noexcept {}
-public:
-	void CheckDraw_Sub(void) noexcept override;
-public:
-	bool IsPlayer(void) noexcept override { return false; }
-
-	void Load_Chara(void) noexcept override {}
-	void Init_Chara(void) noexcept override {}
-	void Update_Chara(void) noexcept override;
-	void Draw_Chara(void) const noexcept override {}
-	void Dispose_Chara(void) noexcept override {}
 };

@@ -225,7 +225,7 @@ class Grass {
 	};
 public:
 	static constexpr int grassDiv{ 12 };//^2;
-	static constexpr int grasss = 200;						/*grassの数*/
+	static constexpr int grasss = 50;						/*grassの数*/
 	static constexpr float size{ 30.f };
 private:
 	int			Flag = 0;
@@ -506,8 +506,6 @@ private:
 	Draw::MV1				SkyBoxID{};
 	Draw::MV1				MapID{};
 
-	Draw::MV1				LimitID{};
-
 	Grass					m_Grass;
 public:
 	BackGround(void) noexcept {}
@@ -524,7 +522,6 @@ public:
 	void Load() noexcept {
 		Draw::MV1::Load("data/model/Sky/model.mv1", &SkyBoxID);
 		Draw::MV1::Load("data/model/Map/model.mv1", &MapID);
-		Draw::MV1::Load("data/model/Limit/model.mv1", &LimitID);
 	}
 	void Init(void) noexcept {
 		int A = LoadSoftImage("data/grass.png");
@@ -536,7 +533,6 @@ public:
 	void Dispose(void) noexcept {
 		SkyBoxID.Dispose();
 		MapID.Dispose();
-		LimitID.Dispose();
 		m_Grass.Dispose();
 	}
 
@@ -579,44 +575,6 @@ public:
 		SetUseBackCulling(Prev);
 
 		SetFogEnable(false);
-
-
-		Util::VECTOR3D CamPos = GetCameraPosition();
-		if (
-			(CamPos.x > 2000.f * Scale3DRate - 100.f * Scale3DRate) ||
-			(CamPos.x < -2000.f * Scale3DRate + 100.f * Scale3DRate) ||
-			(CamPos.y > 500.f * Scale3DRate - 100.f * Scale3DRate) ||
-			(CamPos.y < -1000.f * Scale3DRate + 100.f * Scale3DRate) ||
-			(CamPos.z > 2000.f * Scale3DRate - 100.f * Scale3DRate) ||
-			(CamPos.z < -2000.f * Scale3DRate + 100.f * Scale3DRate)
-			) {
-			float Per = 0.f;
-			if (CamPos.x > 2000.f * Scale3DRate - 100.f * Scale3DRate) {
-				Per = std::max(Per, std::fabs(CamPos.x - (2000.f * Scale3DRate - 100.f * Scale3DRate)) / (50.f * Scale3DRate));
-			}
-			else if (CamPos.x < -2000.f * Scale3DRate + 100.f * Scale3DRate) {
-				Per = std::max(Per, std::fabs(CamPos.x - (-2000.f * Scale3DRate + 100.f * Scale3DRate)) / (50.f * Scale3DRate));
-			}
-
-			if (CamPos.y > 500.f * Scale3DRate - 100.f * Scale3DRate) {
-				Per = std::max(Per, std::fabs(CamPos.y - (500.f * Scale3DRate - 100.f * Scale3DRate)) / (50.f * Scale3DRate));
-			}
-			else if (CamPos.y < -1000.f * Scale3DRate + 100.f * Scale3DRate) {
-				Per = std::max(Per, std::fabs(CamPos.y - (-1000.f * Scale3DRate + 100.f * Scale3DRate)) / (50.f * Scale3DRate));
-			}
-
-			if (CamPos.z > 2000.f * Scale3DRate - 100.f * Scale3DRate) {
-				Per = std::max(Per, std::fabs(CamPos.z - (2000.f * Scale3DRate - 100.f * Scale3DRate)) / (50.f * Scale3DRate));
-			}
-			else if (CamPos.z < -2000.f * Scale3DRate + 100.f * Scale3DRate) {
-				Per = std::max(Per, std::fabs(CamPos.z - (-2000.f * Scale3DRate + 100.f * Scale3DRate)) / (50.f * Scale3DRate));
-			}
-			LimitID.SetOpacityRate(Per);
-
-			SetUseLighting(false);
-			LimitID.DrawModel();
-			SetUseLighting(true);
-		}
 	}
 	void ShadowDrawFar(void) const noexcept {
 		auto Prev = GetUseBackCulling();

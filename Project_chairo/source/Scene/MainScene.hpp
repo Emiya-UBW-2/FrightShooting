@@ -31,17 +31,13 @@ class MainScene : public Util::SceneBase {
 	const Draw::GraphHandle*		m_Damage{};
 	Util::VECTOR3D					m_CamOffset{};
 	Util::VECTOR3D					m_CamVec{};
-	float							m_FPSPer{ 0.f };
-	Util::Matrix4x4					m_EyeRotFree;
 	float							m_CamCheckLen{};
 	float							m_CamCheckTimer{};
 	float							m_Fade{ 1.f };
-	float							m_ShotFov{ 0.f };
 	float							m_DamagePer{ 0.f };
 	float							m_DamageWatch{ 0.f };
 	float							m_SpeedPer{ 0.f };
 	float							m_AltPer{ 0.f };
-	std::array<float,5>				m_AtackPer{};
 	size_t							m_AttackNow{};
 	Sound::SoundUniqueID			m_cursorID{ InvalidID };
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
