@@ -169,23 +169,28 @@ float4 applySSR(float3 normal, float2 screenUV) {
 }
 
 PS_OUTPUT main(PS_INPUT PSInput) {
+    
+    float2 UV = PSInput.TextureCoord0;
+    UV.y = 1.f - UV.y;
+    
+
 	//戻り値
 	PS_OUTPUT PSOutput;
 	//反射をどれだけ見せるか
-    float uvFactor = 2.0 * length(PSInput.TextureCoord0 - float2(0.5, 0.5));
+    float uvFactor = 2.0 * length(UV - float2(0.5, 0.5));
     uvFactor *= uvFactor;
     uvFactor *= uvFactor;
     float edge = max(0.0, 1.0 - uvFactor);
-    float Per = GetTexColor2(PSInput.TextureCoord0).g * edge;
+    float Per = GetTexColor2(UV).g * edge;
 	//ノーマル座標取得
-    float3 normal = GetTexColor1(PSInput.TextureCoord0).xyz * 2.f - 1.f;
+    float3 normal = GetTexColor1(UV).xyz * 2.f - 1.f;
 	
-    float4 color = applySSR(normal, PSInput.TextureCoord0);
+    float4 color = applySSR(normal, UV);
     
 	//処理
     float4 lWorldPosition;
 	//キューブマップからの反射
-    lWorldPosition.xyz = DisptoProjNorm(PSInput.TextureCoord0);
+    lWorldPosition.xyz = DisptoProjNorm(UV);
     lWorldPosition.w = 0.f;
 	
 	// ワールド座標を射影座標に変換
@@ -206,7 +211,7 @@ PS_OUTPUT main(PS_INPUT PSInput) {
     {
         PSOutput.color0 = lerp(PSOutput.color0, color, Per);
     	//差分だけを出力する
-        float3 Color = GetTexColor0(PSInput.TextureCoord0).xyz;
+        float3 Color = GetTexColor0(UV).xyz;
         if (
 		PSOutput.color0.r == Color.r &&
 		PSOutput.color0.g == Color.g &&
