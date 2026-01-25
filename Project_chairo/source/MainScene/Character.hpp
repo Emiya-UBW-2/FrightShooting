@@ -370,13 +370,9 @@ class PlaneCommon :public BaseObject {
 	Util::VECTOR3D		m_MyPosTarget = Util::VECTOR3D::zero();
 	Util::VECTOR3D		m_Vector = Util::VECTOR3D::zero();
 	Util::Matrix3x3		m_Rot;
-	int					m_TotalAmmo{ 0 };//予備弾数
-	int					m_CanHaveAmmo{ 17 * 2 };//予備弾数
 	float				m_Speed{ 0.f };
 	float				m_SpeedTarget{ 0.f };
 	float				m_ShootTimer{};
-	float				m_YawPer{};
-	float				m_PtichPer{};
 	float				m_RollPer{};
 
 	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
@@ -387,22 +383,19 @@ class PlaneCommon :public BaseObject {
 	int													m_AmmoID{};
 	char		padding3[4]{};
 
-	size_t				m_PropellerIndex{};
-	size_t				m_EngineIndex{};
-
+	size_t					m_PropellerIndex{};
+	size_t					m_EngineIndex{};
 	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
-	int					PlayerID{ InvalidID };
-	int					DamageID{};
-	int					m_HitPoint{ m_HitPointMax };
-	static constexpr int			m_HitPointMax{ 100 };
 
 	Util::Matrix4x4			BaseMat;
 	Util::VECTOR3D			m_MovePoint;
 	Util::VECTOR3D			m_MovePointAdd;
-
 	Util::VECTOR3D			m_MoveVec;
+
+	int						m_HitPoint{ m_HitPointMax };
+	static constexpr int	m_HitPointMax{ 100 };
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -416,19 +409,11 @@ private:
 public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
-	void			SetPlayerID(int ID) noexcept { PlayerID = ID; }
-	int				GetPlayerID(void) const noexcept { return PlayerID; }
-	void			SetDamage(int ID) noexcept {
-		DamageID = ID;
-		if (DamageID != InvalidID) {
-			m_HitPoint = std::clamp(m_HitPoint - 10, 0, m_HitPointMax);
-		}
-	}
-	int				GetDamageID(void) const noexcept { return DamageID; }
+
 	auto			GetTargetPos() const { return this->m_MyPosTarget; }
 	float			GetSpeed() const { return this->m_Speed; }
 	float			GetSpeedMax(void) const noexcept {
-		return 200.f * 2.f / 3.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
+		return 1000.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
 	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
 		this->m_MyPosTarget = MyPos;

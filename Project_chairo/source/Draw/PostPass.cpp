@@ -881,46 +881,6 @@ namespace Draw {
 			ScreenBufferPool->ResetUseCount(xsize, ysize, true);
 		}
 	};
-	class PostPassScope : public PostPassEffect::PostPassBase {
-	private:
-		Shader2DController				m_Shader;			// シェーダー
-	public:
-		PostPassScope(void) noexcept {}
-		PostPassScope(const PostPassScope&) = delete;
-		PostPassScope(PostPassScope&&) = delete;
-		PostPassScope& operator=(const PostPassScope&) = delete;
-		PostPassScope& operator=(PostPassScope&&) = delete;
-
-		virtual ~PostPassScope(void) noexcept {}
-	protected:
-		void		Load_Sub(void) noexcept override {
-			this->m_Shader.Init("CommonData/shader/PS_lens.pso");
-		}
-		void		Dispose_Sub(void) noexcept override {
-			this->m_Shader.Dispose();
-		}
-		void		SetEffect_Sub(Draw::ScreenHandle* TargetGraph, PostPassEffect::Gbuffer* pGbuffer) noexcept override {
-			auto* PostPassParts = PostPassEffect::Instance();
-			auto* DrawerMngr = Draw::MainDraw::Instance();
-			if (!PostPassParts->GetScopeParam().m_IsActive) { return; }
-			// レンズ
-			TargetGraph->SetDraw_Screen(false);
-			{
-				auto Prev = DxLib::GetDrawMode();
-				DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
-
-				pGbuffer->GetColorBuffer().SetUseTextureToShader(0);	// 使用するテクスチャをセット
-				this->m_Shader.SetDispSize(DrawerMngr->GetRenderDispWidth(), DrawerMngr->GetRenderDispHeight());
-				this->m_Shader.SetParam(3,
-					PostPassParts->GetScopeParam().m_Xpos, PostPassParts->GetScopeParam().m_Ypos,
-					PostPassParts->GetScopeParam().m_Radius, PostPassParts->GetScopeParam().m_Zoom);
-				this->m_Shader.Draw();
-				SetUseTextureToShader(0, InvalidID);
-
-				DxLib::SetDrawMode(Prev);
-			}
-		}
-	};
 	class PostPassBlackout : public PostPassEffect::PostPassBase {
 	private:
 		Shader2DController				m_Shader;			// シェーダー
@@ -972,7 +932,6 @@ namespace Draw {
 		this->m_PostPass[now] = std::make_unique<PostPassCornerBlur>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassFXAA>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassAberration>(); ++now;
-		this->m_PostPass[now] = std::make_unique<PostPassScope>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassBlackout>(); ++now;
 		this->m_PostPass[now] = std::make_unique<PostPassDistortion>(); ++now;
 	}

@@ -11,47 +11,130 @@
 #include "../PauseUI.hpp"
 #include "../MainScene/PlayerManager.hpp"
 
-
-class MainScene : public Util::SceneBase {
+class MainUI {
 	OptionWindow					m_OptionWindow;
 	PauseUI							m_PauseUI;
-	bool							m_Exit{ false };
 	bool							m_IsSceneEnd{ false };
 	bool							m_IsPauseActive{ false };
-	bool							m_IsChangeEquip{ false };
-	bool							m_IsResetMouse{ false };
-	char		padding[3]{};
-	float							m_CharaStyleChange{};
-	float							m_CharaStyleChangeR{};
-	const Draw::GraphHandle*		m_Cursor{};
-	const Draw::GraphHandle*		m_Lock{};
-	const Draw::GraphHandle*		m_Speed{};
-	const Draw::GraphHandle*		m_Meter{};
-	const Draw::GraphHandle*		m_Damage{};
-	Util::VECTOR3D					m_CamOffset{};
-	Util::VECTOR3D					m_CamVec{};
-	float							m_CamCheckLen{};
-	float							m_CamCheckTimer{};
-	float							m_Fade{ 1.f };
-	float							m_DamagePer{ 0.f };
-	float							m_DamageWatch{ 0.f };
-	float							m_SpeedPer{ 0.f };
-	size_t							m_AttackNow{};
-	Sound::SoundUniqueID			m_cursorID{ InvalidID };
+	bool							m_IsExit{ false };
+	char		padding[5]{};
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
-	Sound::SoundUniqueID			m_EnviID{ InvalidID };
-	bool							m_AimPointDraw{ false };
-	char		padding4[3]{};
-	Util::VECTOR2D					m_LensPos{};
-	Util::VECTOR2D					m_LensSize{};
+public:
+	MainUI(void) noexcept {}
+	MainUI(const MainUI&) = delete;
+	MainUI(MainUI&&) = delete;
+	MainUI& operator=(const MainUI&) = delete;
+	MainUI& operator=(MainUI&&) = delete;
+	virtual ~MainUI(void) noexcept {}
+public:
+	bool IsPauseActive(void) const noexcept { return m_IsPauseActive; }
+	bool IsExit(void) const noexcept { return m_IsExit; }
+public:
+	void Init() noexcept {
+		this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
+
+		this->m_IsSceneEnd = false;
+		this->m_IsPauseActive = false;
+		this->m_IsExit = false;
+
+		this->m_OptionWindow.Init();
+		this->m_PauseUI.Init();
+
+		this->m_PauseUI.SetEvent(0, [this]() {
+			this->m_IsSceneEnd = true;
+			this->m_IsPauseActive = false;
+			auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
+			KeyGuideParts->SetGuideFlip();
+			});
+		this->m_PauseUI.SetEvent(1, [this]() {
+			this->m_OptionWindow.SetActive(true);
+			});
+		this->m_PauseUI.SetEvent(2, [this]() {
+			this->m_IsPauseActive = false;
+			auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
+			KeyGuideParts->SetGuideFlip();
+			});
+	}
+	void Update() noexcept {
+		auto* KeyMngr = Util::KeyParam::Instance();
+		auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
+		if (KeyMngr->GetMenuKeyTrigger(Util::EnumMenu::Tab)) {
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_OKID)->Play(DX_PLAYTYPE_BACK, TRUE);
+			this->m_IsPauseActive ^= 1;
+			KeyGuideParts->SetGuideFlip();
+		}
+		this->m_PauseUI.SetActive(this->m_IsPauseActive && !this->m_OptionWindow.IsActive());
+		if (!this->m_IsPauseActive) {
+			this->m_OptionWindow.SetActive(false);
+		}
+		this->m_PauseUI.Update();
+		if (this->m_IsSceneEnd && this->m_PauseUI.IsEnd()) {
+			this->m_IsExit = true;
+		}
+		this->m_OptionWindow.Update();
+	}
+	void Draw() noexcept {
+		this->m_PauseUI.Draw();
+		this->m_OptionWindow.Draw();
+	}
+	void Dispose() noexcept {
+		this->m_PauseUI.Dispose();
+		this->m_OptionWindow.Dispose();
+	}
+};
+class AimPoint {
+	const Draw::GraphHandle* m_Cursor{};
 	Util::VECTOR2D					m_AimPoint2D_Near;
 	Util::VECTOR2D					m_AimPoint2D_Far;
-	char		padding5[4]{};
+public:
+	AimPoint(void) noexcept {}
+	AimPoint(const AimPoint&) = delete;
+	AimPoint(AimPoint&&) = delete;
+	AimPoint& operator=(const AimPoint&) = delete;
+	AimPoint& operator=(AimPoint&&) = delete;
+	virtual ~AimPoint(void) noexcept {}
+public:
+	void Load() noexcept {
+		m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
+	}
+	void CalcPoint() noexcept {
+		auto& Watch = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	Util::VECTOR3D CamPosition;
-	Util::VECTOR3D CamTarget;
-	Util::VECTOR3D CamUp;
-	char		padding3[4]{};
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		{
+			auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2() * (25.f * Scale3DRate)).get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				this->m_AimPoint2D_Near.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+				this->m_AimPoint2D_Near.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+			}
+		}
+		{
+			auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2() * (50.f * Scale3DRate)).get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				this->m_AimPoint2D_Far.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+				this->m_AimPoint2D_Far.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+			}
+		}
+	}
+	void Draw() noexcept {
+		SetDrawBright(0, 128, 0);
+		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Far.x), static_cast<int>(this->m_AimPoint2D_Far.y), 0.5f, 0.f, true);
+		SetDrawBright(0, 255, 0);
+		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Near.x), static_cast<int>(this->m_AimPoint2D_Near.y), 1.f, 0.f, true);
+		SetDrawBright(255, 255, 255);
+	}
+};
+
+class MainScene : public Util::SceneBase {
+	std::unique_ptr<MainUI>			m_MainUI{};
+	std::unique_ptr<AimPoint>		m_AimPoint{};
+	Sound::SoundUniqueID			m_EnviID{ InvalidID };
+	Util::VECTOR3D					CamPosition;
+	Util::VECTOR3D					CamTarget;
+	Util::VECTOR3D					CamUp;
+	float							m_Fade{ 1.f };
+	bool							m_Exit{ false };
+	char		padding[7]{};
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

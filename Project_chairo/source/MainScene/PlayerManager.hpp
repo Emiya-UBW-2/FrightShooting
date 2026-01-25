@@ -30,7 +30,6 @@ public:
 	void Init(void) noexcept {
 		this->m_Plane.at(0) = std::make_shared<PlaneCommon>();
 		ObjectManager::Instance()->InitObject(this->m_Plane.at(0), this->m_Plane.at(0), "data/model/Sopwith/");
-		this->m_Plane.at(0)->SetPlayerID(0);
 		//this->m_Plane.at(0)->SetPos(BackGround::Instance()->GetWorldPos(m.m_pos));
 	}
 	void Dispose(void) noexcept {
