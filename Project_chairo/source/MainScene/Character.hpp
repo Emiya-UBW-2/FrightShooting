@@ -367,9 +367,7 @@ public:
 };
 
 class PlaneCommon :public BaseObject {
-	Util::VECTOR3D		m_MyPosTarget = Util::VECTOR3D::zero();
-	Util::VECTOR3D		m_Vector = Util::VECTOR3D::zero();
-	Util::Matrix3x3		m_Rot;
+	Util::Matrix3x3		m_Roll;
 	float				m_Speed{ 0.f };
 	float				m_SpeedTarget{ 0.f };
 	float				m_ShootTimer{};
@@ -389,7 +387,7 @@ class PlaneCommon :public BaseObject {
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 
-	Util::Matrix4x4			BaseMat;
+	Util::Matrix4x4			RailMat;
 	Util::VECTOR3D			m_MovePoint;
 	Util::VECTOR3D			m_MovePointAdd;
 	Util::VECTOR3D			m_MoveVec;
@@ -410,18 +408,16 @@ public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
 
-	auto			GetTargetPos() const { return this->m_MyPosTarget; }
 	float			GetSpeed() const { return this->m_Speed; }
 	float			GetSpeedMax(void) const noexcept {
 		return 1000.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
 	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
-		this->m_MyPosTarget = MyPos;
-		MyMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(GetTargetPos());
-		m_Rot = Util::Matrix3x3::Get33DX(MyMat);
+		RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(MyPos);
+		m_Roll = Util::Matrix3x3::identity();
 	}
 	auto			GetEyeMatrix(void) const noexcept {
-		return BaseMat;
+		return RailMat;
 	}
 public:
 	void Load_Sub(void) noexcept override {

@@ -22,7 +22,7 @@ void MainScene::Init_Sub(void) noexcept {
 
 	auto& Player = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
 
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 300.f * Scale3DRate, 500.f*Scale3DRate), Util::deg2rad(0));
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 300.f * Scale3DRate, 0.f*Scale3DRate), Util::deg2rad(90));
 	//
 	this->m_Exit = false;
 	this->m_Fade = 2.f;
@@ -70,12 +70,12 @@ void MainScene::Update_Sub(void) noexcept {
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::S), Localize->Get(334));
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::A), "");
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::D), Localize->Get(335));
-				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Q), "");
-				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::E), Localize->Get(336));
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Run), "");
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Jump), Localize->Get(337));
 				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Attack), Localize->Get(339));
-				KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Aim), Localize->Get(338));
+				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Q), "");
+				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::E), Localize->Get(336));
+				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Aim), Localize->Get(338));
 				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Walk), Localize->Get(309));
 				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Squat), Localize->Get(310));
 				//KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Prone), Localize->Get(311));
@@ -134,6 +134,10 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
 	BackGround::Instance()->Update();
+
+	clsDx();
+	printfDx("CamPosition(%f,%f,%f)\n", CamPosition.x, CamPosition.y, CamPosition.z);
+	printfDx("(%f,%f,%f)\n", Watch->GetMat().pos().x, Watch->GetMat().pos().y, Watch->GetMat().pos().z);
 }
 void MainScene::BGDraw_Sub(void) noexcept {
 	BackGround::Instance()->BGDraw();

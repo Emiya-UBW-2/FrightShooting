@@ -68,11 +68,12 @@ void PlaneCommon::Update_Sub(void) noexcept {
 
 			float RollPer = 0.f;
 			RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
-			if (MyMat.yvec().y > 0.f) {
-				RollPer *= MyMat.yvec().x;
+			auto YVec = (GetMat() * RailMat.inverse()).yvec();
+			if (YVec.y > 0.f) {
+				RollPer *= YVec.x;
 			}
 			else {
-				RollPer *= (MyMat.yvec().x > 0.f) ? 1.f : -1.f;
+				RollPer *= (YVec.x > 0.f) ? 1.f : -1.f;
 			}
 			if (prev != m_MovePointAdd.x) {
 				if (LeftKey && !RightKey) {
@@ -83,7 +84,7 @@ void PlaneCommon::Update_Sub(void) noexcept {
 				}
 			}
 			Util::Easing(&m_RollPer, RollPer, 0.9f);
-			this->m_Rot *= Util::Matrix3x3::RotAxis(this->m_Rot.zvec(), m_RollPer);
+			this->m_Roll *= Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
 		}
 		Util::Easing(&m_MoveVec, MoveVec, 0.95f);
 		Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
@@ -106,24 +107,22 @@ void PlaneCommon::Update_Sub(void) noexcept {
 	}
 	// 移動ベクトルを加算した仮座標を作成
 	{
-		Util::VECTOR3D PosBefore = GetTargetPos();
-		this->m_MyPosTarget = PosBefore + Util::Matrix3x3::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), this->m_Rot);
+		Util::VECTOR3D PosBefore = RailMat.pos();
+		Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
 		//当たり判定
-		this->m_Speed = std::clamp((this->m_MyPosTarget - PosBefore).magnitude(), 0.f, this->m_Speed);
-		Util::VECTOR3D MyPos = GetMat().pos();
-		Util::Easing(&MyPos, this->m_MyPosTarget, 0.9f);
-		//this->m_Rot = Util::Matrix3x3::Get33DX(GetRotMat());
-		SetMatrix(this->m_Rot.Get44DX() * Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix4x4::Mtrans(MyPos));
-		//アニメアップデート
-		{
-			for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
-				SetAnim(loop).SetPer(0.f);
-			}
-			SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
-			SetModel().FlipAnimAll();
-		}
 
-		BaseMat = Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Eye)).pos() + m_MovePoint);
+		RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+		SetMatrix(
+			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
+			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
+	}
+	//アニメアップデート
+	{
+		for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
+			SetAnim(loop).SetPer(0.f);
+		}
+		SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
+		SetModel().FlipAnimAll();
 	}
 	//射撃
 	{
