@@ -134,10 +134,6 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
 	BackGround::Instance()->Update();
-
-	clsDx();
-	printfDx("CamPosition(%f,%f,%f)\n", CamPosition.x, CamPosition.y, CamPosition.z);
-	printfDx("(%f,%f,%f)\n", Watch->GetMat().pos().x, Watch->GetMat().pos().y, Watch->GetMat().pos().z);
 }
 void MainScene::BGDraw_Sub(void) noexcept {
 	BackGround::Instance()->BGDraw();
