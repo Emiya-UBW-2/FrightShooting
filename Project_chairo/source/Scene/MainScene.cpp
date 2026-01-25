@@ -20,9 +20,15 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* LightParts = Draw::LightPool::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
-	auto& Player = PlayerManager::Instance()->SetPlane();
+	PlayerManager::Instance()->SetEnemy().emplace_back();
+	PlayerManager::Instance()->SetEnemy().at(0) = std::make_shared<Enemy>();
+	ObjectManager::Instance()->InitObject(PlayerManager::Instance()->SetEnemy().at(0), PlayerManager::Instance()->SetEnemy().at(0), "data/model/Sopwith/");
 
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 300.f * Scale3DRate, 0.f*Scale3DRate), Util::deg2rad(90));
+	PlayerManager::Instance()->SetEnemy().at(0)->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 5.f * Scale3DRate), Util::deg2rad(-90));
+
+
+	auto& Player = PlayerManager::Instance()->SetPlane();
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::deg2rad(-90));
 	//
 	this->m_Exit = false;
 	this->m_Fade = 2.f;
@@ -43,7 +49,7 @@ void MainScene::Init_Sub(void) noexcept {
 		(Scale3DRate * 0.15f), Scale3DRate * 5.0f,
 		(Scale3DRate * 0.05f), Scale3DRate * 30.0f);
 
-	PostPassParts->SetGodRayPer(0.5f);
+	PostPassParts->SetGodRayPer(0.25f);
 
 	m_MainUI = std::make_unique<MainUI>();
 	m_MainUI->Init();
@@ -57,7 +63,7 @@ void MainScene::Update_Sub(void) noexcept {
 	auto* CameraParts = Camera::Camera3D::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
-	PostPassParts->SetShadowScale(40.f);
+	PostPassParts->SetShadowScale(20.f);
 
 	KeyGuideParts->ChangeGuide(
 		[this]() {

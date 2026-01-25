@@ -56,8 +56,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			if (pOption->GetParam(pOption->GetOptionType(Util::OptionType::Shadow))->GetSelect() > 0) {
 				if (PostPassParts->PopShadowFarChange()) {
 					Util::VECTOR3D Pos = CameraParts->GetCameraForDraw().GetCamPos();
-					Pos.x = 0.f;
-					Pos.z = 0.f;
+					//Pos.x = 0.f;
+					//Pos.z = 0.f;
 					PostPassParts->Update_Shadow([]() {
 						auto* SceneMngr = Util::SceneManager::Instance();
 						SceneMngr->ShadowFarDraw3D();

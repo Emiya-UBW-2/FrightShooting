@@ -28,7 +28,6 @@
     <ClCompile Include="source\Draw\MainDraw.cpp" />
     <ClCompile Include="source\Draw\MV1.cpp" />
     <ClCompile Include="source\Draw\PostPass.cpp" />
-    <ClCompile Include="source\Draw\Voxel.cpp" />
     <ClCompile Include="source\File\FileStream.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\MainScene\BackGround.cpp" />
@@ -58,7 +57,6 @@
     <ClInclude Include="source\Draw\MainDraw.hpp" />
     <ClInclude Include="source\Draw\MV1.hpp" />
     <ClInclude Include="source\Draw\PostPass.hpp" />
-    <ClInclude Include="source\Draw\Voxel.hpp" />
     <ClInclude Include="source\File\FileStream.hpp" />
     <ClInclude Include="source\File\json.hpp" />
     <ClInclude Include="source\MainScene\BackGround.hpp" />

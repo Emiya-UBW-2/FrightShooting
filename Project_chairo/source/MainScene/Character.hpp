@@ -388,9 +388,6 @@ class Enemy :public BaseObject {
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 
 	Util::Matrix4x4			RailMat;
-	Util::VECTOR3D			m_MovePoint;
-	Util::VECTOR3D			m_MovePointAdd;
-	Util::VECTOR3D			m_MoveVec;
 
 	int						m_HitPoint{ m_HitPointMax };
 	static constexpr int	m_HitPointMax{ 100 };
@@ -410,7 +407,7 @@ public:
 
 	float			GetSpeed() const { return this->m_Speed; }
 	float			GetSpeedMax(void) const noexcept {
-		return 1000.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
+		return 100.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
 	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
 		RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(MyPos);
@@ -511,7 +508,7 @@ public:
 
 	float			GetSpeed() const { return this->m_Speed; }
 	float			GetSpeedMax(void) const noexcept {
-		return 1000.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
+		return 100.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
 	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
 		RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(MyPos);

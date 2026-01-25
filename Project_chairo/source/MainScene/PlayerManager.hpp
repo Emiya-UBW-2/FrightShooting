@@ -39,4 +39,5 @@ public:
 	}
 public:
 	auto& SetPlane(void) noexcept { return this->m_Plane; }
+	auto& SetEnemy(void) noexcept { return this->m_Enemy; }
 };

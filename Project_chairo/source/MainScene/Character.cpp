@@ -35,90 +35,14 @@ void Enemy::Init_Sub(void) noexcept {
 }
 void Enemy::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
-	auto* KeyMngr = Util::KeyParam::Instance();
 	//
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(128);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
-	//移動
-	{
-		Util::VECTOR3D MoveVec = Util::VECTOR3D::forward();
-		//上下
-		{
-			bool UpKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::W);
-			bool DownKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::S);
-			float prev = m_MovePointAdd.y;
-			if (UpKey && !DownKey) {
-				m_MovePointAdd.y -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.y = -0.3f;
-			}
-			if (DownKey && !UpKey) {
-				m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.y = 0.3f;
-			}
-			m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -4.f * Scale3DRate, 4.f * Scale3DRate);
-			if (prev == m_MovePointAdd.y) {
-				MoveVec.y = 0.0f;
-			}
-		}
-		//ロール
-		{
-			bool LeftKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::A);
-			bool RightKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::D);
-
-			float prev = m_MovePointAdd.x;
-			if (LeftKey && !RightKey) {
-				m_MovePointAdd.x -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.x = -0.3f;
-			}
-			if (RightKey && !LeftKey) {
-				m_MovePointAdd.x += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.x = 0.3f;
-			}
-			m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -6.f * Scale3DRate, 6.f * Scale3DRate);
-			if (prev == m_MovePointAdd.x) {
-				MoveVec.x = 0.0f;
-			}
-
-			float RollPer = 0.f;
-			RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
-			auto YVec = (GetMat() * RailMat.inverse()).yvec();
-			if (YVec.y > 0.f) {
-				RollPer *= YVec.x;
-			}
-			else {
-				RollPer *= (YVec.x > 0.f) ? 1.f : -1.f;
-			}
-			if (prev != m_MovePointAdd.x) {
-				if (LeftKey && !RightKey) {
-					RollPer = Util::deg2rad(-200.f * DrawerMngr->GetDeltaTime());
-				}
-				if (RightKey && !LeftKey) {
-					RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
-				}
-			}
-			Util::Easing(&m_RollPer, RollPer, 0.9f);
-			this->m_Roll *= Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
-		}
-		Util::Easing(&m_MoveVec, MoveVec, 0.95f);
-		Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
-	}
 	// 進行方向に前進
 	{
-		bool AccelKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Run);
-		bool BrakeKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Jump);
-		if (!AccelKey && !BrakeKey) {
-			this->m_SpeedTarget = GetSpeedMax();
-		}
-		if (AccelKey && !BrakeKey) {
-			this->m_SpeedTarget += 10.f * DrawerMngr->GetDeltaTime();
-		}
-		if (!AccelKey && BrakeKey) {
-			this->m_SpeedTarget -= 10.f * DrawerMngr->GetDeltaTime();
-		}
-		this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() * 3.f / 4.f, GetSpeedMax() * 3.f / 2.f);
-		Util::Easing(&this->m_Speed, this->m_SpeedTarget, 0.95f);
+		this->m_Speed = GetSpeedMax();
 	}
 	// 移動ベクトルを加算した仮座標を作成
 	{
@@ -127,9 +51,7 @@ void Enemy::Update_Sub(void) noexcept {
 		//当たり判定
 
 		RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
-		SetMatrix(
-			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
-			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
+		SetMatrix(RailMat);
 	}
 	//アニメアップデート
 	{
@@ -141,7 +63,7 @@ void Enemy::Update_Sub(void) noexcept {
 	}
 	//射撃
 	{
-		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack)) {
+		if (!false) {
 			m_ShootTimer = 0.f;
 		}
 		else {
