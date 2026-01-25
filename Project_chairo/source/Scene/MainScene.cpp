@@ -20,22 +20,17 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* LightParts = Draw::LightPool::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
-	PlayerManager::Instance()->SetEnemy().emplace_back();
-	PlayerManager::Instance()->SetEnemy().at(0) = std::make_shared<Enemy>();
-	ObjectManager::Instance()->InitObject(PlayerManager::Instance()->SetEnemy().at(0), PlayerManager::Instance()->SetEnemy().at(0), "data/model/Sopwith/");
-
-	PlayerManager::Instance()->SetEnemy().at(0)->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 5.f * Scale3DRate), Util::deg2rad(-90));
-
-
 	auto& Player = PlayerManager::Instance()->SetPlane();
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::deg2rad(-90));
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::deg2rad(0));
+
+	m_EnemyScript.Init("Enemy01");
 	//
 	this->m_Exit = false;
 	this->m_Fade = 2.f;
 
 	this->m_EnviID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/Envi.wav", false);
 
-	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(-0.3f, -0.7f, 0.3f).normalized();
+	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(-0.3f, -0.7f, -0.3f).normalized();
 
 	PostPassParts->SetAmbientLight(LightVec);
 
@@ -130,6 +125,8 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	//更新
 	if (this->m_Fade <= 1.f) {
+		m_EnemyScript.Update();
+
 		ObjectManager::Instance()->UpdateObject();
 	}
 	if (Watch->GetHitPoint() != 0) {

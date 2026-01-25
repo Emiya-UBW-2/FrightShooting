@@ -125,9 +125,80 @@ public:
 	}
 };
 
+struct EnemyMove {
+	int				m_Frame{};
+	Util::VECTOR3D	m_Pos{};
+};
+class EnemyScript {
+	int						m_EnemyID{};
+	int						m_HP{};
+	std::vector<EnemyMove>	m_EnemyMove;
 
+	float					m_Frame{};
+public:
+	void Init(std::string Path) noexcept {
+		m_EnemyID = PlayerManager::Instance()->SetEnemy().size();
+		PlayerManager::Instance()->SetEnemy().emplace_back();
+		PlayerManager::Instance()->SetEnemy().at(m_EnemyID) = std::make_shared<Enemy>();
+		ObjectManager::Instance()->InitObject(PlayerManager::Instance()->SetEnemy().at(m_EnemyID), PlayerManager::Instance()->SetEnemy().at(m_EnemyID), "data/model/Sopwith/");
+		PlayerManager::Instance()->SetEnemy().at(m_EnemyID)->SetPos(Util::VECTOR3D::vget(5.f, 15.f, 0.f) * Scale3DRate, Util::deg2rad(0));
+		//
+		{
+			File::InputFileStream FileStream;
+			FileStream.Open("data/Enemy/" + Path + "/Data.txt");
+			while (true) {
+				if (FileStream.ComeEof()) { break; }
+				std::vector<std::string> Args;
+				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
+				//
+				{
+					if (Args.at(0) == "HitPoint") {
+						m_HP = std::stoi(Args.at(1));
+					}
+				}
+			}
+			FileStream.Close();
+		}
+		//
+		{
+			m_EnemyMove.clear();
+			File::InputFileStream FileStream;
+			FileStream.Open("data/Enemy/" + Path + "/Move.txt");
+			while (true) {
+				if (FileStream.ComeEof()) { break; }
+				std::vector<std::string> Args;
+				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
+				//
+				{
+					if (Args.at(0) == "SetPoint") {
+						m_EnemyMove.emplace_back();
+						m_EnemyMove.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyMove.back().m_Pos = Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4)))* Scale3DRate;
+					}
+				}
+			}
+			FileStream.Close();
+		}
+
+		m_Frame = 0.f;
+	}
+	void Update() noexcept {
+		for (int loop = 1; loop < m_EnemyMove.size(); ++loop) {
+			if (m_EnemyMove.at(loop - 1).m_Frame <= m_Frame && m_Frame <= m_EnemyMove.at(loop).m_Frame) {
+				float Per = (m_Frame - m_EnemyMove.at(loop - 1).m_Frame)/(m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
+				Util::VECTOR3D Pos = Util::Lerp(m_EnemyMove.at(loop - 1).m_Pos, m_EnemyMove.at(loop).m_Pos, Per);
+
+				PlayerManager::Instance()->SetEnemy().at(m_EnemyID)->SetPos(Pos, Util::deg2rad(0));
+				break;
+			}
+		}
+		m_Frame += 1.f;
+	}
+};
 
 class MainScene : public Util::SceneBase {
+	EnemyScript						m_EnemyScript;
+
 	std::unique_ptr<MainUI>			m_MainUI{};
 	std::unique_ptr<AimPoint>		m_AimPoint{};
 	Sound::SoundUniqueID			m_EnviID{ InvalidID };

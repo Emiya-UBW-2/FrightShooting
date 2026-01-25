@@ -47,7 +47,7 @@ void Enemy::Update_Sub(void) noexcept {
 	// 移動ベクトルを加算した仮座標を作成
 	{
 		Util::VECTOR3D PosBefore = RailMat.pos();
-		Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
+		Util::VECTOR3D PosAfter = RailMat.pos();// +Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
 		//当たり判定
 
 		RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
@@ -81,6 +81,9 @@ void Enemy::Update_Sub(void) noexcept {
 			m_ShootTimer = std::max(m_ShootTimer - DrawerMngr->GetDeltaTime(), 0.f);
 		}
 	}
+
+	clsDx();
+	printfDx("(%f,%f,%f)\n", GetMat().pos().x / Scale3DRate, GetMat().pos().y / Scale3DRate, GetMat().pos().z / Scale3DRate);
 }
 
 void MyPlane::Init_Sub(void) noexcept {

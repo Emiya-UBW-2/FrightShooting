@@ -1,0 +1,5 @@
+SetPoint(  0, 5,60,-30);
+SetPoint( 60, 5,15,-57);
+SetPoint(120, 5,15,-84);
+SetPoint(180, 5,15,-111);
+SetPoint(240, 5,60,-138);
