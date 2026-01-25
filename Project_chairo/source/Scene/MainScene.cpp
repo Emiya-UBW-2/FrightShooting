@@ -12,7 +12,6 @@ void MainScene::Load_Sub(void) noexcept {
 
 	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
 	m_Lock = Draw::GraphPool::Instance()->Get("data/Image/Lock.png")->Get();
-	m_Alt = Draw::GraphPool::Instance()->Get("data/Image/alt.png")->Get();
 	m_Speed = Draw::GraphPool::Instance()->Get("data/Image/speed.png")->Get();
 	m_Meter = Draw::GraphPool::Instance()->Get("data/Image/meter.png")->Get();
 	m_Damage = Draw::GraphPool::Instance()->Get("data/Image/damage.png")->Get();
@@ -129,8 +128,13 @@ void MainScene::Update_Sub(void) noexcept {
 			}
 		}
 	);
+	auto& Watch = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
 	//
-	CameraParts->SetCamInfo(CameraParts->GetCamera().GetCamFov(), CameraParts->GetCamera().GetCamNear(), CameraParts->GetCamera().GetCamFar());
+	CameraParts->SetCamInfo(
+		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f),
+		CameraParts->GetCamera().GetCamNear(), CameraParts->GetCamera().GetCamFar());
+
+	CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedMax()) / (Watch->GetSpeedMax() * 2.f) * Scale3DRate);
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	//ポーズメニュー
@@ -160,7 +164,6 @@ void MainScene::Update_Sub(void) noexcept {
 		ObjectManager::Instance()->UpdateObject();
 	}
 	//更新
-	auto& Watch = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
 	if (Watch->GetHitPoint() != 0) {
 		Util::Matrix4x4 EyeMat = Watch->GetEyeMatrix();
 		CamTarget = EyeMat.pos();
@@ -205,11 +208,21 @@ void MainScene::Draw_Sub(void) noexcept {
 	auto& Watch = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
 
 	auto* DrawerMngr = Draw::MainDraw::Instance();
-	auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2()*(100.f*Scale3DRate)).get());
-	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-		this->m_AimPointDraw = true;
-		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
-		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+	{
+		auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2() * (25.f * Scale3DRate)).get());
+		if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+			this->m_AimPointDraw = true;
+			this->m_AimPoint2D_Near.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+			this->m_AimPoint2D_Near.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+		}
+	}
+	{
+		auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2() * (50.f * Scale3DRate)).get());
+		if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+			this->m_AimPointDraw = true;
+			this->m_AimPoint2D_Far.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
+			this->m_AimPoint2D_Far.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
+		}
 	}
 
 	BackGround::Instance()->Draw();
@@ -237,8 +250,10 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	auto& Watch = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
 
 	if(this->m_AimPointDraw) {
+		SetDrawBright(0, 128, 0);
+		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Far.x), static_cast<int>(this->m_AimPoint2D_Far.y), 0.5f, 0.f, true);
 		SetDrawBright(0, 255, 0);
-		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y), 1.f, 0.f, true);
+		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Near.x), static_cast<int>(this->m_AimPoint2D_Near.y), 1.f, 0.f, true);
 		SetDrawBright(255, 255, 255);
 	}
 	if (std::clamp(static_cast<int>(255.f * m_DamageWatch * 0.5f), 0, 255) > 10) {
@@ -255,34 +270,13 @@ void MainScene::UIDraw_Sub(void) noexcept {
 		m_Speed->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
 		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_SpeedPer), true);
 	}
-	{
-		float alt = Watch->GetMat().pos().y / Scale3DRate;
-
-		Util::Easing(&this->m_AltPer, -alt / 500.f * 90.f + GetRandf(3.f), 0.9f);
-
-		int X = 1920 / 2 - 765 + static_cast<int>(CameraParts->GetShake().z * 10.f), Y = 1080 - 128 - 64 + static_cast<int>(CameraParts->GetShake().y * 10.f);
-		m_Alt->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
-		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_AltPer), true);
-	}
-	{
-		int xpos = DrawerMngr->GetDispWidth() / 2;
-		int ypos = DrawerMngr->GetDispHeight() * 3 / 4;
-		if (false) {
-			KeyGuideParts->DrawButton(xpos - 24 / 2, ypos - 24 / 2, DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Reload));
-			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->DrawString(
-				Draw::FontXCenter::MIDDLE, Draw::FontYCenter::TOP,
-				xpos, ypos + 18,
-				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8(Localize->Get(316)));
-			ypos += 52;
-		}
-	}
-	this->m_PauseUI.Draw();
-	this->m_OptionWindow.Draw();
-	{
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->m_Fade), 0, 255));
+	if (this->m_Fade > 0.f) {
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(255.f * this->m_Fade));
 		DxLib::DrawBox(0, 0, DrawerMngr->GetDispWidth(), DrawerMngr->GetDispHeight(), ColorPalette::Black, true);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 	}
+	this->m_PauseUI.Draw();
+	this->m_OptionWindow.Draw();
 }
 void MainScene::Dispose_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();

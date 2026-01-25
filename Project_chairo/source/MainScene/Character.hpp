@@ -270,7 +270,7 @@ public:
 		DxLib::DrawCapsule3D(
 			(GetMat().pos() - this->Vector * std::clamp(this->DrawTimer / 0.1f, 0.f, 1.f)).get(),
 			GetMat().pos().get(),
-			0.09f * Scale3DRate / 2.f,
+			0.45f * Scale3DRate / 2.f,
 			6,
 			DxLib::GetColor(255, 255, 128),
 			DxLib::GetColor(255, 255, 0),
@@ -367,8 +367,6 @@ public:
 };
 
 class PlaneCommon :public BaseObject {
-	Util::VECTOR3D		m_AimPoint;
-	Util::VECTOR2D		m_AimPoint2D;
 	Util::VECTOR3D		m_MyPosTarget = Util::VECTOR3D::zero();
 	Util::VECTOR3D		m_Vector = Util::VECTOR3D::zero();
 	Util::Matrix3x3		m_Rot;
@@ -403,6 +401,8 @@ class PlaneCommon :public BaseObject {
 	Util::Matrix4x4			BaseMat;
 	Util::VECTOR3D			m_MovePoint;
 	Util::VECTOR3D			m_MovePointAdd;
+
+	Util::VECTOR3D			m_MoveVec;
 public:
 	PlaneCommon(void) noexcept {}
 	PlaneCommon(const PlaneCommon&) = delete;
@@ -453,7 +453,7 @@ public:
 	void SetShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
 	}
-	void CheckDraw_Sub(void) noexcept override;
+	void CheckDraw_Sub(void) noexcept override {}
 	void Draw_Sub(void) const noexcept override {
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (!GetModel().GetMeshSemiTransState(loop)) {

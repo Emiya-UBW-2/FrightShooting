@@ -25,7 +25,6 @@ class MainScene : public Util::SceneBase {
 	float							m_CharaStyleChangeR{};
 	const Draw::GraphHandle*		m_Cursor{};
 	const Draw::GraphHandle*		m_Lock{};
-	const Draw::GraphHandle*		m_Alt{};
 	const Draw::GraphHandle*		m_Speed{};
 	const Draw::GraphHandle*		m_Meter{};
 	const Draw::GraphHandle*		m_Damage{};
@@ -37,7 +36,6 @@ class MainScene : public Util::SceneBase {
 	float							m_DamagePer{ 0.f };
 	float							m_DamageWatch{ 0.f };
 	float							m_SpeedPer{ 0.f };
-	float							m_AltPer{ 0.f };
 	size_t							m_AttackNow{};
 	Sound::SoundUniqueID			m_cursorID{ InvalidID };
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
@@ -46,7 +44,8 @@ class MainScene : public Util::SceneBase {
 	char		padding4[3]{};
 	Util::VECTOR2D					m_LensPos{};
 	Util::VECTOR2D					m_LensSize{};
-	Util::VECTOR2D					m_AimPoint2D;
+	Util::VECTOR2D					m_AimPoint2D_Near;
+	Util::VECTOR2D					m_AimPoint2D_Far;
 	char		padding5[4]{};
 
 	Util::VECTOR3D CamPosition;

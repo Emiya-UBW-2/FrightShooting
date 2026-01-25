@@ -52,17 +52,24 @@ void PlaneCommon::Update_Sub(void) noexcept {
 		bool AccelKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Run);
 		bool BrakeKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Jump);
 		{
+			Util::VECTOR3D MoveVec = Util::VECTOR3D::forward();
 			//上下
 			{
 				bool UpKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::W);
 				bool DownKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::S);
+				float prev = m_MovePointAdd.y;
 				if (UpKey && !DownKey) {
-					m_MovePointAdd.y -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					m_MovePointAdd.y -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					MoveVec.y = -0.3f;
 				}
 				if (DownKey && !UpKey) {
-					m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					MoveVec.y = 0.3f;
 				}
 				m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -4.f * Scale3DRate, 4.f * Scale3DRate);
+				if (prev == m_MovePointAdd.y) {
+					MoveVec.y = 0.0f;
+				}
 			}
 			//ロール
 			{
@@ -71,26 +78,39 @@ void PlaneCommon::Update_Sub(void) noexcept {
 
 				float prev = m_MovePointAdd.x;
 				if (LeftKey && !RightKey) {
-					m_MovePointAdd.x -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					m_MovePointAdd.x -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					MoveVec.x = -0.3f;
 				}
 				if (RightKey && !LeftKey) {
-					m_MovePointAdd.x += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					m_MovePointAdd.x += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					MoveVec.x = 0.3f;
 				}
 				m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -6.f * Scale3DRate, 6.f * Scale3DRate);
+				if (prev == m_MovePointAdd.x) {
+					MoveVec.x = 0.0f;
+				}
 
 				float RollPer = 0.f;
-				RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime()) * std::clamp(MyMat.yvec().x / 1.f, -1.f, 1.f);
+				RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
+				if (MyMat.yvec().y > 0.f) {
+					RollPer *= MyMat.yvec().x;
+				}
+				else {
+					RollPer *= (MyMat.yvec().x > 0.f) ? 1.f : -1.f;
+				}
 				if (prev != m_MovePointAdd.x) {
 					if (LeftKey && !RightKey) {
-						RollPer = Util::deg2rad(-500.f * DrawerMngr->GetDeltaTime());
+						RollPer = Util::deg2rad(-200.f * DrawerMngr->GetDeltaTime());
 					}
 					if (RightKey && !LeftKey) {
-						RollPer = Util::deg2rad(500.f * DrawerMngr->GetDeltaTime());
+						RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
 					}
 				}
 				Util::Easing(&m_RollPer, RollPer, 0.9f);
 				this->m_Rot *= Util::Matrix3x3::RotAxis(this->m_Rot.zvec(), m_RollPer);
 			}
+
+			Util::Easing(&m_MoveVec, MoveVec, 0.95f);
 			Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
 			// 進行方向に前進
 			{
@@ -112,7 +132,7 @@ void PlaneCommon::Update_Sub(void) noexcept {
 			Util::VECTOR3D MyPos = GetMat().pos();
 			Util::Easing(&MyPos, this->m_MyPosTarget, 0.9f);
 			//this->m_Rot = Util::Matrix3x3::Get33DX(GetRotMat());
-			SetMatrix(this->m_Rot.Get44DX() * Util::Matrix4x4::Mtrans(MyPos));
+			SetMatrix(this->m_Rot.Get44DX() * Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), m_MoveVec)* Util::Matrix4x4::Mtrans(MyPos));
 			//アニメアップデート
 			{
 				for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
@@ -124,16 +144,6 @@ void PlaneCommon::Update_Sub(void) noexcept {
 		}
 	}
 }
-void PlaneCommon::CheckDraw_Sub(void) noexcept {
-	auto* DrawerMngr = Draw::MainDraw::Instance();
-	this->m_AimPoint = GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Center)).pos();
-	auto Pos2D = ConvWorldPosToScreenPos(this->m_AimPoint.get());
-	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
-		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
-	}
-}
-
 void Ammo::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 
