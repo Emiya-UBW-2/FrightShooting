@@ -366,7 +366,7 @@ public:
 	}
 };
 
-class PlaneCommon :public BaseObject {
+class Enemy :public BaseObject {
 	Util::Matrix3x3		m_Roll;
 	float				m_Speed{ 0.f };
 	float				m_SpeedTarget{ 0.f };
@@ -395,12 +395,113 @@ class PlaneCommon :public BaseObject {
 	int						m_HitPoint{ m_HitPointMax };
 	static constexpr int	m_HitPointMax{ 100 };
 public:
-	PlaneCommon(void) noexcept {}
-	PlaneCommon(const PlaneCommon&) = delete;
-	PlaneCommon(PlaneCommon&&) = delete;
-	PlaneCommon& operator=(const PlaneCommon&) = delete;
-	PlaneCommon& operator=(PlaneCommon&&) = delete;
-	virtual ~PlaneCommon(void) noexcept {}
+	Enemy(void) noexcept {}
+	Enemy(const Enemy&) = delete;
+	Enemy(Enemy&&) = delete;
+	Enemy& operator=(const Enemy&) = delete;
+	Enemy& operator=(Enemy&&) = delete;
+	virtual ~Enemy(void) noexcept {}
+private:
+	int				GetFrameNum(void) noexcept override { return static_cast<int>(CharaFrame::Max); }
+	const char* GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
+public:
+	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
+	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
+
+	float			GetSpeed() const { return this->m_Speed; }
+	float			GetSpeedMax(void) const noexcept {
+		return 1000.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
+	}
+	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
+		RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(MyPos);
+		m_Roll = Util::Matrix3x3::identity();
+	}
+	auto			GetEyeMatrix(void) const noexcept {
+		return RailMat;
+	}
+public:
+	void Load_Sub(void) noexcept override {
+		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
+		this->m_EngineID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/engine.wav", true);
+		//Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, heartID)->Play3D(GetMat().pos(), 10.f * Scale3DRate);
+
+		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
+
+		ObjectManager::Instance()->LoadModel("data/model/FireEffect/");
+	}
+	void Init_Sub(void) noexcept override;
+	void Update_Sub(void) noexcept override;
+	void SetShadowDraw_Sub(void) const noexcept override {
+		GetModel().DrawModel();
+	}
+	void CheckDraw_Sub(void) noexcept override {}
+	void Draw_Sub(void) const noexcept override {
+		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
+			if (!GetModel().GetMeshSemiTransState(loop)) {
+				GetModel().DrawMesh(loop);
+			}
+		}
+	}
+	void DrawFront_Sub(void) const noexcept override {
+		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
+			if (GetModel().GetMeshSemiTransState(loop)) {
+				GetModel().DrawMesh(loop);
+			}
+		}
+	}
+	void ShadowDraw_Sub(void) const noexcept override {
+		GetModel().DrawModel();
+	}
+	void Dispose_Sub(void) noexcept override {
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->StopAll();
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
+
+		SetModel().Dispose();
+
+		for (auto& s : this->m_ShotEffect) {
+			s.reset();
+		}
+		for (auto& s : this->m_AmmoPer) {
+			s.reset();
+		}
+	}
+};
+
+class MyPlane :public BaseObject {
+	Util::Matrix3x3		m_Roll;
+	float				m_Speed{ 0.f };
+	float				m_SpeedTarget{ 0.f };
+	float				m_ShootTimer{};
+	float				m_RollPer{};
+
+	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
+	int													m_ShotEffectID{};
+	char		padding1[4]{};
+
+	std::array<std::shared_ptr<Ammo>, 60>				m_AmmoPer{};
+	int													m_AmmoID{};
+	char		padding3[4]{};
+
+	size_t					m_PropellerIndex{};
+	size_t					m_EngineIndex{};
+	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
+	Sound::SoundUniqueID	m_EngineID{ InvalidID };
+	Sound::SoundUniqueID	m_ShotID{ InvalidID };
+
+	Util::Matrix4x4			RailMat;
+	Util::VECTOR3D			m_MovePoint;
+	Util::VECTOR3D			m_MovePointAdd;
+	Util::VECTOR3D			m_MoveVec;
+
+	int						m_HitPoint{ m_HitPointMax };
+	static constexpr int	m_HitPointMax{ 100 };
+public:
+	MyPlane(void) noexcept {}
+	MyPlane(const MyPlane&) = delete;
+	MyPlane(MyPlane&&) = delete;
+	MyPlane& operator=(const MyPlane&) = delete;
+	MyPlane& operator=(MyPlane&&) = delete;
+	virtual ~MyPlane(void) noexcept {}
 private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(CharaFrame::Max); }
 	const char*		GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }

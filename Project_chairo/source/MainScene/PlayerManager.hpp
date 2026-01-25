@@ -14,7 +14,9 @@ class PlayerManager : public Util::SingletonBase<PlayerManager> {
 private:
 	friend class Util::SingletonBase<PlayerManager>;
 private:
-	std::vector<std::shared_ptr<PlaneCommon>>	m_Plane;
+	std::shared_ptr<MyPlane>	m_Plane;
+
+	std::vector<std::shared_ptr<Enemy>>	m_Enemy;
 private:
 	PlayerManager(void) noexcept {}
 	PlayerManager(const PlayerManager&) = delete;
@@ -25,20 +27,16 @@ private:
 public:
 	void Load(void) noexcept {
 		ObjectManager::Instance()->LoadModel("data/model/Sopwith/");
-		this->m_Plane.resize(1);
+		this->m_Enemy.reserve(2000);
 	}
 	void Init(void) noexcept {
-		this->m_Plane.at(0) = std::make_shared<PlaneCommon>();
-		ObjectManager::Instance()->InitObject(this->m_Plane.at(0), this->m_Plane.at(0), "data/model/Sopwith/");
-		//this->m_Plane.at(0)->SetPos(BackGround::Instance()->GetWorldPos(m.m_pos));
+		this->m_Plane = std::make_shared<MyPlane>();
+		ObjectManager::Instance()->InitObject(this->m_Plane, this->m_Plane, "data/model/Sopwith/");
 	}
 	void Dispose(void) noexcept {
-		for (auto& m : this->m_Plane) {
-			m.reset();
-		}
-		this->m_Plane.clear();
+		this->m_Plane.reset();
+		this->m_Enemy.clear();
 	}
 public:
-	const auto& GetPlane(void) const noexcept { return this->m_Plane; }
 	auto& SetPlane(void) noexcept { return this->m_Plane; }
 };

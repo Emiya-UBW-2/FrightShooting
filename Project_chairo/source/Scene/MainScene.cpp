@@ -20,7 +20,7 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* LightParts = Draw::LightPool::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
-	auto& Player = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
+	auto& Player = PlayerManager::Instance()->SetPlane();
 
 	Player->SetPos(Util::VECTOR3D::vget(0.f, 300.f * Scale3DRate, 0.f*Scale3DRate), Util::deg2rad(90));
 	//
@@ -93,7 +93,7 @@ void MainScene::Update_Sub(void) noexcept {
 			}
 		}
 	);
-	auto& Watch = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
+	auto& Watch = PlayerManager::Instance()->SetPlane();
 	//
 	CameraParts->SetCamInfo(
 		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f),

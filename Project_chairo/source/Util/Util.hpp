@@ -408,42 +408,4 @@ namespace Util {
 		} // else{ return false; }
 		FindClose(hFind);
 	}
-
-	// ファイルが存在するかチェック
-	static bool IsFileExist(const char* Path) noexcept {
-		return std::filesystem::is_regular_file(Path);
-		//DXLIB_Initを通ってからでないと動作しない
-		/*
-		FILEINFO FileInfo;
-		return (FileRead_findFirst(Path, &FileInfo) != (DWORD_PTR)InvalidID);
-		//*/
-	}
-	static std::string ReplaceAll(std::string str, std::string target, std::string replacement) noexcept {
-		if (!target.empty()) {
-			std::string::size_type pos = 0;
-			while ((pos = str.find(target, pos)) != std::string::npos) {
-				str.replace(pos, target.length(), replacement);
-				pos += replacement.length();
-			}
-		}
-		return str;
-	}
-	static void GetArgs(const std::string& str, std::vector<std::string>* Args) noexcept {
-		std::string ALL = ReplaceAll(ReplaceAll(str, " ", ""), "\t", "");
-		auto Func = ALL.substr(0, ALL.find("("));
-		auto Arg = File::InputFileStream::getleft(File::InputFileStream::getright(ALL, "("), ")");
-		Args->clear();
-		Args->emplace_back(Func);
-		while (true) {
-			auto div = Arg.find(",");
-			if (div != std::string::npos) {
-				Args->emplace_back(Arg.substr(0, div));
-				Arg = Arg.substr(div + 1);
-			}
-			else {
-				Args->emplace_back(Arg);
-				break;
-			}
-		}
-	}
 }

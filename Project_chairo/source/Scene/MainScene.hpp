@@ -98,7 +98,7 @@ public:
 		m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
 	}
 	void CalcPoint() noexcept {
-		auto& Watch = ((std::shared_ptr<PlaneCommon>&)PlayerManager::Instance()->SetPlane().at(0));
+		auto& Watch = PlayerManager::Instance()->SetPlane();
 
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		{
@@ -124,6 +124,8 @@ public:
 		SetDrawBright(255, 255, 255);
 	}
 };
+
+
 
 class MainScene : public Util::SceneBase {
 	std::unique_ptr<MainUI>			m_MainUI{};
