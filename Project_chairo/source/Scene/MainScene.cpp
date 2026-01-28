@@ -21,9 +21,9 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
 	auto& Player = PlayerManager::Instance()->SetPlane();
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::deg2rad(0));
+	Player->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
 
-	m_EnemyScript.Init("Enemy01");
+	m_StageScript.Init("Stage01");
 	//
 	this->m_Exit = false;
 	this->m_Fade = 2.f;
@@ -125,8 +125,27 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	//更新
 	if (this->m_Fade <= 1.f) {
-		m_EnemyScript.Update();
+		m_StageScript.Update();
+		//
+		auto& Player = PlayerManager::Instance()->SetPlane();
+		for (auto& a : Player->GetAmmoPer()) {
+			if (a->IsActive()) {
+				for (auto& s : m_StageScript.EnemyPop()) {
+					if (s.m_EnemyScript.IsActive()) {
 
+						SEGMENT_SEGMENT_RESULT Result;
+						Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
+							a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+						if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+							a->SetHit(Result.SegB_MinDist_Pos);
+							s.m_EnemyScript.SetDown();
+							break;
+						}
+					}
+				}
+			}
+		}
+		//
 		ObjectManager::Instance()->UpdateObject();
 	}
 	if (Watch->GetHitPoint() != 0) {
@@ -171,13 +190,14 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	//カーソル
 	m_AimPoint->Draw();
 	//
+	this->m_MainUI->Draw();
+	//
 	if (this->m_Fade > 0.f) {
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(255.f * this->m_Fade));
 		DxLib::DrawBox(0, 0, DrawerMngr->GetDispWidth(), DrawerMngr->GetDispHeight(), ColorPalette::Black, true);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 	}
 	//
-	this->m_MainUI->Draw();
 }
 void MainScene::Dispose_Sub(void) noexcept {
 	this->m_MainUI->Dispose();

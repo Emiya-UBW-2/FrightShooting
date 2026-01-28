@@ -128,6 +128,7 @@ public:
 struct EnemyMove {
 	int				m_Frame{};
 	Util::VECTOR3D	m_Pos{};
+	Util::Matrix3x3	m_Rot{};
 };
 class EnemyScript {
 	int						m_EnemyID{};
@@ -135,13 +136,28 @@ class EnemyScript {
 	std::vector<EnemyMove>	m_EnemyMove;
 
 	float					m_Frame{};
+	bool					m_IsActive{ false };
+	bool					m_IsDown{ false };
 public:
-	void Init(std::string Path) noexcept {
+	auto& EnemyObj(void) noexcept {
+		return PlayerManager::Instance()->SetEnemy().at(m_EnemyID);
+	}
+	void SetActive(void) noexcept {
 		m_EnemyID = PlayerManager::Instance()->SetEnemy().size();
 		PlayerManager::Instance()->SetEnemy().emplace_back();
 		PlayerManager::Instance()->SetEnemy().at(m_EnemyID) = std::make_shared<Enemy>();
-		ObjectManager::Instance()->InitObject(PlayerManager::Instance()->SetEnemy().at(m_EnemyID), PlayerManager::Instance()->SetEnemy().at(m_EnemyID), "data/model/Sopwith/");
-		PlayerManager::Instance()->SetEnemy().at(m_EnemyID)->SetPos(Util::VECTOR3D::vget(5.f, 15.f, 0.f) * Scale3DRate, Util::deg2rad(0));
+		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), "data/model/Sopwith/");
+		EnemyObj()->SetPos(Util::VECTOR3D::vget(5.f, 15.f, 0.f) * Scale3DRate, Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
+		m_IsActive = true;
+	}
+	bool IsActive(void) const noexcept {
+		return m_IsActive;
+	}
+	void SetDown(void) noexcept {
+		m_IsDown = true;
+	}
+public:
+	void Init(std::string Path) noexcept {
 		//
 		{
 			File::InputFileStream FileStream;
@@ -173,7 +189,11 @@ public:
 					if (Args.at(0) == "SetPoint") {
 						m_EnemyMove.emplace_back();
 						m_EnemyMove.back().m_Frame = std::stoi(Args.at(1));//Frame
-						m_EnemyMove.back().m_Pos = Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4)))* Scale3DRate;
+						m_EnemyMove.back().m_Pos = Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4))) * Scale3DRate;
+						m_EnemyMove.back().m_Rot =
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(std::stof(Args.at(7)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(6)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(5))));
 					}
 				}
 			}
@@ -183,13 +203,72 @@ public:
 		m_Frame = 0.f;
 	}
 	void Update() noexcept {
-		for (int loop = 1; loop < m_EnemyMove.size(); ++loop) {
-			if (m_EnemyMove.at(loop - 1).m_Frame <= m_Frame && m_Frame <= m_EnemyMove.at(loop).m_Frame) {
-				float Per = (m_Frame - m_EnemyMove.at(loop - 1).m_Frame)/(m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
-				Util::VECTOR3D Pos = Util::Lerp(m_EnemyMove.at(loop - 1).m_Pos, m_EnemyMove.at(loop).m_Pos, Per);
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		if (!m_IsDown) {
+			for (int loop = 1; loop < m_EnemyMove.size(); ++loop) {
+				if (m_EnemyMove.at(loop - 1).m_Frame <= m_Frame && m_Frame <= m_EnemyMove.at(loop).m_Frame) {
+					float Per = (m_Frame - m_EnemyMove.at(loop - 1).m_Frame) / (m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
+					Util::VECTOR3D Pos = Util::Lerp(m_EnemyMove.at(loop - 1).m_Pos, m_EnemyMove.at(loop).m_Pos, Per);
+					Util::Matrix3x3 Rot = Util::Lerp(m_EnemyMove.at(loop - 1).m_Rot, m_EnemyMove.at(loop).m_Rot, Per);
 
-				PlayerManager::Instance()->SetEnemy().at(m_EnemyID)->SetPos(Pos, Util::deg2rad(0));
+					EnemyObj()->SetPos(Pos, Rot);
+					break;
+				}
+			}
+		}
+		else {
+			Util::VECTOR3D Pos = EnemyObj()->GetRailMat().pos() + Util::VECTOR3D::up() * (-10.f * Scale3DRate * DrawerMngr->GetDeltaTime());
+			Util::Matrix3x3 Rot = Util::Matrix3x3::Get33DX(EnemyObj()->GetRailMat().rotation()
+				* Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360.f * DrawerMngr->GetDeltaTime())));
+			EnemyObj()->SetPos(Pos, Rot);
+		}
+		m_Frame += 1.f;
+	}
+};
+
+struct EnemyPop {
+	int				m_Frame{};
+	EnemyScript		m_EnemyScript;
+};
+class StageScript {
+	std::vector<EnemyPop>	m_EnemyPop;
+	float					m_Frame{};
+public:
+	auto& EnemyPop(void) noexcept {
+		return m_EnemyPop;
+	}
+public:
+	void Init(std::string Path) noexcept {
+		//
+		{
+			m_EnemyPop.clear();
+			File::InputFileStream FileStream;
+			FileStream.Open("data/Stage/" + Path + ".txt");
+			while (true) {
+				if (FileStream.ComeEof()) { break; }
+				std::vector<std::string> Args;
+				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
+				//
+				{
+					if (Args.at(0) == "SetEnemy") {
+						m_EnemyPop.emplace_back();
+						m_EnemyPop.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyPop.back().m_EnemyScript.Init(Args.at(2));
+					}
+				}
+			}
+			FileStream.Close();
+		}
+		m_Frame = 0.f;
+	}
+	void Update() noexcept {
+		for (int loop = 0; loop < m_EnemyPop.size(); ++loop) {
+			if (std::fabsf(m_Frame - static_cast<float>(m_EnemyPop.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
+				m_EnemyPop.at(loop).m_EnemyScript.SetActive();
 				break;
+			}
+			if (m_EnemyPop.at(loop).m_EnemyScript.IsActive()) {
+				m_EnemyPop.at(loop).m_EnemyScript.Update();
 			}
 		}
 		m_Frame += 1.f;
@@ -197,7 +276,7 @@ public:
 };
 
 class MainScene : public Util::SceneBase {
-	EnemyScript						m_EnemyScript;
+	StageScript						m_StageScript;
 
 	std::unique_ptr<MainUI>			m_MainUI{};
 	std::unique_ptr<AimPoint>		m_AimPoint{};

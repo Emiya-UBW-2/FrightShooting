@@ -240,11 +240,24 @@ public:
 		this->DrawTimer = this->Timer + 0.1f;
 		Shooter = ID;
 	}
-private:
-	void SetAmmo(const Util::VECTOR3D& pos) noexcept {
+	bool IsActive() const noexcept {
+		return this->Timer != 0.f;
+	}
+	auto GetVector() const noexcept {
+		return this->Vector;
+	}
+public:
+	void SetHit(const Util::VECTOR3D& pos) noexcept {
 		this->Vector = pos - GetMat().pos();
 		this->Timer = 0.f;
 		this->DrawTimer = this->Timer + 0.1f;
+		for (auto& ae : this->m_AmmoEffectPer) {
+			ae->Set(
+				pos,
+				this->Vector.normalized() * -1.f
+			);
+		}
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(pos, 500.f * Scale3DRate);
 	}
 public:
 	void Load_Sub(void) noexcept override {
@@ -409,11 +422,11 @@ public:
 	float			GetSpeedMax(void) const noexcept {
 		return 100.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
-	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
-		RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(MyPos);
+	void			SetPos(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
+		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 		m_Roll = Util::Matrix3x3::identity();
 	}
-	auto			GetEyeMatrix(void) const noexcept {
+	auto			GetRailMat(void) const noexcept {
 		return RailMat;
 	}
 public:
@@ -510,13 +523,14 @@ public:
 	float			GetSpeedMax(void) const noexcept {
 		return 100.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
-	void			SetPos(Util::VECTOR3D MyPos, float yRad) noexcept {
-		RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), yRad) * Util::Matrix4x4::Mtrans(MyPos);
+	void			SetPos(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
+		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 		m_Roll = Util::Matrix3x3::identity();
 	}
 	auto			GetEyeMatrix(void) const noexcept {
 		return RailMat;
 	}
+	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
