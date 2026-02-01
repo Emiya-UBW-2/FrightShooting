@@ -130,10 +130,21 @@ struct EnemyMove {
 	Util::VECTOR3D	m_Pos{};
 	Util::Matrix3x3	m_Rot{};
 };
+enum class AmmoMoveType : size_t {
+	Fixed,
+	Target,
+	Homing,
+};
+struct EnemyAmmo {
+	int				m_Frame{};
+	Util::Matrix3x3	m_Rot{};
+	AmmoMoveType	m_AmmoMoveType{};
+};
 class EnemyScript {
 	int						m_EnemyID{};
 	int						m_HP{};
 	std::vector<EnemyMove>	m_EnemyMove;
+	std::vector<EnemyAmmo>	m_EnemyAmmo;
 
 	float					m_Frame{};
 	bool					m_IsActive{ false };
@@ -195,6 +206,27 @@ public:
 							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(6)))) *
 							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(5))));
 					}
+					if (Args.at(0) == "PutFixedAmmo") {
+						m_EnemyAmmo.emplace_back();
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyAmmo.back().m_Rot =
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(3)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(2))));
+						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Fixed;
+					}
+					if (Args.at(0) == "PutTargetAmmo") {
+						m_EnemyAmmo.emplace_back();
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
+					}
+					if (Args.at(0) == "PutHomingAmmo") {
+						m_EnemyAmmo.emplace_back();
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyAmmo.back().m_Rot =
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(3)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(2))));
+						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
+					}
 				}
 			}
 			FileStream.Close();
@@ -215,8 +247,33 @@ public:
 					break;
 				}
 			}
+
+			for (int loop = 0; loop < m_EnemyAmmo.size(); ++loop) {
+				if (std::fabsf(m_Frame - static_cast<float>(m_EnemyAmmo.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
+					switch (m_EnemyAmmo.at(loop).m_AmmoMoveType) {
+					case AmmoMoveType::Fixed:
+						EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
+						break;
+					case AmmoMoveType::Target:
+					{
+						auto& Player = PlayerManager::Instance()->SetPlane();
+						Util::VECTOR3D Pos = Player->GetMat().pos() + Player->GetMat().zvec() * -(10.f * Scale3DRate);
+						Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetRailMat().pos() - Pos).normalized());
+						EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot);
+					}
+						break;
+					case AmmoMoveType::Homing:
+						EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
+						break;
+					default:
+						break;
+					}
+					break;
+				}
+			}
 		}
 		else {
+			//死んだムーブ
 			Util::VECTOR3D Pos = EnemyObj()->GetRailMat().pos() + Util::VECTOR3D::up() * (-10.f * Scale3DRate * DrawerMngr->GetDeltaTime());
 			Util::Matrix3x3 Rot = Util::Matrix3x3::Get33DX(EnemyObj()->GetRailMat().rotation()
 				* Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360.f * DrawerMngr->GetDeltaTime())));
@@ -287,6 +344,9 @@ class MainScene : public Util::SceneBase {
 	float							m_Fade{ 1.f };
 	bool							m_Exit{ false };
 	char		padding[7]{};
+
+	float							m_DamagePer{ 0.f };
+	float							m_DamageWatch{ 0.f };
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

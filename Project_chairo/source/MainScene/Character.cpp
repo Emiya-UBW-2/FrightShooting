@@ -61,29 +61,22 @@ void Enemy::Update_Sub(void) noexcept {
 		SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
 		SetModel().FlipAnimAll();
 	}
-	//射撃
-	{
-		if (!false) {
-			m_ShootTimer = 0.f;
-		}
-		else {
-			if (m_ShootTimer == 0.f) {
-				this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-				++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
 
-				this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 0);
-				++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
-
-				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
-
-				m_ShootTimer = 0.1f;
+	auto& Player = PlayerManager::Instance()->SetPlane();
+	for (auto& a : GetAmmoPer()) {
+		if (a->IsActive()) {
+			if (true) {
+				SEGMENT_SEGMENT_RESULT Result;
+				Util::GetSegmenttoSegment(Player->GetMat().pos(), Player->GetMat().pos(),
+					a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+				if (Result.SegA_SegB_MinDist_Square < (1.f * Scale3DRate) * (1.f * Scale3DRate)) {
+					a->SetHit(Result.SegB_MinDist_Pos);
+					Player->SetDamage(0);
+					break;
+				}
 			}
-			m_ShootTimer = std::max(m_ShootTimer - DrawerMngr->GetDeltaTime(), 0.f);
 		}
 	}
-
-	clsDx();
-	printfDx("(%f,%f,%f)\n", GetMat().pos().x / Scale3DRate, GetMat().pos().y / Scale3DRate, GetMat().pos().z / Scale3DRate);
 }
 
 void MyPlane::Init_Sub(void) noexcept {
@@ -219,7 +212,9 @@ void MyPlane::Update_Sub(void) noexcept {
 				this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
 				++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
 
-				this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 0);
+				this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 0,
+					(200.f / 60.f * 1000.f + 1000.f)* Scale3DRate
+				);
 				++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);

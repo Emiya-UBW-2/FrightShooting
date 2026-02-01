@@ -231,10 +231,10 @@ private:
 	int Shooter{ InvalidID };
 	char		padding[4]{};
 public:
-	void Set(const Util::Matrix4x4& Muzzle, int ID) noexcept {
+	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		SetMatrix(Muzzle);
-		this->Vector = Muzzle.zvec() * -((200.f / 60.f * 1000.f + 1000.f) * Scale3DRate * DrawerMngr->GetDeltaTime());
+		this->Vector = Muzzle.zvec() * -(Speed * DrawerMngr->GetDeltaTime());
 		this->YVecAdd = 0.f;
 		this->Timer = 5.f;
 		this->DrawTimer = this->Timer + 0.1f;
@@ -426,9 +426,25 @@ public:
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 		m_Roll = Util::Matrix3x3::identity();
 	}
+	void			SetAmmo(bool IsHoming, Util::Matrix3x3 Mat) noexcept {
+		this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+		++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
+
+		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 0,
+			(25.f) * Scale3DRate
+			);
+		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
+
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
+
+		if (IsHoming) {
+			//TODO:ホーミング
+		}
+	}
 	auto			GetRailMat(void) const noexcept {
 		return RailMat;
 	}
+	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
@@ -505,6 +521,8 @@ class MyPlane :public BaseObject {
 
 	int						m_HitPoint{ m_HitPointMax };
 	static constexpr int	m_HitPointMax{ 100 };
+
+	int					DamageID{};
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
@@ -531,6 +549,14 @@ public:
 		return RailMat;
 	}
 	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
+
+	void			SetDamage(int ID) noexcept {
+		DamageID = ID;
+		if (DamageID != InvalidID) {
+			//m_HitPoint = std::clamp(m_HitPoint - 10, 0, m_HitPointMax);
+		}
+	}
+	int				GetDamageID(void) const noexcept { return DamageID; }
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);

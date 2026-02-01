@@ -23,6 +23,8 @@ void MainScene::Init_Sub(void) noexcept {
 	auto& Player = PlayerManager::Instance()->SetPlane();
 	Player->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
 
+	Player->SetDamage(InvalidID);
+
 	m_StageScript.Init("Stage01");
 	//
 	this->m_Exit = false;
@@ -100,7 +102,17 @@ void MainScene::Update_Sub(void) noexcept {
 		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f),
 		CameraParts->GetCamera().GetCamNear(), CameraParts->GetCamera().GetCamFar());
 
-	CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedMax()) / (Watch->GetSpeedMax() * 2.f) * Scale3DRate);
+	m_DamagePer = std::max(m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
+	m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 0.f);
+	if (m_DamagePer == 0.f) {
+		CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedMax()) / (Watch->GetSpeedMax() * 2.f) * Scale3DRate);
+		if (Watch->GetDamageID() != InvalidID) {
+			CameraParts->SetCamShake(0.2f, 5.f * Scale3DRate);
+			m_DamagePer = 0.2f;
+			m_DamageWatch = 2.f;
+		}
+	}
+	Watch->SetDamage(InvalidID);
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	//ポーズメニュー
