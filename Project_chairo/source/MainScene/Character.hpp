@@ -523,6 +523,8 @@ class MyPlane :public BaseObject {
 	static constexpr int	m_HitPointMax{ 100 };
 
 	int					DamageID{};
+
+	float					m_RollingTimer{ 0.f };
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
@@ -536,6 +538,9 @@ private:
 public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
+
+	
+	bool			IsRollingActive() const { return this->m_RollingTimer>0.f; }
 
 	float			GetSpeed() const { return this->m_Speed; }
 	float			GetSpeedMax(void) const noexcept {
@@ -557,6 +562,16 @@ public:
 		}
 	}
 	int				GetDamageID(void) const noexcept { return DamageID; }
+
+	void			Shot(Util::Matrix4x4 Mat) noexcept {
+		this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat);
+		++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
+
+		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat, 0,
+			(200.f / 60.f * 1000.f + 1000.f) * Scale3DRate
+		);
+		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
+	}
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);

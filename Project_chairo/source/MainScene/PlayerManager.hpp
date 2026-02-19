@@ -26,12 +26,12 @@ private:
 	virtual ~PlayerManager(void) noexcept { Dispose(); }
 public:
 	void Load(void) noexcept {
-		ObjectManager::Instance()->LoadModel("data/model/Sopwith/");
+		ObjectManager::Instance()->LoadModel("data/model/Plane/");
 		this->m_Enemy.reserve(2000);
 	}
 	void Init(void) noexcept {
 		this->m_Plane = std::make_shared<MyPlane>();
-		ObjectManager::Instance()->InitObject(this->m_Plane, this->m_Plane, "data/model/Sopwith/");
+		ObjectManager::Instance()->InitObject(this->m_Plane, this->m_Plane, "data/model/Plane/");
 	}
 	void Dispose(void) noexcept {
 		this->m_Plane.reset();

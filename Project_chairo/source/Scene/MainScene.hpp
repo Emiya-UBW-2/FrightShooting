@@ -157,7 +157,7 @@ public:
 		m_EnemyID = PlayerManager::Instance()->SetEnemy().size();
 		PlayerManager::Instance()->SetEnemy().emplace_back();
 		PlayerManager::Instance()->SetEnemy().at(m_EnemyID) = std::make_shared<Enemy>();
-		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), "data/model/Sopwith/");
+		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), "data/model/Plane/");
 		EnemyObj()->SetPos(Util::VECTOR3D::vget(5.f, 15.f, 0.f) * Scale3DRate, Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
 		m_IsActive = true;
 	}

@@ -69,9 +69,16 @@ void Enemy::Update_Sub(void) noexcept {
 				SEGMENT_SEGMENT_RESULT Result;
 				Util::GetSegmenttoSegment(Player->GetMat().pos(), Player->GetMat().pos(),
 					a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-				if (Result.SegA_SegB_MinDist_Square < (1.f * Scale3DRate) * (1.f * Scale3DRate)) {
-					a->SetHit(Result.SegB_MinDist_Pos);
-					Player->SetDamage(0);
+				if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+					if (Player->IsRollingActive()) {
+						//はじく
+						a->SetHit(Result.SegB_MinDist_Pos);
+						Player->Shot(Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), a->GetVector()) * Util::Matrix4x4::Mtrans(Player->GetMat().pos()));
+					}
+					else {
+						a->SetHit(Result.SegB_MinDist_Pos);
+						Player->SetDamage(0);
+					}
 					break;
 				}
 			}
@@ -130,6 +137,9 @@ void MyPlane::Update_Sub(void) noexcept {
 			bool LeftKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::A);
 			bool RightKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::D);
 
+			bool Left2Key = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Q);
+			bool Right2Key = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::E);
+
 			float prev = m_MovePointAdd.x;
 			if (LeftKey && !RightKey) {
 				m_MovePointAdd.x -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
@@ -139,6 +149,16 @@ void MyPlane::Update_Sub(void) noexcept {
 				m_MovePointAdd.x += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.x = 0.3f;
 			}
+			/*
+			if (Left2Key && !Right2Key) {
+				m_MovePointAdd.x -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				MoveVec.x = -0.6f;
+			}
+			if (Right2Key && !Left2Key) {
+				m_MovePointAdd.x += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				MoveVec.x = 0.6f;
+			}
+			//*/
 			m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -6.f * Scale3DRate, 6.f * Scale3DRate);
 			if (prev == m_MovePointAdd.x) {
 				MoveVec.x = 0.0f;
@@ -161,6 +181,17 @@ void MyPlane::Update_Sub(void) noexcept {
 					RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
 				}
 			}
+
+			m_RollingTimer = std::max(m_RollingTimer - DrawerMngr->GetDeltaTime(), 0.f);
+			if (Left2Key && !Right2Key) {
+				RollPer = Util::deg2rad(-20000.f * DrawerMngr->GetDeltaTime());
+				m_RollingTimer = 0.2f;
+			}
+			if (Right2Key && !Left2Key) {
+				RollPer = Util::deg2rad(20000.f * DrawerMngr->GetDeltaTime());
+				m_RollingTimer = 0.2f;
+			}
+
 			Util::Easing(&m_RollPer, RollPer, 0.9f);
 			this->m_Roll *= Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
 		}
@@ -209,16 +240,8 @@ void MyPlane::Update_Sub(void) noexcept {
 		}
 		else {
 			if (m_ShootTimer == 0.f) {
-				this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-				++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
-
-				this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 0,
-					(200.f / 60.f * 1000.f + 1000.f)* Scale3DRate
-				);
-				++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
-
+				Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
-
 				m_ShootTimer = 0.1f;
 			}
 			m_ShootTimer = std::max(m_ShootTimer - DrawerMngr->GetDeltaTime(), 0.f);
