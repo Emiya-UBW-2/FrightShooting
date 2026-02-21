@@ -116,8 +116,8 @@ void MyPlane::Update_Sub(void) noexcept {
 		Util::VECTOR3D MoveVec = Util::VECTOR3D::forward();
 		//上下
 		{
-			bool UpKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::W);
-			bool DownKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::S);
+			bool UpKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::S);
+			bool DownKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::W);
 			float prev = m_MovePointAdd.y;
 			if (UpKey && !DownKey) {
 				m_MovePointAdd.y -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
@@ -137,16 +137,16 @@ void MyPlane::Update_Sub(void) noexcept {
 			bool LeftKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::A);
 			bool RightKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::D);
 
-			bool Left2Key = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Q);
-			bool Right2Key = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::E);
+			bool Left2Key = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Q);
+			bool Right2Key = KeyMngr->GetBattleKeyPress(Util::EnumBattle::E);
 
 			float prev = m_MovePointAdd.x;
 			if (LeftKey && !RightKey) {
-				m_MovePointAdd.x -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				m_MovePointAdd.x -= 5.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.x = -0.3f;
 			}
 			if (RightKey && !LeftKey) {
-				m_MovePointAdd.x += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				m_MovePointAdd.x += 5.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.x = 0.3f;
 			}
 			/*
@@ -184,11 +184,11 @@ void MyPlane::Update_Sub(void) noexcept {
 
 			m_RollingTimer = std::max(m_RollingTimer - DrawerMngr->GetDeltaTime(), 0.f);
 			if (Left2Key && !Right2Key) {
-				RollPer = Util::deg2rad(-20000.f * DrawerMngr->GetDeltaTime());
+				RollPer = Util::deg2rad(-90.f * DrawerMngr->GetDeltaTime());
 				m_RollingTimer = 0.2f;
 			}
 			if (Right2Key && !Left2Key) {
-				RollPer = Util::deg2rad(20000.f * DrawerMngr->GetDeltaTime());
+				RollPer = Util::deg2rad(90.f * DrawerMngr->GetDeltaTime());
 				m_RollingTimer = 0.2f;
 			}
 
