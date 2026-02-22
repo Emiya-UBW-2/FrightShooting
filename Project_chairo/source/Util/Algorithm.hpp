@@ -789,6 +789,14 @@ namespace Util {
 		return value;
 	}
 
+	// -Pi~Piに収める
+	inline float AngleRange180(float value) noexcept {
+		value = AngleRange360(value);
+		if (value >= DX_PI_F) {
+			value -= DX_PI_F * 2.f;
+		}
+		return value;
+	}
 	// --------------------------------------------------------------------------------------------------
 	// 角度変換
 	// --------------------------------------------------------------------------------------------------

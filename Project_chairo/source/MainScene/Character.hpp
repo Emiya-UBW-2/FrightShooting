@@ -524,7 +524,10 @@ class MyPlane :public BaseObject {
 
 	int					DamageID{};
 
-	float					m_RollingTimer{ 0.f };
+	float					m_RollingTimer1{ 0.f };
+	float					m_RollingTimer2{ 0.f };
+	float					m_RollingInputTimer1{ 0.f };
+	float					m_RollingInputTimer2{ 0.f };
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
@@ -540,7 +543,7 @@ public:
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
 
 	
-	bool			IsRollingActive() const { return this->m_RollingTimer>0.f; }
+	bool			IsRollingActive() const { return this->m_RollingTimer1 > 0.f || this->m_RollingTimer2 > 0.f; }
 
 	float			GetSpeed() const { return this->m_Speed; }
 	float			GetSpeedMax(void) const noexcept {

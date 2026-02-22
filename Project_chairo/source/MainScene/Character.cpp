@@ -140,14 +140,17 @@ void MyPlane::Update_Sub(void) noexcept {
 			bool Left2Key = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Q);
 			bool Right2Key = KeyMngr->GetBattleKeyPress(Util::EnumBattle::E);
 
+			bool Left2Trig = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Q);
+			bool Right2Trig = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::E);
+
 			float prev = m_MovePointAdd.x;
 			if (LeftKey && !RightKey) {
-				m_MovePointAdd.x -= 5.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.x = -0.3f;
+				m_MovePointAdd.x -= 15.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				MoveVec.x = -0.6f;
 			}
 			if (RightKey && !LeftKey) {
-				m_MovePointAdd.x += 5.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.x = 0.3f;
+				m_MovePointAdd.x += 15.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				MoveVec.x = 0.6f;
 			}
 			/*
 			if (Left2Key && !Right2Key) {
@@ -175,25 +178,47 @@ void MyPlane::Update_Sub(void) noexcept {
 			}
 			if (prev != m_MovePointAdd.x) {
 				if (LeftKey && !RightKey) {
-					RollPer = Util::deg2rad(-200.f * DrawerMngr->GetDeltaTime());
+					RollPer = Util::deg2rad(-30);
 				}
 				if (RightKey && !LeftKey) {
-					RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
+					RollPer = Util::deg2rad(30);
 				}
 			}
 
-			m_RollingTimer = std::max(m_RollingTimer - DrawerMngr->GetDeltaTime(), 0.f);
+			m_RollingTimer1 = std::max(m_RollingTimer1 - DrawerMngr->GetDeltaTime(), 0.f);
+			m_RollingTimer2 = std::max(m_RollingTimer2 - DrawerMngr->GetDeltaTime(), 0.f);
+			m_RollingInputTimer1 = std::max(m_RollingInputTimer1 - DrawerMngr->GetDeltaTime(), 0.f);
+			m_RollingInputTimer2 = std::max(m_RollingInputTimer2 - DrawerMngr->GetDeltaTime(), 0.f);
+			if (Left2Trig && !Right2Trig) {
+				if (m_RollingInputTimer1 != 0.f) {
+					m_RollingTimer1 = 0.5f;
+				}
+				m_RollingInputTimer1 = 0.2f;
+			}
+			if (Right2Trig && !Left2Trig) {
+				if (m_RollingInputTimer2 != 0.f) {
+					m_RollingTimer2 = 0.5f;
+				}
+				m_RollingInputTimer2 = 0.2f;
+			}
 			if (Left2Key && !Right2Key) {
-				RollPer = Util::deg2rad(-90.f * DrawerMngr->GetDeltaTime());
-				m_RollingTimer = 0.2f;
+				RollPer = Util::deg2rad(-90);
 			}
 			if (Right2Key && !Left2Key) {
-				RollPer = Util::deg2rad(90.f * DrawerMngr->GetDeltaTime());
-				m_RollingTimer = 0.2f;
+				RollPer = Util::deg2rad(90);
 			}
 
-			Util::Easing(&m_RollPer, RollPer, 0.9f);
-			this->m_Roll *= Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
+			if (this->m_RollingTimer1 > 0.f) {
+				m_RollPer = Util::AngleRange180(m_RollPer - Util::deg2rad(360 / 0.5f) * DrawerMngr->GetDeltaTime());
+			}
+			else if (this->m_RollingTimer2 > 0.f) {
+				m_RollPer = Util::AngleRange180(m_RollPer + Util::deg2rad(360 / 0.5f) * DrawerMngr->GetDeltaTime());
+			}
+			else {
+				Util::Easing(&m_RollPer, RollPer, 0.95f);
+			}
+
+			this->m_Roll = Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
 		}
 		Util::Easing(&m_MoveVec, MoveVec, 0.95f);
 		Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
