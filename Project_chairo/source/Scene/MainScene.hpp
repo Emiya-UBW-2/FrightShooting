@@ -150,14 +150,15 @@ class EnemyScript {
 	float					m_Frame{};
 	bool					m_IsActive{ false };
 	bool					m_IsDown{ false };
+	char		padding[2]{};
 public:
-	auto& EnemyObj(void) noexcept {
-		return PlayerManager::Instance()->SetEnemy().at(m_EnemyID);
+	auto& EnemyObj(void) const noexcept {
+		return PlayerManager::Instance()->SetEnemy().at(static_cast<size_t>(m_EnemyID));
 	}
 	void SetActive(void) noexcept {
-		m_EnemyID = PlayerManager::Instance()->SetEnemy().size();
+		m_EnemyID = static_cast<int>(PlayerManager::Instance()->SetEnemy().size());
 		PlayerManager::Instance()->SetEnemy().emplace_back();
-		PlayerManager::Instance()->SetEnemy().at(m_EnemyID) = std::make_shared<Enemy>();
+		PlayerManager::Instance()->SetEnemy().at(static_cast<size_t>(m_EnemyID)) = std::make_shared<Enemy>();
 		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), "data/model/Plane/");
 		EnemyObj()->SetPos(Util::VECTOR3D::vget(5.f, 15.f, 0.f) * Scale3DRate, Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
 		m_IsActive = true;
@@ -238,9 +239,9 @@ public:
 	void Update() noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		if (!m_IsDown) {
-			for (int loop = 1; loop < m_EnemyMove.size(); ++loop) {
-				if (m_EnemyMove.at(loop - 1).m_Frame <= m_Frame && m_Frame <= m_EnemyMove.at(loop).m_Frame) {
-					float Per = (m_Frame - m_EnemyMove.at(loop - 1).m_Frame) / (m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
+			for (size_t loop = 1; loop < m_EnemyMove.size(); ++loop) {
+				if (static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame) <= m_Frame && m_Frame <= static_cast<float>(m_EnemyMove.at(loop).m_Frame)) {
+					float Per = (m_Frame - static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame)) / static_cast<float>(m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
 					Util::VECTOR3D Pos = Util::Lerp(m_EnemyMove.at(loop - 1).m_Pos, m_EnemyMove.at(loop).m_Pos, Per);
 					Util::Matrix3x3 Rot = Util::Lerp(m_EnemyMove.at(loop - 1).m_Rot, m_EnemyMove.at(loop).m_Rot, Per);
 
@@ -249,7 +250,7 @@ public:
 				}
 			}
 
-			for (int loop = 0; loop < m_EnemyAmmo.size(); ++loop) {
+			for (size_t loop = 0; loop < m_EnemyAmmo.size(); ++loop) {
 				if (std::fabsf(m_Frame - static_cast<float>(m_EnemyAmmo.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
 					switch (m_EnemyAmmo.at(loop).m_AmmoMoveType) {
 					case AmmoMoveType::Fixed:
@@ -286,10 +287,12 @@ public:
 
 struct EnemyPop {
 	int				m_Frame{};
+	char		padding[4]{};
 	EnemyScript		m_EnemyScript;
 };
 class StageScript {
 	std::vector<EnemyPop>	m_EnemyPop;
+	char		padding[4]{};
 	float					m_Frame{};
 public:
 	auto& EnemyPop(void) noexcept {
@@ -320,7 +323,7 @@ public:
 		m_Frame = 0.f;
 	}
 	void Update() noexcept {
-		for (int loop = 0; loop < m_EnemyPop.size(); ++loop) {
+		for (size_t loop = 0; loop < m_EnemyPop.size(); ++loop) {
 			if (std::fabsf(m_Frame - static_cast<float>(m_EnemyPop.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
 				m_EnemyPop.at(loop).m_EnemyScript.SetActive();
 				break;

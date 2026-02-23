@@ -34,7 +34,6 @@ void Enemy::Init_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
 }
 void Enemy::Update_Sub(void) noexcept {
-	auto* DrawerMngr = Draw::MainDraw::Instance();
 	//
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());

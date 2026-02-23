@@ -385,6 +385,7 @@ class Enemy :public BaseObject {
 	float				m_SpeedTarget{ 0.f };
 	float				m_ShootTimer{};
 	float				m_RollPer{};
+	char		padding[4]{};
 
 	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
 	int													m_ShotEffectID{};
@@ -401,6 +402,7 @@ class Enemy :public BaseObject {
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 
 	Util::Matrix4x4			RailMat;
+	char		padding2[4]{};
 
 	int						m_HitPoint{ m_HitPointMax };
 	static constexpr int	m_HitPointMax{ 100 };
@@ -499,6 +501,7 @@ class MyPlane :public BaseObject {
 	float				m_SpeedTarget{ 0.f };
 	float				m_ShootTimer{};
 	float				m_RollPer{};
+	char		padding[4]{};
 
 	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
 	int													m_ShotEffectID{};
