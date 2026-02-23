@@ -574,12 +574,12 @@ public:
 	}
 	int				GetDamageID(void) const noexcept { return DamageID; }
 
-	void			Shot(Util::Matrix4x4 Mat) noexcept {
+	void			Shot(Util::Matrix4x4 Mat,float speed) noexcept {
 		this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat);
 		++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
 
 		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat, 0,
-			(200.f / 60.f * 1000.f + 1000.f) * Scale3DRate
+			speed * Scale3DRate
 		);
 		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 	}

@@ -21,19 +21,19 @@
 			"Type":"GraphicsPreset",
 			"SelectType": "Select",
 			"Value" : ["Low","Middle","High","Ultra"],
-			"DefaultValue" : "Low"
+			"DefaultValue" : "Middle"
 		},
 		{
 			"Type":"DrawScale",
 			"SelectType" : "Int",
 			"Value" : [25,100],
-			"DefaultValue" : 50
+			"DefaultValue" : 80
 		},
 		{
 			"Type":"ObjectLevel",
 			"SelectType": "Select",
 			"Value" : ["Low","Middle","High"],
-			"DefaultValue" : "Low"
+			"DefaultValue" : "Middle"
 		},
 		{
 			"Type":"DoF",
@@ -63,7 +63,7 @@
 			"Type":"Fov",
 			"SelectType" : "Int",
 			"Value" : [45,180],
-			"DefaultValue" : 90
+			"DefaultValue" : 120
 		},
 		{
 			"Type":"ScreenEffect",
@@ -93,19 +93,19 @@
 			"Type":"Distortion",
 			"SelectType": "Select",
 			"SelectType" : "Bool",
-			"DefaultValue" : "True"
+			"DefaultValue" : "False"
 		},
 		{
 			"Type":"MotionBlur",
 			"SelectType": "Select",
 			"SelectType" : "Bool",
-			"DefaultValue" : "True"
+			"DefaultValue" : "False"
 		},
 		{
 			"Type":"MasterVolume",
 			"SelectType" : "Int",
 			"Value" : [0,100],
-			"DefaultValue" : 50
+			"DefaultValue" : 100
 		},
 		{
 			"Type":"BGMVolume",

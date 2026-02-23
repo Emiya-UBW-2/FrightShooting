@@ -75,9 +75,11 @@ namespace Draw {
 		~MainDraw(void) noexcept;
 	public://Getter
 		auto	GetFrameRate(void) const noexcept {
+			/*
 			if (this->m_UpdateTickCount >= 2 || m_FPSLimit == 30) {
 				return 30.f;
 			}
+			//*/
 			return static_cast<float>(this->m_CalculateTick);
 		}
 		auto	GetDeltaTime(void) const noexcept { return 1.f / GetFrameRate(); }

@@ -68,11 +68,13 @@ void Enemy::Update_Sub(void) noexcept {
 				SEGMENT_SEGMENT_RESULT Result;
 				Util::GetSegmenttoSegment(Player->GetMat().pos(), Player->GetMat().pos(),
 					a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-				if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+				if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
 					if (Player->IsRollingActive()) {
 						//はじく
+						Player->Shot(
+							Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), a->GetVector().normalized()) *
+							Util::Matrix4x4::Mtrans(Player->GetMat().pos()), 25.f+200.f);
 						a->SetHit(Result.SegB_MinDist_Pos);
-						Player->Shot(Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), a->GetVector()) * Util::Matrix4x4::Mtrans(Player->GetMat().pos()));
 					}
 					else {
 						a->SetHit(Result.SegB_MinDist_Pos);
@@ -196,13 +198,13 @@ void MyPlane::Update_Sub(void) noexcept {
 				if (m_RollingInputTimer1 != 0.f) {
 					m_RollingTimer1 = 0.5f;
 				}
-				m_RollingInputTimer1 = 0.2f;
+				m_RollingInputTimer1 = 0.3f;
 			}
 			if (Right2Trig && !Left2Trig) {
 				if (m_RollingInputTimer2 != 0.f) {
 					m_RollingTimer2 = 0.5f;
 				}
-				m_RollingInputTimer2 = 0.2f;
+				m_RollingInputTimer2 = 0.3f;
 			}
 			if (Left2Key && !Right2Key) {
 				RollPer = Util::deg2rad(-90);
@@ -271,8 +273,8 @@ void MyPlane::Update_Sub(void) noexcept {
 		}
 		else {
 			if (m_ShootTimer == 0.f) {
-				Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
+				Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f);
+				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 200.f * Scale3DRate);
 				m_ShootTimer = 0.1f;
 			}
 			m_ShootTimer = std::max(m_ShootTimer - DrawerMngr->GetDeltaTime(), 0.f);

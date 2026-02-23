@@ -280,6 +280,7 @@ namespace Util {
 		int GetOptionType(OptionType ID) const noexcept { return this->m_OptionID.at(static_cast<size_t>(ID)); }
 	public:
 		void Load(void) noexcept {
+			if (!File::IsFileExist("Save/Option.dat")) { return; }
 			File::InputFileStream Istream("Save/Option.dat");
 			while (!Istream.ComeEof()) {
 				std::string Line = File::InputFileStream::getleft(Istream.SeekLineAndGetStr(), "//");

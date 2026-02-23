@@ -163,7 +163,7 @@ void MainScene::Update_Sub(void) noexcept {
 	if (Watch->GetHitPoint() != 0) {
 		Util::Matrix4x4 EyeMat = Watch->GetEyeMatrix();
 		CamTarget = EyeMat.pos();
-		CamPosition = EyeMat.pos() - EyeMat.zvec() * (-15.f * Scale3DRate);
+		CamPosition = EyeMat.pos() - EyeMat.zvec() * (-15.f * Scale3DRate);// +Util::VECTOR3D::up() * (10.f * Scale3DRate);
 		CamUp = EyeMat.yvec();
 	}
 	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
@@ -183,6 +183,8 @@ void MainScene::Draw_Sub(void) noexcept {
 	m_AimPoint->CalcPoint();
 	BackGround::Instance()->Draw();
 	ObjectManager::Instance()->Draw();
+	//カーソル
+	m_AimPoint->Draw();
 }
 void MainScene::DrawFront_Sub(void) noexcept {
 	ObjectManager::Instance()->DrawFront();
@@ -199,8 +201,6 @@ void MainScene::ShadowDraw_Sub(void) noexcept {
 }
 void MainScene::UIDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
-	//カーソル
-	m_AimPoint->Draw();
 	//
 	this->m_MainUI->Draw();
 	//
