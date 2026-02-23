@@ -100,16 +100,17 @@ public:
 	void CalcPoint() noexcept {
 		auto& Watch = PlayerManager::Instance()->SetPlane();
 
+		auto Mat = Watch->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1));
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		{
-			auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2() * (25.f * Scale3DRate)).get());
+			auto Pos2D = ConvWorldPosToScreenPos((Mat.pos() + Mat.zvec2() * (25.f * Scale3DRate)).get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
 				this->m_AimPoint2D_Near.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
 				this->m_AimPoint2D_Near.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
 			}
 		}
 		{
-			auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2() * (50.f * Scale3DRate)).get());
+			auto Pos2D = ConvWorldPosToScreenPos((Mat.pos() + Mat.zvec2() * (50.f * Scale3DRate)).get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
 				this->m_AimPoint2D_Far.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
 				this->m_AimPoint2D_Far.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());

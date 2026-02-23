@@ -114,20 +114,21 @@ void MyPlane::Update_Sub(void) noexcept {
 	//移動
 	{
 		Util::VECTOR3D MoveVec = Util::VECTOR3D::forward();
+		float RollingCam = 0.f;
 		//上下
 		{
 			bool UpKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::S);
 			bool DownKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::W);
 			float prev = m_MovePointAdd.y;
 			if (UpKey && !DownKey) {
-				m_MovePointAdd.y -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				m_MovePointAdd.y -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.y = -0.3f;
 			}
 			if (DownKey && !UpKey) {
-				m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.y = 0.3f;
 			}
-			m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -4.f * Scale3DRate, 4.f * Scale3DRate);
+			m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -12.f * Scale3DRate, 12.f * Scale3DRate);
 			if (prev == m_MovePointAdd.y) {
 				MoveVec.y = 0.0f;
 			}
@@ -145,12 +146,14 @@ void MyPlane::Update_Sub(void) noexcept {
 
 			float prev = m_MovePointAdd.x;
 			if (LeftKey && !RightKey) {
-				m_MovePointAdd.x -= 15.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				m_MovePointAdd.x -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.x = -0.6f;
+				RollingCam = Util::deg2rad(-10);
 			}
 			if (RightKey && !LeftKey) {
-				m_MovePointAdd.x += 15.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+				m_MovePointAdd.x += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.x = 0.6f;
+				RollingCam = Util::deg2rad(10);
 			}
 			/*
 			if (Left2Key && !Right2Key) {
@@ -162,9 +165,10 @@ void MyPlane::Update_Sub(void) noexcept {
 				MoveVec.x = 0.6f;
 			}
 			//*/
-			m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -6.f * Scale3DRate, 6.f * Scale3DRate);
+			m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -18.f * Scale3DRate, 18.f * Scale3DRate);
 			if (prev == m_MovePointAdd.x) {
 				MoveVec.x = 0.0f;
+				RollingCam = Util::deg2rad(0);
 			}
 
 			float RollPer = 0.f;
@@ -203,9 +207,11 @@ void MyPlane::Update_Sub(void) noexcept {
 			}
 			if (Left2Key && !Right2Key) {
 				RollPer = Util::deg2rad(-90);
+				RollingCam = Util::deg2rad(-10);
 			}
 			if (Right2Key && !Left2Key) {
 				RollPer = Util::deg2rad(90);
+				RollingCam = Util::deg2rad(10);
 			}
 
 			if (this->m_RollingTimer1 > 0.f) {
@@ -221,6 +227,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			this->m_Roll = Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
 		}
 		Util::Easing(&m_MoveVec, MoveVec, 0.95f);
+		Util::Easing(&m_RollingCam, RollingCam, 0.975f);
 		Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
 	}
 	// 進行方向に前進

@@ -528,6 +528,8 @@ class MyPlane :public BaseObject {
 	float					m_RollingTimer2{ 0.f };
 	float					m_RollingInputTimer1{ 0.f };
 	float					m_RollingInputTimer2{ 0.f };
+
+	float					m_RollingCam{ 0.f };
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
@@ -554,7 +556,10 @@ public:
 		m_Roll = Util::Matrix3x3::identity();
 	}
 	auto			GetEyeMatrix(void) const noexcept {
-		return RailMat;
+		return 
+			Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), m_RollingCam) *
+			Util::Matrix4x4::Mtrans(m_MovePoint*-0.5f)*
+			RailMat;
 	}
 	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
 

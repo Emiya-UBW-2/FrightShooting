@@ -163,7 +163,7 @@ void MainScene::Update_Sub(void) noexcept {
 	if (Watch->GetHitPoint() != 0) {
 		Util::Matrix4x4 EyeMat = Watch->GetEyeMatrix();
 		CamTarget = EyeMat.pos();
-		CamPosition = EyeMat.pos() - EyeMat.zvec() * (-10.f * Scale3DRate);
+		CamPosition = EyeMat.pos() - EyeMat.zvec() * (-15.f * Scale3DRate);
 		CamUp = EyeMat.yvec();
 	}
 	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
