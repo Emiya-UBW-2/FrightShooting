@@ -72,6 +72,5 @@ public:
 		MapID.DrawModel();
 	}
 	void ShadowDraw(void) const noexcept {
-		MapID.DrawModel();
 	}
 };

@@ -205,7 +205,7 @@ namespace Draw {
 				TargetGraph->SetDraw_Screen(false);
 				{
 					TargetGraph->DrawGraph(0, 0, true);
-					pScreenBuffer2->DrawGraph(0, 0, true);
+					pScreenBuffer->DrawGraph(0, 0, true);
 				}
 				ScreenBufferPool->ResetUseCount(xsizeEx, ysizeEx, true);
 				ScreenBufferPool->ResetUseCount(xsizeEx, ysizeEx, true);
@@ -216,7 +216,7 @@ namespace Draw {
 		}
 	};
 	class PostPassSSAO : public PostPassEffect::PostPassBase {
-		static const int EXTEND = 4;
+		static const int EXTEND = 2;
 	private:
 		Shader2DController				m_Shader;		// シェーダー
 	protected:

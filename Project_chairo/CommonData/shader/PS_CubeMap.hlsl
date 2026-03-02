@@ -89,19 +89,21 @@ float3 DisptoProjNorm(float2 screenUV) {
 PS_OUTPUT main(PS_INPUT PSInput) {
 	//戻り値
 	PS_OUTPUT PSOutput;
+    float2 uv = PSInput.TextureCoord0;
+    uv.y = 1.f - uv.y;
 	//反射をどれだけ見せるか
-    float uvFactor = 2.0 * length(PSInput.TextureCoord0 - float2(0.5, 0.5));
+    float uvFactor = 2.0 * length(uv - float2(0.5, 0.5));
     uvFactor *= uvFactor;
     uvFactor *= uvFactor;
     float edge = max(0.0, 1.0 - uvFactor);
-    float Per = GetTexColor2(PSInput.TextureCoord0).g * edge;
+    float Per = GetTexColor2(uv).g * edge;
 	//ノーマル座標取得
-    float3 normal = GetTexColor1(PSInput.TextureCoord0).xyz * 2.f - 1.f;
+    float3 normal = GetTexColor1(uv).xyz * 2.f - 1.f;
     
 	//処理
     float4 lWorldPosition;
 	//キューブマップからの反射
-    lWorldPosition.xyz = DisptoProjNorm(PSInput.TextureCoord0);
+    lWorldPosition.xyz = DisptoProjNorm(uv);
     lWorldPosition.w = 0.f;
 	
 	// ワールド座標を射影座標に変換

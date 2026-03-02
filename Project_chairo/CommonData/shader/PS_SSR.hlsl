@@ -118,7 +118,7 @@ bool Hitcheck(float3 position) {
 	}
 }
 
-static float maxLength = 12.5f *100.f; // ”½ËÅ‘å‹——£
+static float maxLength = 12.5f *300.f; // ”½ËÅ‘å‹——£
 static int BinarySearchIterations = 24; //2•ª’TõÅ‘å”
 
 float4 applySSR(float3 normal, float2 screenUV) {
@@ -221,9 +221,19 @@ PS_OUTPUT main(PS_INPUT PSInput) {
             PSOutput.color0.a = 0.0;
         }
     }
+
     if (PSOutput.color0.a == 0.f)
     {
         PSOutput.color0 = lerp(PSOutput.color0, RefColor, Per);
     }
+    else
+    {
+        float depth = GetTexColor2(UV).r;
+        PSOutput.color0.r = lerp(PSOutput.color0.r, 0.f, saturate(depth / maxLength));
+        PSOutput.color0.g = lerp(PSOutput.color0.g, 0.f, saturate(depth / maxLength));
+        PSOutput.color0.b = lerp(PSOutput.color0.b, 0.f, saturate(depth / maxLength));
+        PSOutput.color0.a = lerp(PSOutput.color0.a, 0.f, saturate(depth / maxLength));
+    }
+
 	return PSOutput;
 }

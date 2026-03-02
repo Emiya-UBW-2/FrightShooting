@@ -60,7 +60,7 @@ void MainScene::Update_Sub(void) noexcept {
 	auto* CameraParts = Camera::Camera3D::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
-	PostPassParts->SetShadowScale(20.f);
+	PostPassParts->SetShadowScale(7.5f);
 
 	KeyGuideParts->ChangeGuide(
 		[this]() {
