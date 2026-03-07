@@ -14,10 +14,10 @@ class TitleUI {
 private:
 	Draw::DrawUISystem*						m_DrawUI{ nullptr };
 	int										m_UIBase{ InvalidID };
-	int										m_ButtonID[4] = { InvalidID,InvalidID,InvalidID,InvalidID };
+	int										m_ButtonID[2] = { InvalidID,InvalidID };
 	bool									m_IsActive{};
 	char		padding[3]{};
-	std::array<std::function<void()>, 4>	m_ButtonDo{};
+	std::array<std::function<void()>, 2>	m_ButtonDo{};
 
 	Sound::SoundUniqueID					m_cancelID{ InvalidID };
 	Sound::SoundUniqueID					m_cursorID{ InvalidID };
@@ -49,7 +49,7 @@ public:
 		this->m_DrawUI->Init("data/UI/Title/TitleUI.json");
 		this->m_UIBase = this->m_DrawUI->GetID("");
 
-		for (int loop = 0; loop < 4; ++loop) {
+		for (int loop = 0; loop < 2; ++loop) {
 			std::string Path = "Tab";
 			Path += std::to_string(loop + 1);
 			this->m_ButtonID[loop] = this->m_DrawUI->GetID(Path.c_str());
@@ -61,7 +61,7 @@ public:
 		this->m_DrawUI->Update(IsActive());
 		if (IsActive()) {
 			int IsSelect = InvalidID;
-			for (int loop = 0; loop < 4; ++loop) {
+			for (int loop = 0; loop < 2; ++loop) {
 				if (this->m_DrawUI->Get(this->m_ButtonID[loop]).IsSelectButton()) {
 					IsSelect = loop;
 					break;
@@ -73,14 +73,14 @@ public:
 			this->m_isSelectSoundPrev = IsSelect;
 
 			if (KeyMngr->GetMenuKeyTrigger(Util::EnumMenu::Diside)) {
-				for (int loop = 0; loop < 4; ++loop) {
+				for (int loop = 0; loop < 2; ++loop) {
 					if (this->m_DrawUI->Get(this->m_ButtonID[loop]).IsSelectButton()) {
 						Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_OKID)->Play(DX_PLAYTYPE_BACK, TRUE);
 					}
 				}
 			}
 			if (KeyMngr->GetMenuKeyReleaseTrigger(Util::EnumMenu::Diside)) {
-				for (int loop = 0; loop < 4; ++loop) {
+				for (int loop = 0; loop < 2; ++loop) {
 					if (this->m_DrawUI->Get(this->m_ButtonID[loop]).IsSelectButton()) {
 						if (this->m_ButtonDo[static_cast<size_t>(loop)]) {
 							this->m_ButtonDo[static_cast<size_t>(loop)]();

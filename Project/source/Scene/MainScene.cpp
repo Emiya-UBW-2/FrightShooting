@@ -312,6 +312,9 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	}
 }
 void MainScene::Dispose_Sub(void) noexcept {
+	Util::SaveData::Instance()->SetParam("score", std::max<int64_t>(Util::SaveData::Instance()->GetParam("score"), PlayerManager::Instance()->GetScore()));
+	Util::SaveData::Instance()->Save();
+
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->StopAll();
 	BackGround::Release();

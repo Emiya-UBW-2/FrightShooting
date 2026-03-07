@@ -210,6 +210,7 @@ private:
 	float YVecAdd{};
 	float Timer{};
 	float DrawTimer{};
+	char		padding3[4]{};
 	Sound::SoundUniqueID HitGroundID{ InvalidID };
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	std::array<std::shared_ptr<AmmoHitEffect>, 10>	m_AmmoEffectPer{};

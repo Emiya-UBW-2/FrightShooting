@@ -37,12 +37,8 @@ protected:
 		this->m_TitleUI.SetEvent(0, [this]() {
 			this->m_TitleUI.SetEnd();
 			});
-		this->m_TitleUI.SetEvent(1, []() {
-			});
-		this->m_TitleUI.SetEvent(2, [this]() {
+		this->m_TitleUI.SetEvent(1, [this]() {
 			this->m_OptionWindow.SetActive(true);
-			});
-		this->m_TitleUI.SetEvent(3, []() {
 			});
 
 		this->m_EndUI.Init();

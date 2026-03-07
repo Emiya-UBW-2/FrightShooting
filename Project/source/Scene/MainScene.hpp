@@ -148,14 +148,14 @@ public:
 			float Rad = std::atan2f(Vec1.x, -Vec1.z);
 
 			for (int loop = 0; loop < 8; ++loop) {
-				int X2 = X + std::sin(Util::deg2rad(loop * 360 / 8)) * (200.f + 6.f), Y2 = Y + std::cos(Util::deg2rad(loop * 360 / 8)) * (200.f + 6.f);
-				int X3 = X + std::sin(Util::deg2rad(loop * 360 / 8)) * (200.f + 12.f), Y3 = Y + std::cos(Util::deg2rad(loop * 360 / 8)) * (200.f + 12.f);
+				int X2 = X + static_cast<int>(std::sin(Util::deg2rad(loop * 360 / 8)) * (200.f + 6.f)), Y2 = Y + static_cast<int>(std::cos(Util::deg2rad(loop * 360 / 8)) * (200.f + 6.f));
+				int X3 = X + static_cast<int>(std::sin(Util::deg2rad(loop * 360 / 8)) * (200.f + 12.f)), Y3 = Y + static_cast<int>(std::cos(Util::deg2rad(loop * 360 / 8)) * (200.f + 12.f));
 				DrawLine(X2, Y2, X3, Y3, ColorPalette::Black, 3);
 			}
 
 			for (int loop = 0; loop < 36; ++loop) {
-				int X2 = X + std::sin(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 6.f), Y2 = Y + std::cos(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 6.f);
-				int X3 = X + std::sin(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 12.f), Y3 = Y + std::cos(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 12.f);
+				int X2 = X + static_cast<int>(std::sin(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 6.f)), Y2 = Y + static_cast<int>(std::cos(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 6.f));
+				int X3 = X + static_cast<int>(std::sin(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 12.f)), Y3 = Y + static_cast<int>(std::cos(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 12.f));
 				DrawLine(X2, Y2, X3, Y3, ColorPalette::Black, 3);
 			}
 			m_NRad->DrawRotaGraph(X, Y, 1.f, Rad, true);
@@ -171,7 +171,7 @@ public:
 				18, 18,
 				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8("TIME  : %d:%05.2f"),
 				static_cast<int>(PlayerManager::Instance()->GetTime() / 60.f),
-				PlayerManager::Instance()->GetTime() - static_cast<int>(PlayerManager::Instance()->GetTime() / 60.f) * 60.f);
+				PlayerManager::Instance()->GetTime() - static_cast<float>(static_cast<int>(PlayerManager::Instance()->GetTime() / 60.f)) * 60.f);
 
 			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, 32, 3)->DrawString(
 				Draw::FontXCenter::LEFT, Draw::FontYCenter::TOP,

@@ -31,7 +31,7 @@ public:
 	virtual ~Target(void) noexcept {}
 private:
 	int				GetFrameNum(void) noexcept override { return 0; }
-	const char* GetFrameStr(int id) noexcept override { return nullptr; }
+	const char* GetFrameStr(int) noexcept override { return nullptr; }
 public:
 	void Load_Sub(void) noexcept override {}
 	void Init_Sub(void) noexcept override {}
