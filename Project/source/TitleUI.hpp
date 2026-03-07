@@ -93,6 +93,13 @@ public:
 	}
 	void		Draw(void) noexcept {
 		this->m_DrawUI->Draw();
+
+		Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, 32, 3)->DrawString(
+			Draw::FontXCenter::LEFT, Draw::FontYCenter::TOP,
+			18, 18,
+			ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8("HIGH SCORE : %d"),
+			Util::SaveData::Instance()->GetParam("score")
+			);
 	}
 	void		Dispose(void) noexcept {
 		delete this->m_DrawUI;
