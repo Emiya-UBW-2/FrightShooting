@@ -110,6 +110,9 @@
     <ClCompile Include="source\Util\Algorithm.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="source\MainScene\Ammo.cpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\File\json.hpp">
@@ -197,6 +200,9 @@
       <Filter>ソース ファイル\MainScene</Filter>
     </ClInclude>
     <ClInclude Include="source\MainScene\PlayerManager.hpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MainScene\Ammo.hpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClInclude>
   </ItemGroup>

@@ -775,8 +775,8 @@ namespace Draw {
 			this->m_bkScreen2.Dispose();
 		}
 		bool		IsActive_Sub(void) noexcept override {
-			auto* pOption = Util::OptionParam::Instance();
-			return pOption->GetParam(pOption->GetOptionType(Util::OptionType::ScreenEffect))->IsActive();
+			//auto* pOption = Util::OptionParam::Instance();
+			return false;// pOption->GetParam(pOption->GetOptionType(Util::OptionType::ScreenEffect))->IsActive();
 		}
 		void		SetEffect_Sub(Draw::ScreenHandle* TargetGraph, PostPassEffect::Gbuffer*) noexcept override {
 			auto* DrawerMngr = Draw::MainDraw::Instance();

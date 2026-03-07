@@ -177,7 +177,7 @@ namespace Draw {
 		DxLib::ScreenFlip();
 		if (!this->m_WaitVSync) {
 			if (this->m_UpdateTickCount > 0) {
-				this->m_DrawTimer = static_cast<float>(DxLib::GetNowHiPerformanceCount() - this->m_StartTime) / 1000.f - this->m_CalcTimer;
+				this->m_DrawTimer = static_cast<float>(DxLib::GetNowHiPerformanceCount() - this->m_StartTime) / 1000.f / static_cast<float>(this->m_UpdateTickCount) - this->m_CalcTimer;
 			}
 			// 4msだけスリープ
 			while ((DxLib::GetNowHiPerformanceCount() - this->m_StartTime) < static_cast<LONGLONG>(1000 * (1000 / this->m_FPSLimit - 4))) {

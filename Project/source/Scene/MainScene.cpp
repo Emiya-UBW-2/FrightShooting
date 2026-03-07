@@ -10,29 +10,31 @@ void MainScene::Load_Sub(void) noexcept {
 
 	PlayerManager::Instance()->Load();
 
-	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
-	m_Lock = Draw::GraphPool::Instance()->Get("data/Image/Lock.png")->Get();
-	m_Alt = Draw::GraphPool::Instance()->Get("data/Image/alt.png")->Get();
-	m_Speed = Draw::GraphPool::Instance()->Get("data/Image/speed.png")->Get();
-	m_Meter = Draw::GraphPool::Instance()->Get("data/Image/meter.png")->Get();
-	m_Damage = Draw::GraphPool::Instance()->Get("data/Image/damage.png")->Get();
+	this->m_Main3DUI.Load();
+	this->m_MainUI.Load();
 }
 void MainScene::Init_Sub(void) noexcept {
+	auto* PostPassParts = Draw::PostPassEffect::Instance();
+
 	BackGround::Instance()->Init();
 
 	PlayerManager::Instance()->Init();
 
-	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+	auto& Player = (PlayerManager::Instance()->SetPlane().at(0));
 
 	Player->SetPos(Util::VECTOR3D::vget(0.f, 300.f * Scale3DRate, 500.f*Scale3DRate), Util::deg2rad(0));
 	for (size_t index = 1; index < PlayerManager::Instance()->GetPlane().size(); ++index) {
-		((std::shared_ptr<EnemyPlane>&)PlayerManager::Instance()->SetPlane().at(index))->SetPos(
-			Util::VECTOR3D::vget((static_cast<float>(index) - static_cast<float>(PlayerManager::Instance()->GetPlane().size() - 1 - 1) / 2.f) * 20.f * Scale3DRate, 300.f * Scale3DRate, -500.f * Scale3DRate), Util::deg2rad(90));
-	}
-	for (auto& c : PlayerManager::Instance()->SetPlane()) {
-		c->SetDamage(InvalidID);
+		auto& c = PlayerManager::Instance()->SetPlane().at(index);
+		c->SetPos(
+			Util::VECTOR3D::vget(
+				(static_cast<float>(index) - static_cast<float>(PlayerManager::Instance()->GetPlane().size() - 1 - 1) / 2.f) * 20.f * Scale3DRate,
+				300.f * Scale3DRate,
+				-500.f * Scale3DRate),
+			Util::deg2rad(90));
 	}
 	//
+	this->m_IsPauseActive = false;
+	this->m_IsRetire = false;
 	this->m_Exit = false;
 	this->m_Fade = 2.f;
 
@@ -42,7 +44,6 @@ void MainScene::Init_Sub(void) noexcept {
 
 	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(-0.3f, -0.7f, 0.3f).normalized();
 
-	auto* PostPassParts = Draw::PostPassEffect::Instance();
 	PostPassParts->SetAmbientLight(LightVec);
 
 	SetLightEnable(false);
@@ -58,17 +59,15 @@ void MainScene::Init_Sub(void) noexcept {
 
 	PostPassParts->SetGodRayPer(0.5f);
 
-	this->m_IsSceneEnd = false;
-	this->m_IsPauseActive = false;
-
 	this->m_OptionWindow.Init();
 	this->m_PauseUI.Init();
 
 	this->m_PauseUI.SetEvent(0, [this]() {
-		this->m_IsSceneEnd = true;
 		this->m_IsPauseActive = false;
 		auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 		KeyGuideParts->SetGuideFlip();
+		this->m_Exit = true;
+		this->m_IsRetire = true;
 		});
 	this->m_PauseUI.SetEvent(1, [this]() {
 		this->m_OptionWindow.SetActive(true);
@@ -151,40 +150,39 @@ void MainScene::Update_Sub(void) noexcept {
 			this->m_OptionWindow.SetActive(false);
 		}
 		this->m_PauseUI.Update();
-		if (this->m_IsSceneEnd && this->m_PauseUI.IsEnd()) {
-			this->m_Exit = true;
-		}
 		this->m_OptionWindow.Update();
 	}
-	if (this->m_IsPauseActive) {
+
+
+	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
+	if (m_Exit && (this->m_Fade >= 2.f)) {
+		SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
+		SceneBase::SetEndScene();
+	}
+
+	if (this->m_IsPauseActive || this->m_IsRetire) {
 		DxLib::SetMouseDispFlag(true);
 		m_IsResetMouse = true;
 		return;
 	}
-	auto& Player = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
+	auto& Watch = (PlayerManager::Instance()->SetPlane().at(0));
+
+	m_MainUI.Update();
 
 	m_DamagePer = std::max(m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
-	m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 1.f - Player->GetHitPointPer());
 	if (m_DamagePer == 0.f) {
-		CameraParts->SetCamShake(1.f, std::fabsf(Player->GetSpeed() - Player->GetSpeedMax()) / (Player->GetSpeedMax() * 2.f) * Scale3DRate);
-		if (Player->GetHitPointLow()) {
+		CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedBase()) / (Watch->GetSpeedBase() * 2.f) * Scale3DRate);
+		if (Watch->GetHitPointLow()) {
 			CameraParts->SetCamShake(1.f, 0.25f * Scale3DRate);
 		}
-		if (Player->GetDamageID() != InvalidID) {
+		if (Watch->GetDamageID() != InvalidID) {
 			CameraParts->SetCamShake(0.2f, 5.f * Scale3DRate);
 			m_DamagePer = 0.2f;
-			m_DamageWatch = 2.f;
+			m_MainUI.DamageUIActive();
 		}
 	}
-	for (auto& a : m_AtackPer) {
-		a = std::max(a - DrawerMngr->GetDeltaTime(), 0.f);
-	}
-	for (auto& c : PlayerManager::Instance()->SetPlane()) {
-		if (c->GetDamageID() == 0) {
-			m_AtackPer.at(m_AttackNow) = 1.f;
-			++m_AttackNow %= m_AtackPer.size();
-		}
-	}
+	m_Main3DUI.Update();
+	//TODO:SetDamageなくす
 	for (auto& c : PlayerManager::Instance()->SetPlane()) {
 		c->SetDamage(InvalidID);
 	}
@@ -200,8 +198,6 @@ void MainScene::Update_Sub(void) noexcept {
 	//更新
 	//float XPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionX() - DrawerMngr->GetDispWidth() / 2) / static_cast<float>(DrawerMngr->GetDispWidth() / 2), -1.f, 1.f);
 	//float YPer = std::clamp(static_cast<float>(DrawerMngr->GetMousePositionY() - DrawerMngr->GetDispHeight() / 2) / static_cast<float>(DrawerMngr->GetDispHeight() / 2), -1.f, 1.f);
-
-	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
 
 	this->m_FPSPer = std::clamp(this->m_FPSPer + (Watch->IsFPSView() ? 1.f : -1.f) * DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
 
@@ -231,7 +227,7 @@ void MainScene::Update_Sub(void) noexcept {
 		CamPosition2 = CamTarget2 - EyeMat.zvec() * (-10.f * Scale3DRate);
 		CamUp2 = EyeMat.yvec();
 	}
-	if (Watch->GetHitPoint() != 0) {
+	if (Watch->IsAlive()) {
 		CamPosition = Util::Lerp(CamPosition2, CamPosition1, this->m_FPSPer);
 		CamTarget = Util::Lerp(CamTarget2, CamTarget1, this->m_FPSPer);
 		CamUp = Util::Lerp(CamUp2, CamUp1, this->m_FPSPer);
@@ -252,22 +248,8 @@ void MainScene::Update_Sub(void) noexcept {
 	DxLib::SetMouseDispFlag(false);
 
 	BackGround::Instance()->Update();
-
-	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
-	if (!m_Exit) {
-	}
-	else {
-		if (this->m_Fade >= 2.f) {
-			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
-			SceneBase::SetEndScene();
-		}
-	}
-
 	//
-	{
-		PostPassParts->SetScopeParam().m_IsActive = false;
-	}
-	this->m_AimPointDraw = false;
+	PostPassParts->SetScopeParam().m_IsActive = false;
 }
 void MainScene::BGDraw_Sub(void) noexcept {
 	BackGround::Instance()->BGDraw();
@@ -288,19 +270,11 @@ void MainScene::Draw_Sub(void) noexcept {
 		}
 	}
 
-	auto* DrawerMngr = Draw::MainDraw::Instance();
-
-	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
-
-	auto Pos2D = ConvWorldPosToScreenPos((Watch->GetMat().pos() + Watch->GetMat().zvec2()*(100.f*Scale3DRate)).get());
-	if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-		this->m_AimPointDraw = true;
-		this->m_AimPoint2D.x = Pos2D.x * static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth());
-		this->m_AimPoint2D.y = Pos2D.y * static_cast<float>(DrawerMngr->GetDispHeight()) / static_cast<float>(DrawerMngr->GetRenderDispHeight());
-	}
-
 	BackGround::Instance()->Draw();
 	ObjectManager::Instance()->Draw();
+
+	//UI
+	this->m_Main3DUI.Draw();
 }
 void MainScene::DrawFront_Sub(void) noexcept {
 	ObjectManager::Instance()->DrawFront();
@@ -316,64 +290,11 @@ void MainScene::ShadowDraw_Sub(void) noexcept {
 	ObjectManager::Instance()->Draw_Shadow();
 }
 void MainScene::UIDraw_Sub(void) noexcept {
-	auto* DrawerMngr = Draw::MainDraw::Instance();
-	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
-	auto* Localize = Util::LocalizePool::Instance();
-	auto* CameraParts = Camera::Camera3D::Instance();
-
-	auto& Watch = ((std::shared_ptr<Plane>&)PlayerManager::Instance()->SetPlane().at(0));
-
-	if(this->m_AimPointDraw) {
-		SetDrawBright(0, 255, 0);
-		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y), 1.f, 0.f, true);
-		for (auto& a : m_AtackPer) {
-			if (a > 0.f) {
-				SetDrawBright(255, 0, 0);
-				DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * (1.f - std::fabsf(a - 0.7f) / 0.3f)), 0, 255));
-				m_Lock->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y), 1.f + std::powf(a, 2.f), 0.f, true);
-				DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-			}
-		}
-		SetDrawBright(255, 255, 255);
-	}
-	if (std::clamp(static_cast<int>(255.f * m_DamageWatch * 0.5f), 0, 255) > 10) {
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * m_DamageWatch*0.5f), 0, 255));
-		m_Damage->DrawExtendGraph(0, 0, 1920, 1080, true);
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-	}
-	{
-		float speed = Watch->GetSpeed() / (1.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f);
-
-		Util::Easing(&this->m_SpeedPer, 90.f + speed * 3.f + GetRandf(3.f), 0.9f);
-
-		int X = 1920 / 2 + 765 + static_cast<int>(CameraParts->GetShake().x * 10.f), Y = 1080 - 128 - 64 + static_cast<int>(CameraParts->GetShake().y * 10.f);
-		m_Speed->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
-		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_SpeedPer), true);
-	}
-	{
-		float alt = Watch->GetMat().pos().y / Scale3DRate;
-
-		Util::Easing(&this->m_AltPer, -alt / 500.f * 90.f + GetRandf(3.f), 0.9f);
-
-		int X = 1920 / 2 - 765 + static_cast<int>(CameraParts->GetShake().z * 10.f), Y = 1080 - 128 - 64 + static_cast<int>(CameraParts->GetShake().y * 10.f);
-		m_Alt->DrawRotaGraph(X, Y, 1.0f, 0.f, true);
-		m_Meter->DrawRotaGraph(X, Y, 1.0f, Util::deg2rad(this->m_AltPer), true);
-	}
-	{
-		int xpos = DrawerMngr->GetDispWidth() / 2;
-		int ypos = DrawerMngr->GetDispHeight() * 3 / 4;
-		if (false) {
-			KeyGuideParts->DrawButton(xpos - 24 / 2, ypos - 24 / 2, DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumBattle::Reload));
-			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->DrawString(
-				Draw::FontXCenter::MIDDLE, Draw::FontYCenter::TOP,
-				xpos, ypos + 18,
-				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8(Localize->Get(316)));
-			ypos += 52;
-		}
-	}
+	this->m_MainUI.Draw();
 	this->m_PauseUI.Draw();
 	this->m_OptionWindow.Draw();
 	{
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->m_Fade), 0, 255));
 		DxLib::DrawBox(0, 0, DrawerMngr->GetDispWidth(), DrawerMngr->GetDispHeight(), ColorPalette::Black, true);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);

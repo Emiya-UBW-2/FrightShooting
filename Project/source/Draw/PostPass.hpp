@@ -660,11 +660,11 @@ namespace Draw {
 					break;
 				case 1:
 					size = 2 << 9;
-					EXTEND = 2;
+					EXTEND = 1;
 					break;
 				case 2:
 					size = 2 << 10;
-					EXTEND = 2;
+					EXTEND = 1;
 					break;
 				case 3:
 					size = 2 << 10;
@@ -741,7 +741,7 @@ namespace Draw {
 					this->m_BaseShadowHandle.SetUseTextureToShader(0);
 					this->m_DepthScreenHandle.SetUseTextureToShader(1);
 					this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
-					this->m_Shader.SetPixelParam(3, ShadowLevel, this->m_Scale * 4500.f, Scale3DRate * 1.f * ThresholdLevel, Scale3DRate * 25.f * ThresholdLevel);
+					this->m_Shader.SetPixelParam(3, ShadowLevel, this->m_Scale * 1500.f, Scale3DRate * 1.f * ThresholdLevel, Scale3DRate * 25.f * ThresholdLevel);
 					this->m_Shader.SetVertexCameraMatrix(4, GetCamViewMatrix(false), GetCamProjectionMatrix(false));
 					this->m_Shader.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_Shader.Draw_lamda(doing);
@@ -749,7 +749,7 @@ namespace Draw {
 					this->m_BaseShadowHandle.SetUseTextureToShader(0);
 					this->m_DepthScreenHandle.SetUseTextureToShader(1);
 					this->m_DepthFarScreenHandle.SetUseTextureToShader(2);
-					this->m_ShaderRigid.SetPixelParam(3, ShadowLevel, this->m_Scale * 4500.f, Scale3DRate * 1.f * ThresholdLevel, Scale3DRate * 25.f * ThresholdLevel);
+					this->m_ShaderRigid.SetPixelParam(3, ShadowLevel, this->m_Scale * 1500.f, Scale3DRate * 1.f * ThresholdLevel, Scale3DRate * 25.f * ThresholdLevel);
 					this->m_ShaderRigid.SetVertexCameraMatrix(4, GetCamViewMatrix(false), GetCamProjectionMatrix(false));
 					this->m_ShaderRigid.SetVertexCameraMatrix(5, GetCamViewMatrix(true), GetCamProjectionMatrix(true));
 					this->m_ShaderRigid.Draw_lamda(doing_rigid);

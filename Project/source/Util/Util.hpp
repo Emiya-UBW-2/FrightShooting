@@ -11,6 +11,8 @@
 #include "DxLib.h"
 #include<string>
 #include<filesystem>
+#include <thread>
+#include <functional>
 #pragma warning( pop )
 
 #include "Enum.hpp"
@@ -418,4 +420,88 @@ namespace Util {
 		return (FileRead_findFirst(Path, &FileInfo) != (DWORD_PTR)InvalidID);
 		//*/
 	}
+
+
+	//スレッド実行処理
+	class ThreadJobs {
+		std::thread						m_Job;//作業スレッド
+		bool							m_JobEnd{};//ジョブ終了通知
+		bool							m_isDoing{ false };//
+		bool							m_IsDoEnd{};//ジョブ終了後作業終了通知
+		bool							m_isDoOnce{ false };//ジョブが終了したら一旦停止させるフラグ
+		char		padding[4]{};
+		std::function<void()>			m_Doing{ nullptr };//ジョブ
+		std::function<void()>			m_EndDoing{ nullptr };//ジョブ終了後作業
+	public:
+		ThreadJobs(void) noexcept {}
+		ThreadJobs(const ThreadJobs&) = delete;
+		ThreadJobs(ThreadJobs&&) = delete;
+		ThreadJobs& operator=(const ThreadJobs&) = delete;
+		ThreadJobs& operator=(ThreadJobs&&) = delete;
+		virtual ~ThreadJobs(void) noexcept {}
+	public:
+		void JobStart(void) noexcept {
+			if (!this->m_isDoing) {
+				this->m_isDoing = true;
+				this->m_JobEnd = true;
+				this->m_IsDoEnd = false;
+			}
+		}
+	public:
+		void MakeDoing() noexcept {
+			if (!this->m_JobEnd && !this->m_IsDoEnd) {
+				this->m_isDoing = true;
+			}
+		}
+	public:
+		void Init(std::function<void()> Doing, std::function<void()> EndDoing) noexcept {
+			this->m_Doing = Doing;
+			this->m_EndDoing = EndDoing;
+
+			//JobStart();
+			this->m_isDoing = true;
+			this->m_JobEnd = true;
+			this->m_IsDoEnd = true;
+		}
+		void Update(bool isActive) noexcept {
+			if (isActive) {
+				if (this->m_JobEnd) {
+					this->m_JobEnd = false;
+					if (this->m_IsDoEnd) {
+						this->m_IsDoEnd = false;
+						if (this->m_EndDoing) {
+							this->m_EndDoing();
+						}
+					}
+					if (!this->m_isDoOnce) {
+						this->m_isDoing = true;
+					}
+					if (this->m_isDoing) {
+						if (this->m_Job.joinable()) {
+							this->m_Job.detach();
+						}
+						std::thread tmp([&]() {
+							if (this->m_Doing) {
+								this->m_Doing();
+							}
+							this->m_JobEnd = true;
+							this->m_isDoing = false;
+							this->m_IsDoEnd = true;
+							});
+						this->m_Job.swap(tmp);
+						//強制待機
+						//this->m_Job.join();
+					}
+				}
+			}
+		}
+		void Dispose(void) noexcept {
+			if (this->m_Job.joinable()) {
+				this->m_Job.join();
+				//this->m_Job.detach();
+			}
+			this->m_Doing = nullptr;
+			this->m_EndDoing = nullptr;
+		}
+	};
 }

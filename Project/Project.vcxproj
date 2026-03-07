@@ -31,6 +31,7 @@
     <ClCompile Include="source\Draw\Voxel.cpp" />
     <ClCompile Include="source\File\FileStream.cpp" />
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\MainScene\Ammo.cpp" />
     <ClCompile Include="source\MainScene\BackGround.cpp" />
     <ClCompile Include="source\MainScene\BaseObject.cpp" />
     <ClCompile Include="source\MainScene\Character.cpp" />
@@ -61,6 +62,7 @@
     <ClInclude Include="source\Draw\Voxel.hpp" />
     <ClInclude Include="source\File\FileStream.hpp" />
     <ClInclude Include="source\File\json.hpp" />
+    <ClInclude Include="source\MainScene\Ammo.hpp" />
     <ClInclude Include="source\MainScene\BackGround.hpp" />
     <ClInclude Include="source\MainScene\BaseObject.hpp" />
     <ClInclude Include="source\MainScene\Character.hpp" />
