@@ -1,0 +1,82 @@
+0000=Audio
+0001=Graphic
+0002=Input
+0003=Else
+
+0010=ゲームを終了
+0011=ゲームを終了しますか？
+0012=終了
+
+0050=<
+0051=>
+0052=Reset
+
+0100=MasterVolume
+0101=BGMVolume
+0102=SEVolume
+
+0200=WindowMode
+0201=VSync
+0202=FPSLimit
+0203=Fov
+0204=GraphicsPreset
+0205=DrawScale
+0206=ObjectLevel
+0207=DoF
+0208=Bloom
+0209=Shadow
+0210=SSAO
+0211=ScreenEffect
+0212=Reflection
+0213=AntiAliasing
+0214=GodRay
+0215=Distortion
+0216=MotionBlur
+0217=Silhouette
+
+0300=XSensing
+0301=YSensing
+0302=Go Front
+0303=Go Back
+0304=Go Left
+0305=Go Right
+0306=Left Lean
+0307=Right Lean
+0308=Run
+0309=Walk
+0310=Squat
+0311=Prone
+0312=飛び込み
+0313=Attack
+0314=Use Sight
+0315=Change Weapon
+0316=Reload Weapon
+
+0330=決定
+0331=戻る
+0332=選択
+0333=PAUSE
+
+0334=移動
+0335=傾く
+0336=攻撃
+0337=構える
+0338=注視
+
+0340=終了
+
+0341=首を絞める
+0342=注射
+
+0400=HeadBobbing
+0401=Language
+
+1000=Game Start
+1001=Tutorial
+1002=Option
+1003=Credit
+
+1100=PAUSE
+1101=Return Title
+1102=Option
+1103=Return Game

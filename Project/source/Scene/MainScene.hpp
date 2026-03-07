@@ -74,6 +74,8 @@ class MainUI {
 	const Draw::GraphHandle*		m_Speed{};
 	const Draw::GraphHandle*		m_Meter{};
 	const Draw::GraphHandle*		m_Damage{};
+	const Draw::GraphHandle*		m_NRad{};
+	const Draw::GraphHandle*		m_EnemyRad{};
 
 	float							m_DamageWatch{ 0.f };
 	float							m_SpeedPer{ 0.f };
@@ -89,6 +91,8 @@ public:
 		m_Speed = Draw::GraphPool::Instance()->Get("data/Image/speed.png")->Get();
 		m_Meter = Draw::GraphPool::Instance()->Get("data/Image/meter.png")->Get();
 		m_Damage = Draw::GraphPool::Instance()->Get("data/Image/damage.png")->Get();
+		m_NRad = Draw::GraphPool::Instance()->Get("data/Image/Nrad.png")->Get();
+		m_EnemyRad = Draw::GraphPool::Instance()->Get("data/Image/enemyrad.png")->Get();
 	}
 	void Update() noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -136,6 +140,15 @@ public:
 					xpos, ypos + 18,
 					ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8(Localize->Get(316)));
 				ypos += 52;
+			}
+		}
+		{
+			int X = DrawerMngr->GetDispWidth() / 2, Y = DrawerMngr->GetDispHeight() / 2;
+			auto Vec1 = Watch->GetMat().zvec2(); Vec1.y = 0.f; Vec1 = Vec1.normalized();
+			m_NRad->DrawRotaGraph(X, Y, 1.f, std::atan2f(Vec1.x, -Vec1.z), true);
+			for (auto& c : PlayerManager::Instance()->SetTarget()) {
+				auto Vec2 = c->GetMat().pos() - Watch->GetMat().pos(); Vec2.y = 0.f; Vec2 = Vec2.normalized();
+				m_EnemyRad->DrawRotaGraph(X, Y, 1.f, std::atan2f(Vec1.x, -Vec1.z) - std::atan2f(Vec2.x, -Vec2.z), true);
 			}
 		}
 	}

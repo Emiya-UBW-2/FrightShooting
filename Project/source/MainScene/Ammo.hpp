@@ -187,6 +187,14 @@ public:
 	}
 };
 class Ammo : public BaseObject {
+	const Draw::GraphHandle*		m_Lock{};
+	bool							m_AimPointDraw{ false };
+	bool							m_AimPointIsDraw{ false };
+	char		padding[2]{};
+	float							m_AimPointDrawTimer{};
+	Util::VECTOR2D					m_AimPoint2D;
+	Util::VECTOR3D					m_AimPoint;
+
 public:
 	Ammo(void) noexcept {}
 	Ammo(const Ammo&) = delete;
@@ -206,16 +214,17 @@ private:
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	std::array<std::shared_ptr<AmmoHitEffect>, 10>	m_AmmoEffectPer{};
 	int Shooter{ InvalidID };
-	char		padding[4]{};
+	char		padding2[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		SetMatrix(Muzzle);
-		this->Vector = Muzzle.zvec() * -((200.f / 60.f * 1000.f + 1000.f) * Scale3DRate * DrawerMngr->GetDeltaTime());
+		this->Vector = Muzzle.zvec() * -((200.f / 60.f * 100.f + 100.f) * Scale3DRate * DrawerMngr->GetDeltaTime());
 		this->YVecAdd = 0.f;
 		this->Timer = 5.f;
 		this->DrawTimer = this->Timer + 0.1f;
 		Shooter = ID;
+		m_AimPointIsDraw = false;
 	}
 private:
 	void SetAmmo(const Util::VECTOR3D& pos) noexcept {
@@ -226,7 +235,8 @@ private:
 public:
 	void Load_Sub(void) noexcept override {
 		HitGroundID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitGround.wav", true);
-		HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitHuman.wav", true);
+		HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitHuman.wav", false);
+		m_Lock = Draw::GraphPool::Instance()->Get("data/Image/Lock.png")->Get();
 	}
 	void Init_Sub(void) noexcept override {
 		for (auto& ae : this->m_AmmoEffectPer) {
@@ -239,15 +249,55 @@ public:
 		if (this->Timer == 0.f) { return; }
 	}
 	void CheckDraw_Sub(void) noexcept override {
+		this->m_AimPointDraw = false;
+		auto Pos2D = ConvWorldPosToScreenPos(m_AimPoint.get());
+		if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+			this->m_AimPointDraw = true;
+			this->m_AimPoint2D.x = Pos2D.x;
+			this->m_AimPoint2D.y = Pos2D.y;
+		}
 	}
 	void Draw_Sub(void) const noexcept override {
+		if (this->m_AimPointDraw && this->m_AimPointIsDraw) {
+			auto* DrawerMngr = Draw::MainDraw::Instance();
+
+			float Per = 0.f;
+			if (m_AimPointDrawTimer < 0.1f) {
+				Per = (m_AimPointDrawTimer - 0.f) / (0.1f - 0.f);
+			}
+			else if (m_AimPointDrawTimer < 1.1f) {
+				Per = 1.f;
+			}
+			else if (m_AimPointDrawTimer < 1.6f) {
+				Per = 1.f - (m_AimPointDrawTimer - 1.1f) / (1.6f - 1.1f);
+			}
+			if (Per > 0.f) {
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * Per), 0, 255));
+
+				SetDrawBright(0, 255, 0);
+				m_Lock->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y),
+					1.f / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())),
+					0.f, true);
+				SetDrawBright(255, 255, 255);
+
+				Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic,
+					static_cast<int>(LineHeight / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth()))),
+					3)->DrawString(
+						Draw::FontXCenter::MIDDLE, Draw::FontYCenter::BOTTOM,
+						static_cast<int>(this->m_AimPoint2D.x), static_cast<int>(this->m_AimPoint2D.y),
+						ColorPalette::Green, ColorPalette::DarkGreen, Util::SjistoUTF8("+1"));
+
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+			}
+		}
+
 		if (this->DrawTimer == 0.f) { return; }
 		DxLib::SetUseLighting(FALSE);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->DrawTimer / 0.1f), 0, 255));
 		DxLib::DrawCapsule3D(
 			(GetMat().pos() - this->Vector * std::clamp(this->DrawTimer / 0.1f, 0.f, 1.f)).get(),
 			GetMat().pos().get(),
-			0.09f * Scale3DRate / 2.f,
+			0.25f * Scale3DRate / 2.f,
 			6,
 			DxLib::GetColor(255, 255, 128),
 			DxLib::GetColor(255, 255, 0),

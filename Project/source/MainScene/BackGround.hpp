@@ -225,7 +225,7 @@ class Grass {
 	};
 public:
 	static constexpr int grassDiv{ 12 };//^2;
-	static constexpr int grasss = 200;						/*grassの数*/
+	static constexpr int grasss = 100;						/*grassの数*/
 	static constexpr float size{ 30.f };
 private:
 	int			Flag = 0;

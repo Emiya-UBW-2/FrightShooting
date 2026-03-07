@@ -413,7 +413,23 @@ void Plane::Update_Chara(void) noexcept {
 	}
 
 	{
-		float Per = std::clamp(Util::AngleRange180(this->m_RadR.y - this->m_Rad.y) / Util::deg2rad(15.f), -1.f, 1.f);
+		float Per = 0.f;
+		{
+			float RadDif = this->m_RadR.y - this->m_Rad.y;
+			if (RadDif > 0.f) {
+				while (true) {
+					if (RadDif < DX_PI_F) { break; }
+					RadDif -= DX_PI_F * 2.f;
+				}
+			}
+			if (RadDif < 0.f) {
+				while (true) {
+					if (RadDif > -DX_PI_F) { break; }
+					RadDif += DX_PI_F * 2.f;
+				}
+			}
+			Per = std::clamp(RadDif / Util::deg2rad(15.f), -1.f, 1.f);
+		}
 		if (std::fabsf(Per) > 0.01f) {
 			float Power = 0.5f;
 			this->m_Rad.y += Per * Power * Util::deg2rad(720.f) * DrawerMngr->GetDeltaTime();
