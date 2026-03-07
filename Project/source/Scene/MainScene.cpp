@@ -83,6 +83,8 @@ void MainScene::Init_Sub(void) noexcept {
 
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->Play(DX_PLAYTYPE_LOOP, TRUE);
 	m_IsResetMouse = true;
+
+	PlayerManager::Instance()->SetTime() = 180.f;
 }
 void MainScene::Update_Sub(void) noexcept {
 	auto* KeyMngr = Util::KeyParam::Instance();
@@ -164,6 +166,11 @@ void MainScene::Update_Sub(void) noexcept {
 		DxLib::SetMouseDispFlag(true);
 		m_IsResetMouse = true;
 		return;
+	}
+
+	PlayerManager::Instance()->SetTime() = std::max(PlayerManager::Instance()->SetTime() - DrawerMngr->GetDeltaTime(), 0.f);
+	if (PlayerManager::Instance()->SetTime() == 0.f) {
+		this->m_Exit = true;
 	}
 	auto& Watch = (PlayerManager::Instance()->SetPlane().at(0));
 

@@ -53,6 +53,8 @@ void Ammo::Update_Sub(void) noexcept {
 				GetRandf(500.f * Scale3DRate),
 				GetRandf(1500.f * Scale3DRate)
 			)));
+
+			PlayerManager::Instance()->AddScore();
 			break;
 		}
 	}

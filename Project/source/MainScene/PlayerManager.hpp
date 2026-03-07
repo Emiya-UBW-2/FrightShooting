@@ -16,6 +16,9 @@ private:
 private:
 	std::vector<std::shared_ptr<PlaneCommon>>	m_Plane;
 	std::vector<std::shared_ptr<Target>>	m_Target;
+
+	int										m_Score{ 0 };
+	float									m_Timer{ 0.f };
 private:
 	PlayerManager(void) noexcept {}
 	PlayerManager(const PlayerManager&) = delete;
@@ -52,6 +55,7 @@ public:
 				GetRandf(1500.f * Scale3DRate)
 			)));
 		}
+		m_Score = 0;
 	}
 	void Dispose(void) noexcept {
 		for (auto& m : this->m_Plane) {
@@ -69,4 +73,10 @@ public:
 	auto& SetPlane(void) noexcept { return this->m_Plane; }
 	const auto& GetTarget(void) const noexcept { return this->m_Target; }
 	auto& SetTarget(void) noexcept { return this->m_Target; }
+
+	const auto& GetScore(void) const noexcept { return this->m_Score; }
+	void AddScore(void) noexcept { ++this->m_Score; }
+
+	const auto& GetTime(void) const noexcept { return this->m_Timer; }
+	auto& SetTime(void) noexcept { return this->m_Timer; }
 };

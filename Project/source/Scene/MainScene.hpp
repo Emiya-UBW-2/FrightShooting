@@ -144,12 +144,39 @@ public:
 		}
 		{
 			int X = DrawerMngr->GetDispWidth() / 2, Y = DrawerMngr->GetDispHeight() / 2;
-			auto Vec1 = Watch->GetMat().zvec2(); Vec1.y = 0.f; Vec1 = Vec1.normalized();
-			m_NRad->DrawRotaGraph(X, Y, 1.f, std::atan2f(Vec1.x, -Vec1.z), true);
+			auto Vec1 = CameraParts->GetCamera().GetCamVec() - CameraParts->GetCamera().GetCamPos(); Vec1.y = 0.f; Vec1 = Vec1.normalized();
+			float Rad = std::atan2f(Vec1.x, -Vec1.z);
+
+			for (int loop = 0; loop < 8; ++loop) {
+				int X2 = X + std::sin(Util::deg2rad(loop * 360 / 8)) * (200.f + 6.f), Y2 = Y + std::cos(Util::deg2rad(loop * 360 / 8)) * (200.f + 6.f);
+				int X3 = X + std::sin(Util::deg2rad(loop * 360 / 8)) * (200.f + 12.f), Y3 = Y + std::cos(Util::deg2rad(loop * 360 / 8)) * (200.f + 12.f);
+				DrawLine(X2, Y2, X3, Y3, ColorPalette::Black, 3);
+			}
+
+			for (int loop = 0; loop < 36; ++loop) {
+				int X2 = X + std::sin(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 6.f), Y2 = Y + std::cos(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 6.f);
+				int X3 = X + std::sin(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 12.f), Y3 = Y + std::cos(-Rad + Util::deg2rad(loop * 360 / 36)) * (200.f - 12.f);
+				DrawLine(X2, Y2, X3, Y3, ColorPalette::Black, 3);
+			}
+			m_NRad->DrawRotaGraph(X, Y, 1.f, Rad, true);
+
 			for (auto& c : PlayerManager::Instance()->SetTarget()) {
 				auto Vec2 = c->GetMat().pos() - Watch->GetMat().pos(); Vec2.y = 0.f; Vec2 = Vec2.normalized();
-				m_EnemyRad->DrawRotaGraph(X, Y, 1.f, std::atan2f(Vec1.x, -Vec1.z) - std::atan2f(Vec2.x, -Vec2.z), true);
+				m_EnemyRad->DrawRotaGraph(X, Y, 1.f, Rad - std::atan2f(Vec2.x, -Vec2.z), true);
 			}
+		}
+		{
+			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, 32, 3)->DrawString(
+				Draw::FontXCenter::LEFT, Draw::FontYCenter::TOP,
+				18, 18,
+				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8("TIME  : %d:%05.2f"),
+				static_cast<int>(PlayerManager::Instance()->GetTime() / 60.f),
+				PlayerManager::Instance()->GetTime() - static_cast<int>(PlayerManager::Instance()->GetTime() / 60.f) * 60.f);
+
+			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, 32, 3)->DrawString(
+				Draw::FontXCenter::LEFT, Draw::FontYCenter::TOP,
+				18, 18 + 32 + 18,
+				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8("SCORE : %d"), PlayerManager::Instance()->GetScore());
 		}
 	}
 };
