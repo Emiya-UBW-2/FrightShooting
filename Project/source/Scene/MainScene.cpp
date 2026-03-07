@@ -42,6 +42,8 @@ void MainScene::Init_Sub(void) noexcept {
 	this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
 	this->m_EnviID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/Envi.wav", false);
 
+	this->m_BGMID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, "data/Sound/BGM/bgm.wav", false);
+
 	Util::VECTOR3D LightVec = Util::VECTOR3D::vget(-0.3f, -0.7f, 0.3f).normalized();
 
 	PostPassParts->SetAmbientLight(LightVec);
@@ -82,6 +84,8 @@ void MainScene::Init_Sub(void) noexcept {
 	KeyGuideParts->SetGuideFlip();
 
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->Play(DX_PLAYTYPE_LOOP, TRUE);
+
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->Play(DX_PLAYTYPE_LOOP, TRUE);
 	m_IsResetMouse = true;
 
 	PlayerManager::Instance()->SetTime() = 180.f;
@@ -309,6 +313,7 @@ void MainScene::UIDraw_Sub(void) noexcept {
 }
 void MainScene::Dispose_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->StopAll();
 	BackGround::Release();
 	PlayerManager::Release();
 	ObjectManager::Instance()->DeleteAll();

@@ -204,6 +204,8 @@ class MainScene : public Util::SceneBase {
 	Sound::SoundUniqueID			m_cursorID{ InvalidID };
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
 	Sound::SoundUniqueID			m_EnviID{ InvalidID };
+
+	Sound::SoundUniqueID			m_BGMID{ InvalidID };
 	Util::VECTOR2D					m_LensPos{};
 	Util::VECTOR2D					m_LensSize{};
 	char		padding5[4]{};
