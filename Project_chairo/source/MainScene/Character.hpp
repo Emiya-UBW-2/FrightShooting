@@ -396,6 +396,7 @@ private:
 	float YVecAdd{};
 	float Timer{};
 	float DrawTimer{};
+	float m_Scale{};
 	Sound::SoundUniqueID HitGroundID{ InvalidID };
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	int Shooter{ InvalidID };
@@ -457,6 +458,8 @@ public:
 			DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 		}
 		DxLib::SetUseLighting(TRUE);
+
+		GetModel().DrawModel();
 	}
 	void DrawFront_Sub(void) const noexcept override {
 	}

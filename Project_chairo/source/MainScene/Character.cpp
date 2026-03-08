@@ -21,6 +21,17 @@ void Bomb::Update_Sub(void) noexcept {
 
 	if (this->DrawTimer == 0.f) { return; }
 	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
+
+	if (GetMat().pos().y < 0.f) {
+		SetHit(GetMat().pos());
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale)) * GetMat());
+		m_Scale += DrawerMngr->GetDeltaTime() * 200.f;
+	}
+	else {
+		m_Scale = 0.f;
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale)) * GetMat());
+	}
+
 	if (this->Timer == 0.f) { return; }
 	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
 	this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
@@ -28,7 +39,7 @@ void Bomb::Update_Sub(void) noexcept {
 	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
 	//if (BackGround::Instance()->CheckLine(GetMat().pos(), &Target)) 
 	//todo::当たり判定
-	SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
+	MyMat = GetMat().rotation() * Util::Matrix4x4::Mtrans(Target);
 }
 
 void Enemy::Init_Sub(void) noexcept {
@@ -116,7 +127,7 @@ void MyPlane::Init_Sub(void) noexcept {
 	}
 	for (auto& s : this->m_BombPer) {
 		s = std::make_shared<Bomb>();
-		ObjectManager::Instance()->InitObject(s);
+		ObjectManager::Instance()->InitObject(s, s, "data/model/Bomb/");
 	}
 	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
