@@ -379,6 +379,93 @@ public:
 	}
 };
 
+class Bomb : public BaseObject {
+public:
+	Bomb(void) noexcept {}
+	Bomb(const Bomb&) = delete;
+	Bomb(Bomb&&) = delete;
+	Bomb& operator=(const Bomb&) = delete;
+	Bomb& operator=(Bomb&&) = delete;
+	virtual ~Bomb(void) noexcept {}
+private:
+	int				GetFrameNum(void) noexcept override { return 0; }
+	const char* GetFrameStr(int) noexcept override { return nullptr; }
+private:
+	const Draw::GraphHandle* m_Graph{};
+	Util::VECTOR3D Vector{};
+	float YVecAdd{};
+	float Timer{};
+	float DrawTimer{};
+	Sound::SoundUniqueID HitGroundID{ InvalidID };
+	Sound::SoundUniqueID HitHumanID{ InvalidID };
+	int Shooter{ InvalidID };
+	char		padding[4]{};
+public:
+	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed) noexcept {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		SetMatrix(Muzzle);
+		this->Vector = Muzzle.zvec() * -(Speed * DrawerMngr->GetDeltaTime());
+		this->YVecAdd = 0.f;
+		this->Timer = 5.f;
+		this->DrawTimer = this->Timer + 0.1f;
+		Shooter = ID;
+	}
+	bool IsActive() const noexcept {
+		return this->Timer != 0.f;
+	}
+	auto GetVector() const noexcept {
+		return this->Vector;
+	}
+public:
+	void SetHit(const Util::VECTOR3D& pos) noexcept {
+		this->Vector = pos - GetMat().pos();
+		this->Timer = 0.f;
+		this->DrawTimer = this->Timer + 0.1f;
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(pos, 500.f * Scale3DRate);
+	}
+public:
+	void Load_Sub(void) noexcept override {
+		HitGroundID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitGround.wav", true);
+		HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitHuman.wav", true);
+		this->m_Graph = Draw::GraphPool::Instance()->Get("data/Image/Light.png")->Get();
+	}
+	void Init_Sub(void) noexcept override {}
+	void Update_Sub(void) noexcept override;
+	void SetShadowDraw_Sub(void) const noexcept override {
+		if (this->Timer == 0.f) { return; }
+	}
+	void CheckDraw_Sub(void) noexcept override {
+	}
+	void Draw_Sub(void) const noexcept override {
+		if (this->DrawTimer == 0.f) { return; }
+		DxLib::SetUseZBufferFlag(true);
+		DxLib::SetUseLighting(FALSE);
+		float Per = std::sin(Util::deg2rad(90.f));
+		if (Per > 0.f) {
+			DxLib::SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
+			for (int loop = 0; loop < 2; ++loop) {
+				DxLib::DrawBillboard3D(
+					GetMat().pos().get(),
+					0.5f,
+					0.5f,
+					10.f * Scale3DRate,
+					Util::deg2rad(90 * loop + static_cast<int>(this->Timer*180.f)),
+					this->m_Graph->get(),
+					true
+				);
+			}
+			DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+		}
+		DxLib::SetUseLighting(TRUE);
+	}
+	void DrawFront_Sub(void) const noexcept override {
+	}
+	void ShadowDraw_Sub(void) const noexcept override {
+	}
+	void Dispose_Sub(void) noexcept override {
+	}
+};
+
 class Enemy :public BaseObject {
 	Util::Matrix3x3		m_Roll;
 	float				m_Speed{ 0.f };
@@ -507,6 +594,10 @@ class MyPlane :public BaseObject {
 	int													m_ShotEffectID{};
 	char		padding1[4]{};
 
+	std::array<std::shared_ptr<Bomb>, 3>				m_BombPer{};
+	int													m_BombID{};
+	char		padding2[4]{};
+
 	std::array<std::shared_ptr<Ammo>, 60>				m_AmmoPer{};
 	int													m_AmmoID{};
 	char		padding3[4]{};
@@ -583,6 +674,12 @@ public:
 		);
 		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 	}
+	void			ShotBomb(Util::Matrix4x4 Mat, float speed) noexcept {
+		this->m_BombPer.at(static_cast<size_t>(this->m_BombID))->Set(Mat, 0,
+			speed * Scale3DRate
+		);
+		++m_BombID %= static_cast<int>(this->m_BombPer.size());
+	}
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
@@ -626,6 +723,9 @@ public:
 			s.reset();
 		}
 		for (auto& s : this->m_AmmoPer) {
+			s.reset();
+		}
+		for (auto& s : this->m_BombPer) {
 			s.reset();
 		}
 	}

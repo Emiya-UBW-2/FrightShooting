@@ -16,6 +16,21 @@ void Ammo::Update_Sub(void) noexcept {
 	SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
 }
 
+void Bomb::Update_Sub(void) noexcept {
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+
+	if (this->DrawTimer == 0.f) { return; }
+	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
+	if (this->Timer == 0.f) { return; }
+	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
+	this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
+	this->Vector.y += this->YVecAdd;
+	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
+	//if (BackGround::Instance()->CheckLine(GetMat().pos(), &Target)) 
+	//todo::当たり判定
+	SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
+}
+
 void Enemy::Init_Sub(void) noexcept {
 	this->m_SpeedTarget = GetSpeedMax();
 	this->m_Speed = this->m_SpeedTarget;
@@ -97,6 +112,10 @@ void MyPlane::Init_Sub(void) noexcept {
 	}
 	for (auto& s : this->m_AmmoPer) {
 		s = std::make_shared<Ammo>();
+		ObjectManager::Instance()->InitObject(s);
+	}
+	for (auto& s : this->m_BombPer) {
+		s = std::make_shared<Bomb>();
 		ObjectManager::Instance()->InitObject(s);
 	}
 	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
@@ -268,6 +287,9 @@ void MyPlane::Update_Sub(void) noexcept {
 	}
 	//射撃
 	{
+		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Aim)) {
+			ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
+		}
 		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack)) {
 			m_ShootTimer = 0.f;
 		}
