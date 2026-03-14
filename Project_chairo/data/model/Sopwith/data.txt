@@ -1,4 +1,0 @@
-Name=Saber
-animsel=0
-runspeed=4.5
-end
