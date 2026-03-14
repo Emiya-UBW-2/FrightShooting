@@ -285,8 +285,8 @@ void MyPlane::Update_Sub(void) noexcept {
 	}
 	// 進行方向に前進
 	{
-		bool AccelKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Run);
-		bool BrakeKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Jump);
+		bool AccelKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Throttle);
+		bool BrakeKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Brake);
 		if (!AccelKey && !BrakeKey) {
 			this->m_SpeedTarget = GetSpeedMax();
 		}
@@ -320,10 +320,13 @@ void MyPlane::Update_Sub(void) noexcept {
 	}
 	//射撃
 	{
-		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Aim)) {
+		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Missile)) {
 			ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
 		}
-		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Attack)) {
+		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::MultiMissile)) {
+			ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
+		}
+		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Gun)) {
 			m_ShootTimer = 0.f;
 		}
 		else {
