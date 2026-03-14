@@ -157,6 +157,37 @@ void MainScene::Update_Sub(void) noexcept {
 				}
 			}
 		}
+		for (auto& a : Player->GetBombPer()) {
+			if (a->IsActive()) {
+				//ホーミング用処理
+				//一番近い敵を探す
+				float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
+				Util::VECTOR3D Pos;
+				for (auto& s : m_StageScript.EnemyPop()) {
+					if (s.m_EnemyScript.IsActive() && s.m_EnemyScript.IsAlive()) {
+						auto Vec = a->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
+						if (Mag > Vec.sqrMagnitude()) {
+							Mag = Vec.sqrMagnitude();
+							Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+						}
+					}
+				}
+				a->SetHomingTarget((Mag != (1000.f * Scale3DRate) * (1000.f * Scale3DRate)), Pos);
+				//ヒット判定
+				for (auto& s : m_StageScript.EnemyPop()) {
+					if (s.m_EnemyScript.IsActive()) {
+						SEGMENT_SEGMENT_RESULT Result;
+						Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
+							a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+						if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+							a->SetHit(Result.SegB_MinDist_Pos);
+							s.m_EnemyScript.SetDown();
+							break;
+						}
+					}
+				}
+			}
+		}
 		//
 		ObjectManager::Instance()->UpdateObject();
 	}

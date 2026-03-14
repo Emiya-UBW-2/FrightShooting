@@ -11,8 +11,11 @@ void Ammo::Update_Sub(void) noexcept {
 	//this->YVecAdd -= DrawerMngr->GetGravAccel();
 	this->Vector.y += this->YVecAdd;
 	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
-	//if (BackGround::Instance()->CheckLine(GetMat().pos(), &Target)) 
-	//todo::当たり判定
+	auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
+	if (Ret.HitFlag == TRUE) {
+		Target = Ret.HitPosition;
+		SetHit(Target);
+	}
 	SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
 }
 
@@ -22,23 +25,42 @@ void Bomb::Update_Sub(void) noexcept {
 	if (this->DrawTimer == 0.f) { return; }
 	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
 
-	if (GetMat().pos().y < 0.f) {
-		SetHit(GetMat().pos());
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale)) * GetMat());
-		m_Scale += DrawerMngr->GetDeltaTime() * 200.f;
+	if (!IsActive()) {
+		float Alpha = 0.f;
+		if (m_Scale < 0.1f) {
+			Alpha = 1.f;
+		}
+		else if (m_Scale < 0.25f) {
+			Alpha = 1.f - (m_Scale - 0.1f) / (0.25f - 0.1f);
+		}
+		GetModel().SetOpacityRate(Alpha);
+
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
+		m_Scale += DrawerMngr->GetDeltaTime();
 	}
 	else {
 		m_Scale = 0.f;
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale)) * GetMat());
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f) * GetMat());
 	}
 
 	if (this->Timer == 0.f) { return; }
 	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
-	this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
+
+	if (m_IsHoming) {
+		Util::Easing(
+			&this->Vector,
+			(m_HomingTarget - GetMat().pos()).normalized() * this->Vector.magnitude(),
+			0.95f);
+	}
+
+	//this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
 	this->Vector.y += this->YVecAdd;
 	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
-	//if (BackGround::Instance()->CheckLine(GetMat().pos(), &Target)) 
-	//todo::当たり判定
+	auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
+	if (Ret.HitFlag == TRUE) {
+		Target = Ret.HitPosition;
+		SetHit(Target);
+	}
 	MyMat = GetMat().rotation() * Util::Matrix4x4::Mtrans(Target);
 }
 

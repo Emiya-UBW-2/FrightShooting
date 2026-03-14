@@ -24,6 +24,7 @@ private:
 private:
 	Draw::MV1				SkyBoxID{};
 	Draw::MV1				MapID{};
+	Draw::MV1				ColID{};
 public:
 	BackGround(void) noexcept {}
 	BackGround(const BackGround&) = delete;
@@ -32,18 +33,22 @@ public:
 	BackGround& operator=(BackGround&&) = delete;
 	virtual ~BackGround(void) noexcept { Dispose(); }
 public:
+	const auto& GetCol() const noexcept { return ColID; }
 public:
 	void Load() noexcept {
 		Draw::MV1::Load("data/model/Sky/model.mv1", &SkyBoxID);
 		Draw::MV1::Load("data/model/Map/model.mv1", &MapID);
+		Draw::MV1::Load("data/model/Map/model.mv1", &ColID);
 	}
 	void Init(void) noexcept {
+		ColID.SetupCollInfo();
 	}
 	void Update(void) noexcept {
 	}
 	void Dispose(void) noexcept {
 		SkyBoxID.Dispose();
 		MapID.Dispose();
+		ColID.Dispose();
 	}
 
 	void BGDraw(void) const noexcept {

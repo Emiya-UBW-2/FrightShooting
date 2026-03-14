@@ -393,6 +393,7 @@ private:
 private:
 	const Draw::GraphHandle* m_Graph{};
 	Util::VECTOR3D Vector{};
+	char		padding0[4]{};
 	float YVecAdd{};
 	float Timer{};
 	float DrawTimer{};
@@ -401,6 +402,11 @@ private:
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	int Shooter{ InvalidID };
 	char		padding[4]{};
+
+	bool m_IsHoming{};
+	char		padding2[7]{};
+	Util::VECTOR3D m_HomingTarget{};
+	char		padding3[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -408,7 +414,7 @@ public:
 		this->Vector = Muzzle.zvec() * -(Speed * DrawerMngr->GetDeltaTime());
 		this->YVecAdd = 0.f;
 		this->Timer = 5.f;
-		this->DrawTimer = this->Timer + 0.1f;
+		this->DrawTimer = this->Timer + 0.25f;
 		Shooter = ID;
 	}
 	bool IsActive() const noexcept {
@@ -417,11 +423,16 @@ public:
 	auto GetVector() const noexcept {
 		return this->Vector;
 	}
+
+	void SetHomingTarget(bool IsHoming, Util::VECTOR3D& pos) noexcept {
+		m_IsHoming = IsHoming;
+		m_HomingTarget = pos;
+	}
 public:
 	void SetHit(const Util::VECTOR3D& pos) noexcept {
 		this->Vector = pos - GetMat().pos();
 		this->Timer = 0.f;
-		this->DrawTimer = this->Timer + 0.1f;
+		this->DrawTimer = this->Timer + 0.25f;
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(pos, 500.f * Scale3DRate);
 	}
 public:
@@ -659,6 +670,7 @@ public:
 			RailMat;
 	}
 	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
+	auto& GetBombPer(void) noexcept { return m_BombPer; }
 
 	void			SetDamage(int ID) noexcept {
 		DamageID = ID;

@@ -101,7 +101,6 @@ public:
 		auto& Watch = PlayerManager::Instance()->SetPlane();
 
 		auto Mat = Watch->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1));
-		auto* DrawerMngr = Draw::MainDraw::Instance();
 		{
 			auto Pos2D = ConvWorldPosToScreenPos((Mat.pos() + Mat.zvec2() * (25.f * Scale3DRate)).get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
@@ -168,6 +167,9 @@ public:
 	}
 	bool IsActive(void) const noexcept {
 		return m_IsActive;
+	}
+	bool IsAlive(void) const noexcept {
+		return !m_IsDown;
 	}
 	void SetDown(void) noexcept {
 		m_IsDown = true;
