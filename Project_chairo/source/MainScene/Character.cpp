@@ -1,5 +1,10 @@
-﻿#include "Character.hpp"
+﻿#pragma warning(disable:5259)
+
+#include "Character.hpp"
 #include "PlayerManager.hpp"
+
+const AmmoPool* Util::SingletonBase<AmmoPool>::m_Singleton = nullptr;
+const BombPool* Util::SingletonBase<BombPool>::m_Singleton = nullptr;
 
 void Ammo::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -45,6 +50,61 @@ void Bomb::Update_Sub(void) noexcept {
 
 	if (this->Timer == 0.f) { return; }
 	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
+
+	if (m_IsHoming) {
+		Util::Easing(
+			&this->Vector,
+			(m_HomingTarget - GetMat().pos()).normalized() * this->Vector.magnitude(),
+			0.95f);
+	}
+
+	//this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
+	this->Vector.y += this->YVecAdd;
+	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
+	auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
+	if (Ret.HitFlag == TRUE) {
+		Target = Ret.HitPosition;
+		SetHit(Target);
+	}
+	MyMat = GetMat().rotation() * Util::Matrix4x4::Mtrans(Target);
+}
+
+void MultiBomb::Update_Sub(void) noexcept {
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+
+	if (this->DrawTimer == 0.f) { return; }
+	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
+
+	if (!IsActive()) {
+		float Alpha = 0.f;
+		if (m_Scale < 0.1f) {
+			Alpha = 1.f;
+		}
+		else if (m_Scale < 0.25f) {
+			Alpha = 1.f - (m_Scale - 0.1f) / (0.25f - 0.1f);
+		}
+		GetModel().SetOpacityRate(Alpha);
+
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
+		m_Scale += DrawerMngr->GetDeltaTime();
+	}
+	else {
+		m_Scale = 0.f;
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f) * GetMat());
+	}
+
+	if (this->Timer == 0.f) { return; }
+	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
+	if (this->Timer == 0.f) {
+		SetHit(GetMat().pos());
+		int max = 8;
+		for (int loop = 0; loop < max; ++loop) {
+			BombPool::Instance()->Shot(
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(30)) *
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360) * loop / max) *
+				GetMat(), 100.f);
+		}
+	}
 
 	if (m_IsHoming) {
 		Util::Easing(
@@ -135,6 +195,11 @@ void Enemy::Update_Sub(void) noexcept {
 	}
 }
 
+void MyPlane::Shot(Util::Matrix4x4 Mat, float speed) noexcept {
+	this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat);
+	++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
+	AmmoPool::Instance()->Shot(Mat, speed);
+}
 void MyPlane::Init_Sub(void) noexcept {
 	this->m_SpeedTarget = GetSpeedMax();
 	this->m_Speed = this->m_SpeedTarget;
@@ -143,12 +208,8 @@ void MyPlane::Init_Sub(void) noexcept {
 		s = std::make_shared<ShotEffect>();
 		ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
 	}
-	for (auto& s : this->m_AmmoPer) {
-		s = std::make_shared<Ammo>();
-		ObjectManager::Instance()->InitObject(s);
-	}
-	for (auto& s : this->m_BombPer) {
-		s = std::make_shared<Bomb>();
+	for (auto& s : this->m_MultiBombPer) {
+		s = std::make_shared<MultiBomb>();
 		ObjectManager::Instance()->InitObject(s, s, "data/model/Bomb/");
 	}
 	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
@@ -321,10 +382,10 @@ void MyPlane::Update_Sub(void) noexcept {
 	//射撃
 	{
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Missile)) {
-			ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
+			BombPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
 		}
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::MultiMissile)) {
-			ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
+			ShotMultiBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
 		}
 		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Gun)) {
 			m_ShootTimer = 0.f;

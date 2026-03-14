@@ -2,6 +2,8 @@
 
 #include "../MainScene/BackGround.hpp"
 
+#include "../MainScene/Character.hpp"
+
 void MainScene::Load_Sub(void) noexcept {
 	ObjectManager::Create();
 	PlayerManager::Create();
@@ -11,8 +13,15 @@ void MainScene::Load_Sub(void) noexcept {
 
 	m_AimPoint = std::make_unique<AimPoint>();
 	m_AimPoint->Load();
+
+	AmmoPool::Create();
+	BombPool::Create();
+
+	BombPool::Instance()->Load();
 }
 void MainScene::Init_Sub(void) noexcept {
+	BombPool::Instance()->Init();
+	AmmoPool::Instance()->Init();
 	BackGround::Instance()->Init();
 	PlayerManager::Instance()->Init();
 
@@ -135,8 +144,7 @@ void MainScene::Update_Sub(void) noexcept {
 	if (this->m_Fade <= 1.f) {
 		m_StageScript.Update();
 		//
-		auto& Player = PlayerManager::Instance()->SetPlane();
-		for (auto& a : Player->GetAmmoPer()) {
+		for (auto& a : AmmoPool::Instance()->GetAmmoPer()) {
 			if (a->IsActive()) {
 				for (auto& s : m_StageScript.EnemyPop()) {
 					if (s.m_EnemyScript.IsActive()) {
@@ -153,7 +161,7 @@ void MainScene::Update_Sub(void) noexcept {
 				}
 			}
 		}
-		for (auto& a : Player->GetBombPer()) {
+		for (auto& a : BombPool::Instance()->GetBombPer()) {
 			if (a->IsActive()) {
 				//ホーミング用処理
 				//一番近い敵を探す
@@ -247,4 +255,7 @@ void MainScene::Dispose_Sub(void) noexcept {
 	PlayerManager::Release();
 	ObjectManager::Instance()->DeleteAll();
 	ObjectManager::Release();
+
+	AmmoPool::Release();
+	BombPool::Release();
 }
