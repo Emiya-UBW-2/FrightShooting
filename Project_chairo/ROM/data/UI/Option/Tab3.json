@@ -181,62 +181,6 @@
 				}
 			]
 		}
-		,
-		{
-			"Name":"Column14",
-			"Type":"Json",
-			"OfsNoRad":[0,585],
-			"BaseColor":[255,255,255,0],
-			"FilePath":"data/UI/Option/TabChild003.json",
-			"Override":[
-				{
-					"Target":"String1",
-					"FontID":313
-				}
-			]
-		}
-		,
-		{
-			"Name":"Column15",
-			"Type":"Json",
-			"OfsNoRad":[0,630],
-			"BaseColor":[255,255,255,0],
-			"FilePath":"data/UI/Option/TabChild003.json",
-			"Override":[
-				{
-					"Target":"String1",
-					"FontID":314
-				}
-			]
-		}
-		,
-		{
-			"Name":"Column16",
-			"Type":"Json",
-			"OfsNoRad":[0,675],
-			"BaseColor":[255,255,255,0],
-			"FilePath":"data/UI/Option/TabChild003.json",
-			"Override":[
-				{
-					"Target":"String1",
-					"FontID":315
-				}
-			]
-		}
-		,
-		{
-			"Name":"Column17",
-			"Type":"Json",
-			"OfsNoRad":[0,720],
-			"BaseColor":[255,255,255,0],
-			"FilePath":"data/UI/Option/TabChild003.json",
-			"Override":[
-				{
-					"Target":"String1",
-					"FontID":316
-				}
-			]
-		}
 	],
 	"Anim":[
 		{
@@ -317,30 +261,6 @@
 				},
 				{
 					"Target":"Column13",
-					"Color":[255,255,255,255],
-					"StartFrame":0,
-					"EndFrame":12
-				},
-				{
-					"Target":"Column14",
-					"Color":[255,255,255,255],
-					"StartFrame":0,
-					"EndFrame":12
-				},
-				{
-					"Target":"Column15",
-					"Color":[255,255,255,255],
-					"StartFrame":0,
-					"EndFrame":12
-				},
-				{
-					"Target":"Column16",
-					"Color":[255,255,255,255],
-					"StartFrame":0,
-					"EndFrame":12
-				},
-				{
-					"Target":"Column17",
 					"Color":[255,255,255,255],
 					"StartFrame":0,
 					"EndFrame":12
