@@ -11,6 +11,7 @@
 #include "DxLib.h"
 #include<string>
 #include<filesystem>
+#include <fstream>
 #pragma warning( pop )
 
 #include "Enum.hpp"

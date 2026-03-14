@@ -1,4 +1,5 @@
 ﻿#pragma warning(disable:4464)
+#pragma warning(disable:5259)
 #include "Util.hpp"
 
 
