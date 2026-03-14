@@ -285,8 +285,8 @@ public:
 			GetMat().pos().get(),
 			0.45f * Scale3DRate / 2.f,
 			6,
-			DxLib::GetColor(255, 255, 128),
-			DxLib::GetColor(255, 255, 0),
+			DxLib::GetColor(192, 255, 255),
+			DxLib::GetColor(0, 255, 255),
 			true
 		);
 		DxLib::SetUseLighting(TRUE);

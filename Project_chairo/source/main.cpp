@@ -129,6 +129,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Draw::FontPool::Release();
 	Util::KeyParam::Release();
 	Util::SceneManager::Release();
+
+	Util::SaveData::Instance()->Save();
 	Util::SaveData::Release();
 
 	Draw::MainDraw::Release();
