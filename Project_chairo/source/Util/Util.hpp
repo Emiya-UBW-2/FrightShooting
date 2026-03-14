@@ -408,4 +408,62 @@ namespace Util {
 		} // else{ return false; }
 		FindClose(hFind);
 	}
+
+
+	/*------------------------------------------------------------------------------------------------------------------------------------------*/
+	// 汎用セーブデータ
+	/*------------------------------------------------------------------------------------------------------------------------------------------*/
+	typedef std::pair<std::string, int64_t> SaveParam;
+	class SaveData : public SingletonBase<SaveData> {
+	private:
+		friend class SingletonBase<SaveData>;
+	private:
+		std::vector<SaveParam>	m_data;
+	private:
+		SaveData(void) noexcept {
+			Load();
+		}
+		SaveData(const SaveData&) = delete;
+		SaveData(SaveData&&) = delete;
+		SaveData& operator=(const SaveData&) = delete;
+		SaveData& operator=(SaveData&&) = delete;
+	public:
+		SaveParam* GetData(std::string_view Name) noexcept {
+			for (auto& d : this->m_data) {
+				if (d.first == Name) {
+					return &d;
+				}
+			}
+			return nullptr;
+		}
+	public:
+		void SetParam(std::string_view Name, int64_t value) noexcept {
+			auto* Data = GetData(Name);
+			if (Data) {
+				Data->second = value;
+			}
+			else {
+				this->m_data.emplace_back(std::make_pair((std::string)Name, value));
+			}
+		}
+		auto GetParam(std::string_view Name) noexcept {
+			auto* Data = GetData(Name);
+			if (Data) {
+				return Data->second;
+			}
+			return (int64_t)InvalidID;
+		}
+	public:
+		void Save(void) noexcept {
+			std::ofstream outputfile("Save/new.svf");
+			for (auto& d : this->m_data) {
+				outputfile << d.first + "=" + std::to_string(d.second) + "\n";
+			}
+			outputfile.close();
+		}
+		bool Load(void) noexcept;
+		void Reset(void) noexcept {
+			this->m_data.clear();
+		}
+	};
 }

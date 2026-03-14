@@ -19,6 +19,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	Draw::MainDraw::Create();
 
+	Util::SaveData::Create();
 	Util::SceneManager::Create();
 	Util::KeyParam::Create();
 	Draw::FontPool::Create();
@@ -128,6 +129,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Draw::FontPool::Release();
 	Util::KeyParam::Release();
 	Util::SceneManager::Release();
+	Util::SaveData::Release();
 
 	Draw::MainDraw::Release();
 
