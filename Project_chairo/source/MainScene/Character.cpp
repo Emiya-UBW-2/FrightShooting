@@ -3,8 +3,11 @@
 #include "Character.hpp"
 #include "PlayerManager.hpp"
 
+const ShotEffectPool* Util::SingletonBase<ShotEffectPool>::m_Singleton = nullptr;
+
 const AmmoPool* Util::SingletonBase<AmmoPool>::m_Singleton = nullptr;
 const BombPool* Util::SingletonBase<BombPool>::m_Singleton = nullptr;
+const MultiBombPool* Util::SingletonBase<MultiBombPool>::m_Singleton = nullptr;
 
 void Ammo::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -101,8 +104,10 @@ void MultiBomb::Update_Sub(void) noexcept {
 		for (int loop = 0; loop < max; ++loop) {
 			BombPool::Instance()->Shot(
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(30)) *
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360) * loop / max) *
-				GetMat(), 100.f);
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360) * static_cast<float>(loop) / static_cast<float>(max)) *
+				GetMat(), 100.f
+				, Shooter
+			);
 		}
 	}
 
@@ -128,24 +133,12 @@ void Enemy::Init_Sub(void) noexcept {
 	this->m_SpeedTarget = GetSpeedMax();
 	this->m_Speed = this->m_SpeedTarget;
 
-	for (auto& s : this->m_ShotEffect) {
-		s = std::make_shared<ShotEffect>();
-		ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
-	}
-	for (auto& s : this->m_AmmoPer) {
-		s = std::make_shared<Ammo>();
-		ObjectManager::Instance()->InitObject(s);
-	}
-	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(0);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
 }
 void Enemy::Update_Sub(void) noexcept {
 	//
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(128);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
 	// 進行方向に前進
 	{
@@ -168,62 +161,20 @@ void Enemy::Update_Sub(void) noexcept {
 		SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
 		SetModel().FlipAnimAll();
 	}
-
-	auto& Player = PlayerManager::Instance()->SetPlane();
-	for (auto& a : GetAmmoPer()) {
-		if (a->IsActive()) {
-			if (true) {
-				SEGMENT_SEGMENT_RESULT Result;
-				Util::GetSegmenttoSegment(Player->GetMat().pos(), Player->GetMat().pos(),
-					a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-				if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
-					if (Player->IsRollingActive()) {
-						//はじく
-						Player->Shot(
-							Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), a->GetVector().normalized()) *
-							Util::Matrix4x4::Mtrans(Player->GetMat().pos()), 25.f+200.f);
-						a->SetHit(Result.SegB_MinDist_Pos);
-					}
-					else {
-						a->SetHit(Result.SegB_MinDist_Pos);
-						Player->SetDamage(0);
-					}
-					break;
-				}
-			}
-		}
-	}
 }
 
-void MyPlane::Shot(Util::Matrix4x4 Mat, float speed) noexcept {
-	this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat);
-	++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
-	AmmoPool::Instance()->Shot(Mat, speed);
-}
 void MyPlane::Init_Sub(void) noexcept {
 	this->m_SpeedTarget = GetSpeedMax();
 	this->m_Speed = this->m_SpeedTarget;
 
-	for (auto& s : this->m_ShotEffect) {
-		s = std::make_shared<ShotEffect>();
-		ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
-	}
-	for (auto& s : this->m_MultiBombPer) {
-		s = std::make_shared<MultiBomb>();
-		ObjectManager::Instance()->InitObject(s, s, "data/model/Bomb/");
-	}
-	m_PropellerIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(0);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
 }
 void MyPlane::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* KeyMngr = Util::KeyParam::Instance();
 	//
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetPosition(m_PropellerIndex, GetMat().pos());
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(128);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
 	//
 	m_DamageInterval = std::max(m_DamageInterval - DrawerMngr->GetDeltaTime(), 0.f);
@@ -271,16 +222,6 @@ void MyPlane::Update_Sub(void) noexcept {
 				MoveVec.x = 0.6f;
 				RollingCam = Util::deg2rad(10);
 			}
-			/*
-			if (Left2Key && !Right2Key) {
-				m_MovePointAdd.x -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.x = -0.6f;
-			}
-			if (Right2Key && !Left2Key) {
-				m_MovePointAdd.x += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.x = 0.6f;
-			}
-			//*/
 			m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -18.f * Scale3DRate, 18.f * Scale3DRate);
 			if (prev == m_MovePointAdd.x) {
 				MoveVec.x = 0.0f;
@@ -389,17 +330,18 @@ void MyPlane::Update_Sub(void) noexcept {
 	//射撃
 	{
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Missile)) {
-			BombPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
+			BombPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
 		}
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::MultiMissile)) {
-			ShotMultiBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f);
+			MultiBombPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
 		}
 		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Gun)) {
 			m_ShootTimer = 0.f;
 		}
 		else {
 			if (m_ShootTimer == 0.f) {
-				Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f);
+				ShotEffectPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+				AmmoPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f, GetObjectID());
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 200.f * Scale3DRate);
 				m_ShootTimer = 0.1f;
 			}

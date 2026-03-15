@@ -20,7 +20,7 @@
 
 
 enum class CharaAnim {
-	Stand,//立ち
+	Stand,
 	Roll,
 	Pitch,
 	Yaw,
@@ -210,6 +210,43 @@ public:
 	void Dispose_Sub(void) noexcept override {
 	}
 };
+
+class ShotEffectPool : public Util::SingletonBase<ShotEffectPool> {
+private:
+	friend class Util::SingletonBase<ShotEffectPool>;
+private:
+	std::array<std::shared_ptr<ShotEffect>, 64>			m_ShotEffect{};
+	int													m_ShotEffectID{};
+	char		padding3[4]{};
+private:
+	ShotEffectPool(void) noexcept {}
+	ShotEffectPool(const ShotEffectPool&) = delete;
+	ShotEffectPool(ShotEffectPool&&) = delete;
+	ShotEffectPool& operator=(const ShotEffectPool&) = delete;
+	ShotEffectPool& operator=(ShotEffectPool&&) = delete;
+	virtual ~ShotEffectPool(void) noexcept { Dispose(); }
+public:
+	void			Shot(Util::Matrix4x4 Mat) noexcept {
+		this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat);
+		++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
+	}
+public:
+	void Load() noexcept {
+		ObjectManager::Instance()->LoadModel("data/model/FireEffect/");
+	}
+	void Init() noexcept {
+		for (auto& s : this->m_ShotEffect) {
+			s = std::make_shared<ShotEffect>();
+			ObjectManager::Instance()->InitObject(s, s, "data/model/FireEffect/");
+		}
+	}
+	void Dispose(void) noexcept {
+		for (auto& s : this->m_ShotEffect) {
+			s.reset();
+		}
+	}
+};
+
 class Ammo : public BaseObject {
 public:
 	Ammo(void) noexcept {}
@@ -246,6 +283,9 @@ public:
 	}
 	auto GetVector() const noexcept {
 		return this->Vector;
+	}
+	auto GetShooterID() const noexcept {
+		return this->Shooter;
 	}
 public:
 	void SetHit(const Util::VECTOR3D& pos) noexcept {
@@ -304,118 +344,6 @@ public:
 		}
 	}
 };
-class DamageEffect : public BaseObject {
-public:
-	DamageEffect(void) noexcept {}
-	DamageEffect(const DamageEffect&) = delete;
-	DamageEffect(DamageEffect&&) = delete;
-	DamageEffect& operator=(const DamageEffect&) = delete;
-	DamageEffect& operator=(DamageEffect&&) = delete;
-	virtual ~DamageEffect(void) noexcept {}
-private:
-	int				GetFrameNum(void) noexcept override { return 0; }
-	const char* GetFrameStr(int) noexcept override { return nullptr; }
-private:
-	const Draw::GraphHandle* m_SmokeGraph{};
-	Util::VECTOR3D Vector{};
-	float YVecAdd{};
-	float Timer{};
-	char		padding[4]{};
-public:
-	void Set(const Util::VECTOR3D& Pos, const Util::VECTOR3D& Normal) noexcept {
-		auto* DrawerMngr = Draw::MainDraw::Instance();
-		SetMatrix(Util::Matrix4x4::Mtrans(Pos));
-		this->Vector = Normal;
-		this->Vector =
-			Util::Matrix4x4::Vtrans(this->Vector,
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::forward(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f))) *
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::Cross(Util::VECTOR3D::up(), this->Vector), Util::deg2rad(45.f * (static_cast<float>(-50 + GetRand(100)) / 100.f)))
-			) *
-			(static_cast<float>(250 + GetRand(100)) / 100.f * Scale3DRate * DrawerMngr->GetDeltaTime());
-		this->YVecAdd = 0.f;
-		this->Timer = 1.f;
-
-	}
-public:
-	void Load_Sub(void) noexcept override {
-		this->m_SmokeGraph = Draw::GraphPool::Instance()->Get("data/Image/Smoke.png")->Get();
-	}
-	void Init_Sub(void) noexcept override {
-	}
-	void Update_Sub(void) noexcept override {
-		auto* DrawerMngr = Draw::MainDraw::Instance();
-		if (this->Timer == 0.f) { return; }
-		this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
-		Util::VECTOR3D Target = GetMat().pos() + this->Vector;
-		Util::VECTOR3D Normal;
-		SetMatrix(GetMat().rotation() * Util::Matrix4x4::Mtrans(Target));
-	}
-	void SetShadowDraw_Sub(void) const noexcept override {
-		if (this->Timer == 0.f) { return; }
-	}
-	void CheckDraw_Sub(void) noexcept override {
-	}
-	void Draw_Sub(void) const noexcept override {
-		if (this->Timer == 0.f) { return; }
-		DxLib::SetUseLighting(FALSE);
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->Timer), 0, 255));
-		SetDrawBright(64 * 2, 32 * 2, 16 * 2);
-		DxLib::DrawBillboard3D(
-			GetMat().pos().get(),
-			0.5f,
-			0.5f,
-			1.6f * Scale3DRate,
-			Util::deg2rad(0.f),
-			this->m_SmokeGraph->get(),
-			true
-		);
-		DxLib::SetUseLighting(TRUE);
-		SetDrawBright(255, 255, 255);
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-	}
-	void DrawFront_Sub(void) const noexcept override {
-	}
-	void ShadowDraw_Sub(void) const noexcept override {
-	}
-	void Dispose_Sub(void) noexcept override {
-	}
-};
-
-class AmmoPool : public Util::SingletonBase<AmmoPool> {
-private:
-	friend class Util::SingletonBase<AmmoPool>;
-private:
-	std::array<std::shared_ptr<Ammo>, 64>				m_AmmoPer{};
-	int													m_AmmoID{};
-	char		padding3[4]{};
-private:
-	AmmoPool(void) noexcept {}
-	AmmoPool(const AmmoPool&) = delete;
-	AmmoPool(AmmoPool&&) = delete;
-	AmmoPool& operator=(const AmmoPool&) = delete;
-	AmmoPool& operator=(AmmoPool&&) = delete;
-	virtual ~AmmoPool(void) noexcept { Dispose(); }
-public:
-	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
-
-	void			Shot(Util::Matrix4x4 Mat, float speed) noexcept {
-		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat, 0, speed * Scale3DRate);
-		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
-	}
-public:
-	void Init() noexcept {
-		for (auto& s : this->m_AmmoPer) {
-			s = std::make_shared<Ammo>();
-			ObjectManager::Instance()->InitObject(s);
-		}
-	}
-	void Dispose(void) noexcept {
-		for (auto& s : this->m_AmmoPer) {
-			s.reset();
-		}
-	}
-};
-
 class Bomb : public BaseObject {
 public:
 	Bomb(void) noexcept {}
@@ -459,6 +387,9 @@ public:
 	}
 	auto GetVector() const noexcept {
 		return this->Vector;
+	}
+	auto GetShooterID() const noexcept {
+		return this->Shooter;
 	}
 
 	void SetHomingTarget(bool IsHoming, Util::VECTOR3D& pos) noexcept {
@@ -516,7 +447,6 @@ public:
 	void Dispose_Sub(void) noexcept override {
 	}
 };
-
 class MultiBomb : public BaseObject {
 public:
 	MultiBomb(void) noexcept {}
@@ -561,7 +491,10 @@ public:
 	auto GetVector() const noexcept {
 		return this->Vector;
 	}
-
+	auto GetShooterID() const noexcept {
+		return this->Shooter;
+	}
+	
 	void SetHomingTarget(bool IsHoming, Util::VECTOR3D& pos) noexcept {
 		m_IsHoming = IsHoming;
 		m_HomingTarget = pos;
@@ -618,6 +551,40 @@ public:
 	}
 };
 
+class AmmoPool : public Util::SingletonBase<AmmoPool> {
+private:
+	friend class Util::SingletonBase<AmmoPool>;
+private:
+	std::array<std::shared_ptr<Ammo>, 64>				m_AmmoPer{};
+	int													m_AmmoID{};
+	char		padding3[4]{};
+private:
+	AmmoPool(void) noexcept {}
+	AmmoPool(const AmmoPool&) = delete;
+	AmmoPool(AmmoPool&&) = delete;
+	AmmoPool& operator=(const AmmoPool&) = delete;
+	AmmoPool& operator=(AmmoPool&&) = delete;
+	virtual ~AmmoPool(void) noexcept { Dispose(); }
+public:
+	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
+
+	void			Shot(Util::Matrix4x4 Mat, float speed, int ShooterID) noexcept {
+		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat, ShooterID, speed * Scale3DRate);
+		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
+	}
+public:
+	void Init() noexcept {
+		for (auto& s : this->m_AmmoPer) {
+			s = std::make_shared<Ammo>();
+			ObjectManager::Instance()->InitObject(s);
+		}
+	}
+	void Dispose(void) noexcept {
+		for (auto& s : this->m_AmmoPer) {
+			s.reset();
+		}
+	}
+};
 class BombPool : public Util::SingletonBase<BombPool> {
 private:
 	friend class Util::SingletonBase<BombPool>;
@@ -635,8 +602,8 @@ private:
 public:
 	auto& GetBombPer(void) noexcept { return m_BombPer; }
 
-	void			Shot(Util::Matrix4x4 Mat, float speed) noexcept {
-		this->m_BombPer.at(static_cast<size_t>(this->m_BombID))->Set(Mat, 0, speed * Scale3DRate);
+	void			Shot(Util::Matrix4x4 Mat, float speed, int ShooterID) noexcept {
+		this->m_BombPer.at(static_cast<size_t>(this->m_BombID))->Set(Mat, ShooterID, speed * Scale3DRate);
 		++m_BombID %= static_cast<int>(this->m_BombPer.size());
 	}
 public:
@@ -655,6 +622,43 @@ public:
 		}
 	}
 };
+class MultiBombPool : public Util::SingletonBase<MultiBombPool> {
+private:
+	friend class Util::SingletonBase<MultiBombPool>;
+private:
+	std::array<std::shared_ptr<MultiBomb>, 64>				m_MultiBombPer{};
+	int													m_MultiBombID{};
+	char		padding2[4]{};
+private:
+	MultiBombPool(void) noexcept {}
+	MultiBombPool(const MultiBombPool&) = delete;
+	MultiBombPool(MultiBombPool&&) = delete;
+	MultiBombPool& operator=(const MultiBombPool&) = delete;
+	MultiBombPool& operator=(MultiBombPool&&) = delete;
+	virtual ~MultiBombPool(void) noexcept { Dispose(); }
+public:
+	auto& GetMultiBombPer(void) noexcept { return m_MultiBombPer; }
+
+	void			Shot(Util::Matrix4x4 Mat, float speed, int ShooterID) noexcept {
+		this->m_MultiBombPer.at(static_cast<size_t>(this->m_MultiBombID))->Set(Mat, ShooterID, speed * Scale3DRate);
+		++m_MultiBombID %= static_cast<int>(this->m_MultiBombPer.size());
+	}
+public:
+	void Load() noexcept {
+		ObjectManager::Instance()->LoadModel("data/model/Bomb/");
+	}
+	void Init() noexcept {
+		for (auto& s : this->m_MultiBombPer) {
+			s = std::make_shared<MultiBomb>();
+			ObjectManager::Instance()->InitObject(s, s, "data/model/Bomb/");
+		}
+	}
+	void Dispose(void) noexcept {
+		for (auto& s : this->m_MultiBombPer) {
+			s.reset();
+		}
+	}
+};
 
 class Enemy :public BaseObject {
 	Util::Matrix3x3		m_Roll;
@@ -664,17 +668,7 @@ class Enemy :public BaseObject {
 	float				m_RollPer{};
 	char		padding[4]{};
 
-	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
-	int													m_ShotEffectID{};
-	char		padding1[4]{};
-
-	std::array<std::shared_ptr<Ammo>, 60>				m_AmmoPer{};
-	int													m_AmmoID{};
-	char		padding3[4]{};
-
-	size_t					m_PropellerIndex{};
 	size_t					m_EngineIndex{};
-	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 
@@ -706,13 +700,9 @@ public:
 		m_Roll = Util::Matrix3x3::identity();
 	}
 	void			SetAmmo(bool IsHoming, Util::Matrix3x3 Mat) noexcept {
-		this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-		++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
-
-		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 0,
-			(25.f) * Scale3DRate
-			);
-		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
+		ShotEffectPool::Instance()->Shot(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+		AmmoPool::Instance()->Shot(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)),
+			(2.5f) * Scale3DRate, GetObjectID());
 
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
 
@@ -723,16 +713,12 @@ public:
 	auto			GetRailMat(void) const noexcept {
 		return RailMat;
 	}
-	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
 public:
 	void Load_Sub(void) noexcept override {
-		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
 		this->m_EngineID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/engine.wav", true);
 		//Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, heartID)->Play3D(GetMat().pos(), 10.f * Scale3DRate);
 
 		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
-
-		ObjectManager::Instance()->LoadModel("data/model/FireEffect/");
 	}
 	void Init_Sub(void) noexcept override;
 	void Update_Sub(void) noexcept override;
@@ -758,17 +744,9 @@ public:
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
 
 		SetModel().Dispose();
-
-		for (auto& s : this->m_ShotEffect) {
-			s.reset();
-		}
-		for (auto& s : this->m_AmmoPer) {
-			s.reset();
-		}
 	}
 };
 
@@ -780,17 +758,7 @@ class MyPlane :public BaseObject {
 	float				m_RollPer{};
 	char		padding[4]{};
 
-	std::array<std::shared_ptr<ShotEffect>, 10>			m_ShotEffect{};
-	int													m_ShotEffectID{};
-	char		padding1[4]{};
-
-	std::array<std::shared_ptr<MultiBomb>, 3>			m_MultiBombPer{};
-	int													m_MultiBombID{};
-	char		padding4[4]{};
-
-	size_t					m_PropellerIndex{};
 	size_t					m_EngineIndex{};
-	Sound::SoundUniqueID	m_PropellerID{ InvalidID };
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 
@@ -804,14 +772,15 @@ class MyPlane :public BaseObject {
 
 	int					DamageID{};
 
-	float					m_DamageInterval{ 0.f };
-
 	float					m_RollingTimer1{ 0.f };
 	float					m_RollingTimer2{ 0.f };
 	float					m_RollingInputTimer1{ 0.f };
 	float					m_RollingInputTimer2{ 0.f };
 
 	float					m_RollingCam{ 0.f };
+
+	float					m_DamageInterval{ 0.f };
+	char		padding3[4]{};
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
@@ -826,7 +795,11 @@ public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
 
-	
+	bool			IsDraw() const {
+		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return false; }
+		return true;
+	}
+
 	bool			IsRollingActive() const { return this->m_RollingTimer1 > 0.f || this->m_RollingTimer2 > 0.f; }
 
 	float			GetSpeed() const { return this->m_Speed; }
@@ -843,8 +816,6 @@ public:
 			Util::Matrix4x4::Mtrans(m_MovePoint*-0.5f)*
 			RailMat;
 	}
-	auto& GetMultiBombPer(void) noexcept { return m_MultiBombPer; }
-	
 	void			SetDamage(int ID) noexcept {
 		if (ID != InvalidID) {
 			if (m_DamageInterval != 0.f) { return; }
@@ -857,33 +828,20 @@ public:
 		}
 	}
 	int				GetDamageID(void) const noexcept { return DamageID; }
-
-	void			Shot(Util::Matrix4x4 Mat, float speed) noexcept;
-	void			ShotMultiBomb(Util::Matrix4x4 Mat, float speed) noexcept {
-		this->m_MultiBombPer.at(static_cast<size_t>(this->m_MultiBombID))->Set(Mat, 0,
-			speed * Scale3DRate
-		);
-		++m_MultiBombID %= static_cast<int>(this->m_MultiBombPer.size());
-	}
 public:
 	void Load_Sub(void) noexcept override {
-		this->m_PropellerID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/Propeller.wav", true);
 		this->m_EngineID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/engine.wav", true);
-		//Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, heartID)->Play3D(GetMat().pos(), 10.f * Scale3DRate);
-
 		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
-
-		ObjectManager::Instance()->LoadModel("data/model/FireEffect/");
 	}
 	void Init_Sub(void) noexcept override;
 	void Update_Sub(void) noexcept override;
 	void SetShadowDraw_Sub(void) const noexcept override {
-		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
+		if (!IsDraw()) { return; }
 		GetModel().DrawModel();
 	}
 	void CheckDraw_Sub(void) noexcept override {}
 	void Draw_Sub(void) const noexcept override {
-		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
+		if (!IsDraw()) { return; }
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (!GetModel().GetMeshSemiTransState(loop)) {
 				GetModel().DrawMesh(loop);
@@ -891,7 +849,7 @@ public:
 		}
 	}
 	void DrawFront_Sub(void) const noexcept override {
-		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
+		if (!IsDraw()) { return; }
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (GetModel().GetMeshSemiTransState(loop)) {
 				GetModel().DrawMesh(loop);
@@ -899,20 +857,11 @@ public:
 		}
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
-		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
+		if (!IsDraw()) { return; }
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
-
 		SetModel().Dispose();
-
-		for (auto& s : this->m_ShotEffect) {
-			s.reset();
-		}
-		for (auto& s : this->m_MultiBombPer) {
-			s.reset();
-		}
 	}
 };

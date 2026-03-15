@@ -16,12 +16,19 @@ void MainScene::Load_Sub(void) noexcept {
 
 	AmmoPool::Create();
 	BombPool::Create();
+	MultiBombPool::Create();
+
+	ShotEffectPool::Create();
 
 	BombPool::Instance()->Load();
+	MultiBombPool::Instance()->Load();
+	ShotEffectPool::Instance()->Load();
 }
 void MainScene::Init_Sub(void) noexcept {
-	BombPool::Instance()->Init();
 	AmmoPool::Instance()->Init();
+	BombPool::Instance()->Init();
+	MultiBombPool::Instance()->Init();
+	ShotEffectPool::Instance()->Init();
 	BackGround::Instance()->Init();
 	PlayerManager::Instance()->Init();
 
@@ -63,6 +70,7 @@ void MainScene::Init_Sub(void) noexcept {
 	KeyGuideParts->SetGuideFlip();
 
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->Play(DX_PLAYTYPE_LOOP, TRUE);
+
 }
 void MainScene::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -101,11 +109,12 @@ void MainScene::Update_Sub(void) noexcept {
 			}
 		}
 	);
+	auto& Player = PlayerManager::Instance()->SetPlane();
 	auto& Watch = PlayerManager::Instance()->SetPlane();
 	//
 	CameraParts->SetCamInfo(
 		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f),
-		CameraParts->GetCamera().GetCamNear(), CameraParts->GetCamera().GetCamFar());
+		1.f * Scale3DRate, 200.f * Scale3DRate);
 
 	m_DamagePer = std::max(m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
 	m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 0.f);
@@ -146,47 +155,72 @@ void MainScene::Update_Sub(void) noexcept {
 		//
 		for (auto& a : AmmoPool::Instance()->GetAmmoPer()) {
 			if (a->IsActive()) {
-				for (auto& s : m_StageScript.EnemyPop()) {
-					if (s.m_EnemyScript.IsActive()) {
+				if (a->GetShooterID() == Player->GetObjectID()) {
+					for (auto& s : m_StageScript.EnemyPop()) {
+						//敵被弾
+						if (s.m_EnemyScript.IsActive()) {
 
-						SEGMENT_SEGMENT_RESULT Result;
-						Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
-							a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-						if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
-							a->SetHit(Result.SegB_MinDist_Pos);
-							s.m_EnemyScript.SetDown();
-							break;
+							SEGMENT_SEGMENT_RESULT Result;
+							Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
+								a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+							if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+								a->SetHit(Result.SegB_MinDist_Pos);
+								s.m_EnemyScript.SetDown();
+								break;
+							}
 						}
+					}
+				}
+				else {
+					//自機被弾
+					SEGMENT_SEGMENT_RESULT Result;
+					Util::GetSegmenttoSegment(Player->GetMat().pos(), Player->GetMat().pos(),
+						a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+					if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+						if (Player->IsRollingActive()) {
+							AmmoPool::Instance()->Shot(
+								Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), a->GetVector().normalized()) *
+								Util::Matrix4x4::Mtrans(Player->GetMat().pos()), 25.f + 200.f,
+								Player->GetObjectID());
+							a->SetHit(Result.SegB_MinDist_Pos);
+						}
+						else {
+							a->SetHit(Result.SegB_MinDist_Pos);
+							Player->SetDamage(0);
+						}
+						break;
 					}
 				}
 			}
 		}
 		for (auto& a : BombPool::Instance()->GetBombPer()) {
 			if (a->IsActive()) {
-				//ホーミング用処理
-				//一番近い敵を探す
-				float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
-				Util::VECTOR3D Pos;
-				for (auto& s : m_StageScript.EnemyPop()) {
-					if (s.m_EnemyScript.IsActive() && s.m_EnemyScript.IsAlive()) {
-						auto Vec = a->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
-						if (Mag > Vec.sqrMagnitude()) {
-							Mag = Vec.sqrMagnitude();
-							Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+				if (a->GetShooterID() == Player->GetObjectID()) {
+					//ホーミング用処理
+					//一番近い敵を探す
+					float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
+					Util::VECTOR3D Pos;
+					for (auto& s : m_StageScript.EnemyPop()) {
+						if (s.m_EnemyScript.IsActive() && s.m_EnemyScript.IsAlive()) {
+							auto Vec = a->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
+							if (Mag > Vec.sqrMagnitude()) {
+								Mag = Vec.sqrMagnitude();
+								Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+							}
 						}
 					}
-				}
-				a->SetHomingTarget((Mag != (1000.f * Scale3DRate) * (1000.f * Scale3DRate)), Pos);
-				//ヒット判定
-				for (auto& s : m_StageScript.EnemyPop()) {
-					if (s.m_EnemyScript.IsActive()) {
-						SEGMENT_SEGMENT_RESULT Result;
-						Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
-							a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-						if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
-							a->SetHit(Result.SegB_MinDist_Pos);
-							s.m_EnemyScript.SetDown();
-							break;
+					a->SetHomingTarget((Mag != (1000.f * Scale3DRate) * (1000.f * Scale3DRate)), Pos);
+					//ヒット判定
+					for (auto& s : m_StageScript.EnemyPop()) {
+						if (s.m_EnemyScript.IsActive()) {
+							SEGMENT_SEGMENT_RESULT Result;
+							Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
+								a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+							if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+								a->SetHit(Result.SegB_MinDist_Pos);
+								s.m_EnemyScript.SetDown();
+								break;
+							}
 						}
 					}
 				}
@@ -258,4 +292,7 @@ void MainScene::Dispose_Sub(void) noexcept {
 
 	AmmoPool::Release();
 	BombPool::Release();
+	MultiBombPool::Release();
+
+	ShotEffectPool::Release();
 }
