@@ -225,6 +225,8 @@ void MyPlane::Update_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_PropellerID)->SetLocalVolume(128);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
+	//
+	m_DamageInterval = std::max(m_DamageInterval - DrawerMngr->GetDeltaTime(), 0.f);
 	//移動
 	{
 		Util::VECTOR3D MoveVec = Util::VECTOR3D::forward();
@@ -370,6 +372,11 @@ void MyPlane::Update_Sub(void) noexcept {
 		SetMatrix(
 			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
 			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
+		//ヒット判定
+		auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(PosBefore, PosAfter);
+		if (Ret.HitFlag == TRUE) {
+			SetDamage(0);
+		}
 	}
 	//アニメアップデート
 	{

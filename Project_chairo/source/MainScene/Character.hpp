@@ -804,6 +804,8 @@ class MyPlane :public BaseObject {
 
 	int					DamageID{};
 
+	float					m_DamageInterval{ 0.f };
+
 	float					m_RollingTimer1{ 0.f };
 	float					m_RollingTimer2{ 0.f };
 	float					m_RollingInputTimer1{ 0.f };
@@ -844,6 +846,11 @@ public:
 	auto& GetMultiBombPer(void) noexcept { return m_MultiBombPer; }
 	
 	void			SetDamage(int ID) noexcept {
+		if (ID != InvalidID) {
+			if (m_DamageInterval != 0.f) { return; }
+			m_DamageInterval = 1.0f;
+		}
+
 		DamageID = ID;
 		if (DamageID != InvalidID) {
 			//m_HitPoint = std::clamp(m_HitPoint - 10, 0, m_HitPointMax);
@@ -871,10 +878,12 @@ public:
 	void Init_Sub(void) noexcept override;
 	void Update_Sub(void) noexcept override;
 	void SetShadowDraw_Sub(void) const noexcept override {
+		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
 		GetModel().DrawModel();
 	}
 	void CheckDraw_Sub(void) noexcept override {}
 	void Draw_Sub(void) const noexcept override {
+		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (!GetModel().GetMeshSemiTransState(loop)) {
 				GetModel().DrawMesh(loop);
@@ -882,6 +891,7 @@ public:
 		}
 	}
 	void DrawFront_Sub(void) const noexcept override {
+		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (GetModel().GetMeshSemiTransState(loop)) {
 				GetModel().DrawMesh(loop);
@@ -889,6 +899,7 @@ public:
 		}
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
+		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return; }
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
