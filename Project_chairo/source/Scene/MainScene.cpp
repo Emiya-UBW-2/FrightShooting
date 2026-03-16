@@ -121,7 +121,7 @@ void MainScene::Update_Sub(void) noexcept {
 	if (m_DamagePer == 0.f) {
 		CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedMax()) / (Watch->GetSpeedMax() * 2.f) * Scale3DRate);
 		if (Watch->GetDamageID() != InvalidID) {
-			CameraParts->SetCamShake(0.2f, 5.f * Scale3DRate);
+			CameraParts->SetCamShake(0.2f, 25.f * Scale3DRate);
 			m_DamagePer = 0.2f;
 			m_DamageWatch = 2.f;
 		}

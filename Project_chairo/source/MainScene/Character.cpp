@@ -33,6 +33,16 @@ void Bomb::Update_Sub(void) noexcept {
 	if (this->DrawTimer == 0.f) { return; }
 	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
 
+	for (auto& l : m_Line) {
+		l.m_Timer = std::max(l.m_Timer - DrawerMngr->GetDeltaTime(), 0.f);
+	}
+	int max = static_cast<int>(m_Line.size());
+	for (int loop = max - 1; loop >= 1; --loop) {
+		m_Line.at(loop) = m_Line.at(loop - 1);
+	}
+	m_Line.at(0).m_Pos = GetMat().pos();
+	m_Line.at(0).m_Timer = 0.25f;
+
 	if (!IsActive()) {
 		float Alpha = 0.f;
 		if (m_Scale < 0.1f) {
@@ -103,7 +113,7 @@ void MultiBomb::Update_Sub(void) noexcept {
 		int max = 8;
 		for (int loop = 0; loop < max; ++loop) {
 			BombPool::Instance()->Shot(
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(30)) *
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(10)) *
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360) * static_cast<float>(loop) / static_cast<float>(max)) *
 				GetMat(), 100.f
 				, Shooter
@@ -314,7 +324,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
 			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
 		//ヒット判定
-		auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(PosBefore, PosAfter);
+		auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), GetMat().pos() + (PosAfter - PosBefore));
 		if (Ret.HitFlag == TRUE) {
 			SetDamage(0);
 		}

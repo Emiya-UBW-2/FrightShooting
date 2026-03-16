@@ -344,6 +344,11 @@ public:
 		}
 	}
 };
+
+struct LineParam {
+	Util::VECTOR3D m_Pos{};
+	float m_Timer{};
+};
 class Bomb : public BaseObject {
 public:
 	Bomb(void) noexcept {}
@@ -356,6 +361,8 @@ private:
 	int				GetFrameNum(void) noexcept override { return 0; }
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
+	std::array<LineParam, 16>	m_Line;
+
 	const Draw::GraphHandle* m_Graph{};
 	Util::VECTOR3D Vector{};
 	char		padding0[4]{};
@@ -381,6 +388,11 @@ public:
 		this->Timer = 5.f;
 		this->DrawTimer = this->Timer + 0.25f;
 		Shooter = ID;
+
+		for (auto& l : m_Line) {
+			l.m_Pos = GetMat().pos();
+			l.m_Timer = 0.25f;
+		}
 	}
 	bool IsActive() const noexcept {
 		return this->Timer != 0.f;
@@ -420,6 +432,23 @@ public:
 		if (this->DrawTimer == 0.f) { return; }
 		DxLib::SetUseZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
+
+		int max = static_cast<int>(m_Line.size());
+		for (int loop = 0; loop < max; ++loop) {
+			DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(255.f * m_Line.at((loop) % max).m_Timer / 0.25f));
+			DxLib::DrawCapsule3D(
+				m_Line.at((loop) % max).m_Pos.get(),
+				m_Line.at((loop + 1) % max).m_Pos.get(),
+				0.45f * Scale3DRate / 2.f,
+				3,
+				DxLib::GetColor(64, 64, 64),
+				DxLib::GetColor(64, 64, 64),
+				true
+			);
+		}
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+
+
 		float Per = std::sin(Util::deg2rad(90.f));
 		if (Per > 0.f) {
 			DxLib::SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
@@ -481,7 +510,7 @@ public:
 		SetMatrix(Muzzle);
 		this->Vector = Muzzle.zvec() * -(Speed * DrawerMngr->GetDeltaTime());
 		this->YVecAdd = 0.f;
-		this->Timer = 0.5f;
+		this->Timer = 0.25f;
 		this->DrawTimer = this->Timer + 0.25f;
 		Shooter = ID;
 	}
@@ -804,7 +833,7 @@ public:
 
 	float			GetSpeed() const { return this->m_Speed; }
 	float			GetSpeedMax(void) const noexcept {
-		return 100.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
+		return 200.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
 	}
 	void			SetPos(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
