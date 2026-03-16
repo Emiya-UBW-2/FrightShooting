@@ -32,6 +32,10 @@ enum class CharaFrame {
 	Eye,
 	Gun1,
 	Gun2,
+	LWingtip,
+	RWingtip,
+	Nozzle1,
+	Nozzle2,
 	Max,
 };
 static const char* CharaFrameName[static_cast<int>(CharaFrame::Max)] = {
@@ -39,6 +43,10 @@ static const char* CharaFrameName[static_cast<int>(CharaFrame::Max)] = {
 	"目",
 	"機銃1",
 	"機銃2",
+	"左翼端",
+	"右翼端",
+	"ノズル1",
+	"ノズル2",
 };
 
 class ShotEffect : public BaseObject {
@@ -347,7 +355,49 @@ public:
 
 struct LineParam {
 	Util::VECTOR3D m_Pos{};
-	float m_Timer{};
+	float m_Per{};
+};
+class LineDraw {
+private:
+	std::array<LineParam, 32>	m_Line;
+public:
+	void Set(const Util::VECTOR3D& Point) noexcept {
+		for (auto& l : m_Line) {
+			l.m_Pos = Point;
+			l.m_Per = 0.f;
+		}
+	}
+	void Update(const Util::VECTOR3D& Point, float Time) noexcept {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		for (auto& l : m_Line) {
+			l.m_Per = std::max(l.m_Per - DrawerMngr->GetDeltaTime() / Time, 0.f);
+		}
+		for (size_t loop = m_Line.size() - 1; loop >= 1; --loop) {
+			m_Line.at(loop) = m_Line.at(loop - 1);
+		}
+		m_Line.at(0).m_Pos = Point;
+		m_Line.at(0).m_Per = 1.f;
+
+	}
+	void Draw(float Radius, unsigned int Color) const noexcept {
+		DxLib::SetUseZBufferFlag(true);
+		DxLib::SetUseLighting(FALSE);
+		for (size_t loop = 0; loop < m_Line.size() - 1; ++loop) {
+			if (static_cast<int>(255.f * m_Line.at(loop).m_Per) <= 0.f) { continue; }
+			DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(255.f * m_Line.at(loop).m_Per));
+			DxLib::DrawCapsule3D(
+				m_Line.at(loop).m_Pos.get(),
+				m_Line.at(loop + 1).m_Pos.get(),
+				Radius,
+				3,
+				Color,
+				Color,
+				true
+			);
+		}
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+		DxLib::SetUseLighting(TRUE);
+	}
 };
 class Bomb : public BaseObject {
 public:
@@ -361,8 +411,7 @@ private:
 	int				GetFrameNum(void) noexcept override { return 0; }
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
-	std::array<LineParam, 16>	m_Line;
-
+	LineDraw				m_LineDraw;
 	const Draw::GraphHandle* m_Graph{};
 	Util::VECTOR3D Vector{};
 	char		padding0[4]{};
@@ -389,10 +438,7 @@ public:
 		this->DrawTimer = this->Timer + 0.25f;
 		Shooter = ID;
 
-		for (auto& l : m_Line) {
-			l.m_Pos = GetMat().pos();
-			l.m_Timer = 0.25f;
-		}
+		m_LineDraw.Set(GetMat().pos());
 	}
 	bool IsActive() const noexcept {
 		return this->Timer != 0.f;
@@ -433,21 +479,7 @@ public:
 		DxLib::SetUseZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
 
-		int max = static_cast<int>(m_Line.size());
-		for (int loop = 0; loop < max; ++loop) {
-			DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(255.f * m_Line.at((loop) % max).m_Timer / 0.25f));
-			DxLib::DrawCapsule3D(
-				m_Line.at((loop) % max).m_Pos.get(),
-				m_Line.at((loop + 1) % max).m_Pos.get(),
-				0.45f * Scale3DRate / 2.f,
-				3,
-				DxLib::GetColor(64, 64, 64),
-				DxLib::GetColor(64, 64, 64),
-				true
-			);
-		}
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-
+		m_LineDraw.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64));
 
 		float Per = std::sin(Util::deg2rad(90.f));
 		if (Per > 0.f) {
@@ -706,6 +738,12 @@ class Enemy :public BaseObject {
 
 	int						m_HitPoint{ m_HitPointMax };
 	static constexpr int	m_HitPointMax{ 100 };
+
+	LineDraw				m_LineDraw1;
+	LineDraw				m_LineDraw2;
+
+	LineDraw				m_LineDraw3;
+	LineDraw				m_LineDraw4;
 public:
 	Enemy(void) noexcept {}
 	Enemy(const Enemy&) = delete;
@@ -768,6 +806,12 @@ public:
 				GetModel().DrawMesh(loop);
 			}
 		}
+
+		m_LineDraw1.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64));
+		m_LineDraw2.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64));
+
+		m_LineDraw3.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 0));
+		m_LineDraw4.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 0));
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
@@ -810,6 +854,12 @@ class MyPlane :public BaseObject {
 
 	float					m_DamageInterval{ 0.f };
 	char		padding3[4]{};
+
+	LineDraw				m_LineDraw1;
+	LineDraw				m_LineDraw2;
+
+	LineDraw				m_LineDraw3;
+	LineDraw				m_LineDraw4;
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
@@ -884,6 +934,12 @@ public:
 				GetModel().DrawMesh(loop);
 			}
 		}
+
+		m_LineDraw1.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64));
+		m_LineDraw2.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64));
+
+		m_LineDraw3.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 0));
+		m_LineDraw4.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 0));
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 		if (!IsDraw()) { return; }

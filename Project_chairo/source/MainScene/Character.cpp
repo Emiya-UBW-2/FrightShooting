@@ -33,15 +33,7 @@ void Bomb::Update_Sub(void) noexcept {
 	if (this->DrawTimer == 0.f) { return; }
 	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
 
-	for (auto& l : m_Line) {
-		l.m_Timer = std::max(l.m_Timer - DrawerMngr->GetDeltaTime(), 0.f);
-	}
-	int max = static_cast<int>(m_Line.size());
-	for (int loop = max - 1; loop >= 1; --loop) {
-		m_Line.at(loop) = m_Line.at(loop - 1);
-	}
-	m_Line.at(0).m_Pos = GetMat().pos();
-	m_Line.at(0).m_Timer = 0.25f;
+	m_LineDraw.Update(GetMat().pos(), 0.5f);
 
 	if (!IsActive()) {
 		float Alpha = 0.f;
@@ -65,10 +57,12 @@ void Bomb::Update_Sub(void) noexcept {
 	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
 
 	if (m_IsHoming) {
+		float Length = this->Vector.magnitude();
 		Util::Easing(
 			&this->Vector,
-			(m_HomingTarget - GetMat().pos()).normalized() * this->Vector.magnitude(),
+			(m_HomingTarget - GetMat().pos()).normalized() * Length,
 			0.95f);
+		this->Vector = this->Vector.normalized() * Length;
 	}
 
 	//this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
@@ -145,6 +139,12 @@ void Enemy::Init_Sub(void) noexcept {
 
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
+
+	m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
+	m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
+
+	m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
+	m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
 }
 void Enemy::Update_Sub(void) noexcept {
 	//
@@ -171,6 +171,12 @@ void Enemy::Update_Sub(void) noexcept {
 		SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
 		SetModel().FlipAnimAll();
 	}
+	//
+	m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos(), 0.25f);
+	m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos(), 0.25f);
+
+	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.05f);
+	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.05f);
 }
 
 void MyPlane::Init_Sub(void) noexcept {
@@ -179,6 +185,12 @@ void MyPlane::Init_Sub(void) noexcept {
 
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
+
+	m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
+	m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
+
+	m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
+	m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
 }
 void MyPlane::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -358,4 +370,10 @@ void MyPlane::Update_Sub(void) noexcept {
 			m_ShootTimer = std::max(m_ShootTimer - DrawerMngr->GetDeltaTime(), 0.f);
 		}
 	}
+	//
+	m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos(), 0.25f);
+	m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos(), 0.25f);
+
+	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.05f);
+	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.05f);
 }
