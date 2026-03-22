@@ -162,7 +162,7 @@ public:
 		PlayerManager::Instance()->SetEnemy().emplace_back();
 		PlayerManager::Instance()->SetEnemy().at(static_cast<size_t>(m_EnemyID)) = std::make_shared<Enemy>();
 		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), "data/model/Plane/");
-		EnemyObj()->SetPos(Util::VECTOR3D::vget(5.f, 15.f, 0.f) * Scale3DRate, Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
+		EnemyObj()->SetPlanePosition(Util::VECTOR3D::vget(5.f, 15.f, 0.f) * Scale3DRate, Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
 		m_IsActive = true;
 	}
 	bool IsActive(void) const noexcept {
@@ -250,7 +250,7 @@ public:
 					Util::VECTOR3D Pos = Util::Lerp(m_EnemyMove.at(loop - 1).m_Pos, m_EnemyMove.at(loop).m_Pos, Per);
 					Util::Matrix3x3 Rot = Util::Lerp(m_EnemyMove.at(loop - 1).m_Rot, m_EnemyMove.at(loop).m_Rot, Per);
 
-					EnemyObj()->SetPos(Pos, Rot);
+					EnemyObj()->SetPlanePosition(Pos, Rot);
 					break;
 				}
 			}
@@ -284,7 +284,7 @@ public:
 			Util::VECTOR3D Pos = EnemyObj()->GetRailMat().pos() + Util::VECTOR3D::up() * (-10.f * Scale3DRate * DrawerMngr->GetDeltaTime());
 			Util::Matrix3x3 Rot = Util::Matrix3x3::Get33DX(EnemyObj()->GetRailMat().rotation()
 				* Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360.f * DrawerMngr->GetDeltaTime())));
-			EnemyObj()->SetPos(Pos, Rot);
+			EnemyObj()->SetPlanePosition(Pos, Rot);
 		}
 		m_Frame += 1.f;
 	}

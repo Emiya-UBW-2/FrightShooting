@@ -33,6 +33,7 @@
     <ClCompile Include="source\MainScene\BackGround.cpp" />
     <ClCompile Include="source\MainScene\BaseObject.cpp" />
     <ClCompile Include="source\MainScene\Character.cpp" />
+    <ClCompile Include="source\MainScene\Common.cpp" />
     <ClCompile Include="source\MainScene\PlayerManager.cpp" />
     <ClCompile Include="source\OptionWindow.cpp" />
     <ClCompile Include="source\PauseUI.cpp" />
@@ -62,6 +63,7 @@
     <ClInclude Include="source\MainScene\BackGround.hpp" />
     <ClInclude Include="source\MainScene\BaseObject.hpp" />
     <ClInclude Include="source\MainScene\Character.hpp" />
+    <ClInclude Include="source\MainScene\Common.hpp" />
     <ClInclude Include="source\MainScene\PlayerManager.hpp" />
     <ClInclude Include="source\OptionWindow.hpp" />
     <ClInclude Include="source\PauseUI.hpp" />

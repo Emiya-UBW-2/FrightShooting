@@ -35,11 +35,7 @@ public:
 public:
 	const auto& GetCol() const noexcept { return ColID; }
 public:
-	void Load() noexcept {
-		Draw::MV1::Load("data/model/Sky/model.mv1", &SkyBoxID);
-		Draw::MV1::Load("data/model/Map/model.mv1", &MapID);
-		Draw::MV1::Load("data/model/Map/model.mv1", &ColID);
-	}
+	void Load() noexcept;
 	void Init(void) noexcept {
 		ColID.SetupCollInfo();
 	}

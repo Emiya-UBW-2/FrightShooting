@@ -5,6 +5,8 @@
 #include "../MainScene/Character.hpp"
 
 void MainScene::Load_Sub(void) noexcept {
+	GameRule::Create();
+
 	ObjectManager::Create();
 	PlayerManager::Create();
 	BackGround::Create();
@@ -37,7 +39,7 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
 	auto& Player = PlayerManager::Instance()->SetPlane();
-	Player->SetPos(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
+	Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
 
 	Player->SetDamage(InvalidID);
 
@@ -295,4 +297,6 @@ void MainScene::Dispose_Sub(void) noexcept {
 	MultiBombPool::Release();
 
 	ShotEffectPool::Release();
+
+	GameRule::Release();
 }
