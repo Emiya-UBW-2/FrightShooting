@@ -102,7 +102,14 @@ void MyPlane::Update_Sub(void) noexcept {
 
 			bool Left2Trig = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Q);
 			bool Right2Trig = KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::E);
+			if (m_OutsidePer > 0.f) {
+				LeftKey = false;
+				RightKey = false;
 
+				float X = (m_OutsideMatAfter * m_OutsideMatBefore.inverse()).zvec2().x;
+				Left2Key = X > 0.f;
+				Right2Key = X < 0.f;
+			}
 			float prev = m_MovePointAdd.x;
 			if (LeftKey && !RightKey) {
 				m_MovePointAdd.x -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
@@ -157,7 +164,7 @@ void MyPlane::Update_Sub(void) noexcept {
 					RollPer = Util::deg2rad(30);
 				}
 				if (!RightKey && !LeftKey) {
-					m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -9.f * Scale3DRate, 9.f * Scale3DRate);
+					m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -5.f * Scale3DRate, 5.f * Scale3DRate);
 				}
 				break;
 			default:
@@ -228,25 +235,66 @@ void MyPlane::Update_Sub(void) noexcept {
 		switch (GameRule::Instance()->GetGameType()) {
 		case GameType::Normal:
 			Util::Easing(&m_RotRail, 0.f, 0.95f);
+			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
 			break;
 		case GameType::AllRange:
-			if (m_MovePointAdd.x < -9.f * Scale3DRate) {
+			if (m_MovePointAdd.x < -5.f * Scale3DRate) {
 				m_RotRail = std::clamp(m_RotRail - 1.f * DrawerMngr->GetDeltaTime(), -1.f, 1.f);
 			}
-			else if (m_MovePointAdd.x > 9.f * Scale3DRate) {
+			else if (m_MovePointAdd.x > 5.f * Scale3DRate) {
 				m_RotRail = std::clamp(m_RotRail + 1.f * DrawerMngr->GetDeltaTime(), -1.f, 1.f);
 			}
 			else {
 				Util::Easing(&m_RotRail, 0.f, 0.95f);
 			}
+			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(90.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+			//範囲外なら真ん中を向く
+			if (m_OutsidePer <= 0.f && (PosAfter.magnitude() > 200.f * Scale3DRate)) {
+				m_OutsidePer = 1.f;
+				m_OutsideMatBefore = RailMat.rotation();
+
+				auto Pos = PosAfter; Pos.y = 0.f; Pos = Pos.normalized();
+				if (Pos.x == 0.f) {
+					Pos.x = 0.01f;
+				}
+				m_OutsideMatAfter = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), Pos).rotation();
+			}
+			if (m_OutsidePer > 0.f) {
+				m_OutsidePer = std::max(m_OutsidePer - DrawerMngr->GetDeltaTime() / 0.5f, 0.f);
+				auto Mat = RailMat.rotation();
+				Util::Easing(&Mat, m_OutsideMatAfter, 0.9f);
+				RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+			}
 			break;
 		default:
 			break;
 		}
-		RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
 		//当たり判定
 
 		RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+
+		auto Eye = RailMat;
+
+		switch (GameRule::Instance()->GetGameType()) {
+		case GameType::Normal:
+			EyeMat = Eye;
+			break;
+		case GameType::AllRange:
+			if (m_OutsidePer > 0.f) {
+				EyeMat = m_OutsideMatAfter.rotation() * Util::Matrix4x4::Mtrans(Eye.pos());
+			}
+			else {
+				EyeMat = Eye;
+			}
+			break;
+		default:
+			break;
+		}
+
+		EyeMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), m_RollingCam) * 
+			Util::Matrix4x4::Mtrans(m_MovePoint * -0.5f) * 
+			EyeMat;
+
 		SetMatrix(
 			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
 			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));

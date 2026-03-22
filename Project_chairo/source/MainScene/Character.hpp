@@ -165,6 +165,7 @@ class MyPlane :public BaseObject {
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 
 	Util::Matrix4x4			RailMat;
+	Util::Matrix4x4			EyeMat;
 	Util::VECTOR3D			m_MovePoint;
 	Util::VECTOR3D			m_MovePointAdd;
 	Util::VECTOR3D			m_MoveVec;
@@ -184,7 +185,12 @@ class MyPlane :public BaseObject {
 	float					m_DamageInterval{ 0.f };
 
 	float					m_RotRail{ 0.f };
-	//char		padding3[4]{};
+
+	float					m_OutsidePer{ };
+	char		padding3[4]{};
+
+	Util::Matrix4x4			m_OutsideMatBefore;
+	Util::Matrix4x4			m_OutsideMatAfter;
 
 	LineDraw				m_LineDraw1;
 	LineDraw				m_LineDraw2;
@@ -218,13 +224,11 @@ public:
 	}
 	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
+		EyeMat = RailMat;
 		m_Roll = Util::Matrix3x3::identity();
 	}
 	auto			GetEyeMatrix(void) const noexcept {
-		return 
-			Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), m_RollingCam) *
-			Util::Matrix4x4::Mtrans(m_MovePoint*-0.5f)*
-			RailMat;
+		return EyeMat;
 	}
 	void			SetDamage(int ID) noexcept {
 		if (ID != InvalidID) {
