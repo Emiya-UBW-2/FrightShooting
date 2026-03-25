@@ -349,12 +349,12 @@ public:
 		m_Line.at(0).m_Per = 1.f;
 
 	}
-	void Draw(float Radius, unsigned int Color) const noexcept {
+	void Draw(float Radius, unsigned int Color, int BLENDMODE) const noexcept {
 		DxLib::SetUseZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
 		for (size_t loop = 0; loop < m_Line.size() - 1; ++loop) {
 			if ((255.f * m_Line.at(loop).m_Per) <= 0.f) { continue; }
-			DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(255.f * m_Line.at(loop).m_Per));
+			DxLib::SetDrawBlendMode(BLENDMODE, static_cast<int>(255.f * m_Line.at(loop).m_Per));
 			DxLib::DrawCapsule3D(
 				m_Line.at(loop).m_Pos.get(),
 				m_Line.at(loop + 1).m_Pos.get(),
@@ -449,7 +449,7 @@ public:
 		DxLib::SetUseZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
 
-		m_LineDraw.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64));
+		m_LineDraw.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
 
 		float Per = std::sin(Util::deg2rad(90.f));
 		if (Per > 0.f) {

@@ -45,8 +45,8 @@ void Enemy::Update_Sub(void) noexcept {
 	m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos(), 0.25f);
 	m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos(), 0.25f);
 
-	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.05f);
-	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.05f);
+	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.15f);
+	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.15f);
 }
 
 void MyPlane::Init_Sub(void) noexcept {
@@ -249,7 +249,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			else {
 				Util::Easing(&m_RotRail, 0.f, 0.95f);
 			}
-			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(90.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
 			//範囲外なら真ん中を向く
 			if (m_OutsidePer <= 0.f && (PosAfter.magnitude() > 200.f * Scale3DRate)) {
 				m_OutsidePer = 1.f;
@@ -341,6 +341,6 @@ void MyPlane::Update_Sub(void) noexcept {
 	m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos(), 0.25f);
 	m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos(), 0.25f);
 
-	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.05f);
-	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.05f);
+	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.15f);
+	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.15f);
 }
