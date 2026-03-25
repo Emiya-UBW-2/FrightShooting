@@ -5,12 +5,9 @@
 #include "../MainScene/Character.hpp"
 
 void MainScene::Load_Sub(void) noexcept {
-	GameRule::Create();
-
 	ObjectManager::Create();
 	PlayerManager::Create();
 	BackGround::Create();
-	BackGround::Instance()->Load();
 	PlayerManager::Instance()->Load();
 
 	m_AimPoint = std::make_unique<AimPoint>();
@@ -25,6 +22,9 @@ void MainScene::Load_Sub(void) noexcept {
 	BombPool::Instance()->Load();
 	MultiBombPool::Instance()->Load();
 	ShotEffectPool::Instance()->Load();
+
+	m_StageScript.Load(GameRule::Instance()->GetNextStage());
+	BackGround::Instance()->Load();
 }
 void MainScene::Init_Sub(void) noexcept {
 	AmmoPool::Instance()->Init();
@@ -42,11 +42,12 @@ void MainScene::Init_Sub(void) noexcept {
 	Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
 
 	Player->SetDamage(InvalidID);
-
-	m_StageScript.Init("Stage01");
 	//
 	this->m_Exit = false;
-	this->m_Fade = 2.f;
+	this->m_Fade = 1.f;
+
+	this->m_NextStage = false;
+	this->m_FadeStage = 0.f;
 
 	this->m_EnviID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/Envi.wav", false);
 
@@ -148,6 +149,27 @@ void MainScene::Update_Sub(void) noexcept {
 	if (m_Exit) {
 		if (this->m_Fade >= 2.f) {
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
+			SceneBase::SetEndScene();
+		}
+	}
+
+	//次ステージ処理
+	switch (GameRule::Instance()->GetGameType()) {
+	case GameType::Normal:
+		if (Watch->GetMat().pos().z < m_StageScript.GetZPosGoal()) {
+			this->m_NextStage = true;
+		}
+		break;
+	case GameType::AllRange:
+		break;
+	case GameType::Max:
+	default:
+		break;
+	}
+	this->m_FadeStage = std::clamp(this->m_FadeStage + (this->m_NextStage ? 3.f : -3.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
+	if (this->m_NextStage) {
+		if (this->m_FadeStage >= 2.f) {
+			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
 			SceneBase::SetEndScene();
 		}
 	}
@@ -281,6 +303,12 @@ void MainScene::UIDraw_Sub(void) noexcept {
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 	}
 	//
+	if (this->m_FadeStage > 0.f) {
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(255.f * this->m_FadeStage));
+		DxLib::DrawBox(0, 0, DrawerMngr->GetDispWidth(), DrawerMngr->GetDispHeight(), ColorPalette::Black, true);
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+	}
+	//
 }
 void MainScene::Dispose_Sub(void) noexcept {
 	this->m_MainUI->Dispose();
@@ -297,6 +325,4 @@ void MainScene::Dispose_Sub(void) noexcept {
 	MultiBombPool::Release();
 
 	ShotEffectPool::Release();
-
-	GameRule::Release();
 }

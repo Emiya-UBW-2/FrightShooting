@@ -694,12 +694,19 @@ public:
 enum class GameType : size_t {
 	Normal,
 	AllRange,
+	Max,
+};
+static const char* GameTypeName[static_cast<int>(GameType::Max)] = {
+	"Normal",
+	"AllRange",
 };
 
 class GameRule : public Util::SingletonBase<GameRule> {
 private:
 	friend class Util::SingletonBase<GameRule>;
 private:
+	std::string			m_ModelName;
+	std::string			m_StageName;
 	GameType			m_GameType{ GameType::AllRange };
 private:
 	GameRule(void) noexcept {}
@@ -709,6 +716,19 @@ private:
 	GameRule& operator=(GameRule&&) = delete;
 	virtual ~GameRule(void) noexcept { Dispose(); }
 public:
+	void SetStageModel(std::string_view str) noexcept {
+		m_ModelName = str;
+	}
+	const auto& GetStageModel(void) const noexcept { return m_ModelName; }
+
+	void SetNextStage(std::string_view str) noexcept {
+		m_StageName = str;
+	}
+	const auto& GetNextStage(void) const noexcept { return m_StageName; }
+
+	void SetGameType(GameType type) noexcept {
+		m_GameType = type;
+	}
 	const auto& GetGameType(void) const noexcept { return m_GameType; }
 public:
 	void Dispose(void) noexcept {

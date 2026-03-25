@@ -132,6 +132,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			case GameType::AllRange:
 				m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -10.f * Scale3DRate, 10.f * Scale3DRate);
 				break;
+			case GameType::Max:
 			default:
 				break;
 			}
@@ -167,6 +168,7 @@ void MyPlane::Update_Sub(void) noexcept {
 					m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -5.f * Scale3DRate, 5.f * Scale3DRate);
 				}
 				break;
+			case GameType::Max:
 			default:
 				break;
 			}
@@ -266,6 +268,7 @@ void MyPlane::Update_Sub(void) noexcept {
 				RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
 			}
 			break;
+		case GameType::Max:
 		default:
 			break;
 		}
@@ -287,6 +290,7 @@ void MyPlane::Update_Sub(void) noexcept {
 				EyeMat = Eye;
 			}
 			break;
+		case GameType::Max:
 		default:
 			break;
 		}

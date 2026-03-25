@@ -31,6 +31,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	DXLibRef::KeyGuide::Create();
 	Sound::SoundPool::Create();
 
+	GameRule::Create();
+
+	GameRule::Instance()->SetNextStage("Stage01");
+
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* pOption = Util::OptionParam::Instance();
 	auto* SceneMngr = Util::SceneManager::Instance();
@@ -118,6 +122,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			break;
 		}
 	}
+
+	GameRule::Release();
 
 	Sound::SoundPool::Release();
 	DXLibRef::KeyGuide::Release();

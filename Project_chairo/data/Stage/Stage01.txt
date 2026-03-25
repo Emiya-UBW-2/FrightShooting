@@ -1,2 +1,7 @@
+SetStageModel(data\model\Map\model.mv1);
+SetGameType(Normal);
+
 SetEnemy(20,Enemy01);
 SetEnemy(30,Enemy02);
+
+GoNextStageNormal(-500,Stage02);//次ステージに行くZ座標と次ステージ名

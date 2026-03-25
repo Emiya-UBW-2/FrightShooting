@@ -153,6 +153,8 @@ class EnemyScript {
 	bool					m_IsActive{ false };
 	bool					m_IsDown{ false };
 	char		padding[2]{};
+	float					m_EndFrame{ -1.f };
+	char		padding2[4]{};
 public:
 	auto& EnemyObj(void) const noexcept {
 		return PlayerManager::Instance()->SetEnemy().at(static_cast<size_t>(m_EnemyID));
@@ -234,6 +236,9 @@ public:
 							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(2))));
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
 					}
+					if (Args.at(0) == "Delete") {
+						m_EndFrame = std::stof(Args.at(1));//Frame
+					}
 				}
 			}
 			FileStream.Close();
@@ -278,6 +283,10 @@ public:
 					break;
 				}
 			}
+
+			if (m_Frame >= m_EndFrame) {
+				m_IsDown = true;
+			}
 		}
 		else {
 			//死んだムーブ
@@ -297,14 +306,16 @@ struct EnemyPop {
 };
 class StageScript {
 	std::vector<EnemyPop>	m_EnemyPop;
-	char		padding[4]{};
+	//char		padding[4]{};
 	float					m_Frame{};
+	float					m_ZPosGoal{};
 public:
 	auto& EnemyPop(void) noexcept {
 		return m_EnemyPop;
 	}
+	const auto& GetZPosGoal(void) const noexcept { return m_ZPosGoal; }
 public:
-	void Init(std::string Path) noexcept {
+	void Load(std::string Path) noexcept {
 		//
 		{
 			m_EnemyPop.clear();
@@ -316,7 +327,25 @@ public:
 				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
 				//
 				{
-					if (Args.at(0) == "SetEnemy") {
+					if (Args.at(0) == "SetStageModel") {
+						GameRule::Instance()->SetStageModel(Args.at(1));
+					}
+					else if (Args.at(0) == "SetGameType") {
+						for (int loop = 0; loop < static_cast<int>(GameType::Max); ++loop) {
+							if (Args.at(1) == GameTypeName[loop]) {
+								GameRule::Instance()->SetGameType(static_cast<GameType>(loop));
+								break;
+							}
+						}
+					}
+					else if (Args.at(0) == "GoNextStageNormal") {
+						m_ZPosGoal = std::stof(Args.at(1)) * Scale3DRate;
+						GameRule::Instance()->SetNextStage(Args.at(2));
+					}
+					else if (Args.at(0) == "GoNextStageAllRange") {
+						GameRule::Instance()->SetNextStage(Args.at(1));
+					}
+					else if (Args.at(0) == "SetEnemy") {
 						m_EnemyPop.emplace_back();
 						m_EnemyPop.back().m_Frame = std::stoi(Args.at(1));//Frame
 						m_EnemyPop.back().m_EnemyScript.Init(Args.at(2));
@@ -351,8 +380,10 @@ class MainScene : public Util::SceneBase {
 	Util::VECTOR3D					CamTarget;
 	Util::VECTOR3D					CamUp;
 	float							m_Fade{ 1.f };
+	float							m_FadeStage{ 1.f };
 	bool							m_Exit{ false };
-	char		padding[7]{};
+	bool							m_NextStage{ false };
+	char		padding[2]{};
 
 	float							m_DamagePer{ 0.f };
 	float							m_DamageWatch{ 0.f };
