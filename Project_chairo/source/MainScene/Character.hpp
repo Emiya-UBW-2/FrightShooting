@@ -22,9 +22,11 @@
 
 enum class CharaAnim {
 	Stand,
+	/*
 	Roll,
 	Pitch,
 	Yaw,
+	//*/
 	Max,
 };
 

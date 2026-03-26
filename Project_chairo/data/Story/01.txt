@@ -1,0 +1,44 @@
+SetCut(0);
+	SetCameraPos(3.0,0.5,-5.0);
+	SetCameraTarget(0.0,1.0,0.0);
+
+	SetModel(data\model\Sky\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Map0\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Plane\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+	SetModelAnimation(data\model\Plane\,0, 0,0.0);
+
+SetCut(60);
+	SetCameraPos(0.0,10.0,1.0);
+	SetCameraTarget(0.0,3.0,0.0);
+
+	SetModel(data\model\Sky\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Map0\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Plane\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+	SetModelAnimation(data\model\Plane\,0, 0);
+
+SetCut(120);
+	SetCameraPos(-1.0,0.5,5.0);
+	SetCameraTarget(-1.0,1.0,0.0);
+
+	SetModel(data\model\Sky\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Map0\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Plane\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+	SetModelAnimation(data\model\Plane\,0, 0,0.0);
+
+SetCut(180);
+	SetCameraPos(-1.0,0.5,5.0);
+	SetCameraTarget(-1.0,1.0,0.0);
+
+	SetModel(data\model\Sky\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Map0\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+
+	SetModel(data\model\Plane\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0);
+	SetModelAnimation(data\model\Plane\,0, 0);
+

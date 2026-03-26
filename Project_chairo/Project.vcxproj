@@ -38,6 +38,7 @@
     <ClCompile Include="source\OptionWindow.cpp" />
     <ClCompile Include="source\PauseUI.cpp" />
     <ClCompile Include="source\Scene\MainScene.cpp" />
+    <ClCompile Include="source\Scene\MovieScene.cpp" />
     <ClCompile Include="source\Scene\TitleScene.cpp" />
     <ClCompile Include="source\TitleUI.cpp" />
     <ClCompile Include="source\Util\Algorithm.cpp" />
@@ -68,6 +69,7 @@
     <ClInclude Include="source\OptionWindow.hpp" />
     <ClInclude Include="source\PauseUI.hpp" />
     <ClInclude Include="source\Scene\MainScene.hpp" />
+    <ClInclude Include="source\Scene\MovieScene.hpp" />
     <ClInclude Include="source\Scene\TitleScene.hpp" />
     <ClInclude Include="source\TitleUI.hpp" />
     <ClInclude Include="source\Util\Algorithm.hpp" />

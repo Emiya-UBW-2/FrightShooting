@@ -306,6 +306,12 @@ namespace Draw {
 		GraphPool(GraphPool&&) = delete;
 		GraphPool& operator=(const GraphPool&) = delete;
 		GraphPool& operator=(GraphPool&&) = delete;
+		~GraphPool(void) noexcept {
+			for (auto& p : m_Pools) {
+				p.reset();
+			}
+			m_Pools.clear();
+		}
 	public:
 		std::unique_ptr<Graphhave>& Get(std::string_view FilePath) noexcept {
 			auto Find = std::find_if(this->m_Pools.begin(), this->m_Pools.end(), [&](const std::unique_ptr<Graphhave>& tgt) {return tgt->Equal(FilePath); });

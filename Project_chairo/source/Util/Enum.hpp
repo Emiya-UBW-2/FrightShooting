@@ -7,6 +7,7 @@ static constexpr int		InvalidID{ -1 };								/*共通の無効値*/
 enum class EnumScene :size_t {
 	Title,
 	Main,
+	Movie,
 };
 
 enum class LanguageType :int {

@@ -45,8 +45,8 @@ void Enemy::Update_Sub(void) noexcept {
 	m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos(), 0.25f);
 	m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos(), 0.25f);
 
-	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.15f);
-	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.15f);
+	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.05f);
+	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.05f);
 }
 
 void MyPlane::Init_Sub(void) noexcept {
@@ -341,6 +341,6 @@ void MyPlane::Update_Sub(void) noexcept {
 	m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos(), 0.25f);
 	m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos(), 0.25f);
 
-	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.15f);
-	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.15f);
+	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.05f);
+	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.05f);
 }

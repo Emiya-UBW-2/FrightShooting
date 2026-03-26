@@ -8,8 +8,11 @@
 #include "Util/Enum.hpp"
 #include "Util/Key.hpp"
 #include "Util/Sound.hpp"
+
 #include "Scene/TitleScene.hpp"
 #include "Scene/MainScene.hpp"
+#include "Scene/MovieScene.hpp"
+
 #include "Draw/MainDraw.hpp"
 #include "Draw/Light.hpp"
 #include "Draw/KeyGuide.hpp"
@@ -43,10 +46,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	TitleScene Title{};
 	MainScene Main{};
+	MovieScene Movie{};
 	//シーン設定
 	SceneMngr->AddScenePtrList(&Title);
 	SceneMngr->AddScenePtrList(&Main);
-	SceneMngr->SetFirstScene(SceneMngr->GetScene(static_cast<int>(EnumScene::Title)));
+	SceneMngr->AddScenePtrList(&Movie);
+	//SceneMngr->SetFirstScene(SceneMngr->GetScene(static_cast<int>(EnumScene::Title)));
+	SceneMngr->SetFirstScene(SceneMngr->GetScene(static_cast<int>(EnumScene::Movie)));
 	//メインループ開始
 	DrawerMngr->LoopStart();
 	while (DrawerMngr->CanContinueLoop()) {
@@ -139,8 +145,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Util::SaveData::Instance()->Save();
 	Util::SaveData::Release();
 
+	Util::OptionParam::Release();
+
 	Draw::MainDraw::Release();
 
-	Util::OptionParam::Release();
 	return 0;// ソフトの終了 
 }
