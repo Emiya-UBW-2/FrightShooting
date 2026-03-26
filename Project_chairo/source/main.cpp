@@ -51,8 +51,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	SceneMngr->AddScenePtrList(&Title);
 	SceneMngr->AddScenePtrList(&Main);
 	SceneMngr->AddScenePtrList(&Movie);
-	//SceneMngr->SetFirstScene(SceneMngr->GetScene(static_cast<int>(EnumScene::Title)));
-	SceneMngr->SetFirstScene(SceneMngr->GetScene(static_cast<int>(EnumScene::Movie)));
+	SceneMngr->SetFirstScene(SceneMngr->GetScene(static_cast<int>(EnumScene::Title)));
 	//メインループ開始
 	DrawerMngr->LoopStart();
 	while (DrawerMngr->CanContinueLoop()) {
