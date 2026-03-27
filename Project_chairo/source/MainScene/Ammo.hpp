@@ -265,8 +265,11 @@ public:
 	void CheckDraw_Sub(void) noexcept override {
 	}
 	void Draw_Sub(void) const noexcept override {
+	}
+	void DrawFront_Sub(void) const noexcept override {
 		if (this->DrawTimer == 0.f) { return; }
 		DxLib::SetUseZBufferFlag(true);
+		//DxLib::SetWriteZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
 
 		m_LineDraw.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
@@ -290,8 +293,6 @@ public:
 		DxLib::SetUseLighting(TRUE);
 
 		GetModel().DrawModel();
-	}
-	void DrawFront_Sub(void) const noexcept override {
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 	}

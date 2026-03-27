@@ -4,4 +4,7 @@ SetGameType(Normal);
 SetEnemy(20,Enemy01);
 SetEnemy(30,Enemy02);
 
-GoNextStageNormal(-500,Stage02);//次ステージに行くZ座標と次ステージ名
+SetEnemy(300,Tank01);
+SetEnemy(310,Tank02);
+
+GoNextStageNormal(-1000,Stage02);//次ステージに行くZ座標と次ステージ名

@@ -12,6 +12,8 @@ enum class EnemyFrame {
 	Eye,
 	Gun1,
 	Gun2,
+	Gun1LR,
+	Gun1UD,
 	LWingtip,
 	RWingtip,
 	Nozzle1,
@@ -23,6 +25,8 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 	"目",
 	"機銃1",
 	"機銃2",
+	"砲塔旋回",
+	"砲塔仰角",
 	"左翼端",
 	"右翼端",
 	"ノズル1",
@@ -77,8 +81,8 @@ public:
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 	}
 	void			SetAmmo(bool IsHoming, Util::Matrix3x3 Mat) noexcept {
-		EffectPool::Instance()->Shot(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)));
-		AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)),
+		EffectPool::Instance()->Shot(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()));
+		AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()),
 			(2.5f) * Scale3DRate, GetObjectID());
 
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
@@ -101,10 +105,32 @@ public:
 		//アニメアップデート
 		{
 			for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
-				SetAnim(loop).SetPer(0.f);
+				//SetAnim(loop).SetPer(0.f);
 			}
-			SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
+			//SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
 			SetModel().FlipAnimAll();
+		}
+		//砲塔旋回
+		if (HaveFrame(static_cast<int>(EnemyFrame::Gun1LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun1UD))) {
+			auto& Player = PlayerManager::Instance()->SetPlane();
+			Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
+			Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetRailMat().pos()).normalized();
+
+			auto Vec1XZ = Vec1; Vec1XZ.y = 0.f;
+			auto Vec2XZ = Vec2; Vec2XZ.y = 0.f;
+
+			auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
+			auto Vec2TY = Vec2; Vec1TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+
+			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1LR),
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(),Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
+				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1LR))
+			);
+
+			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1UD),
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
+				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1UD))
+			);
 		}
 		//
 		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
@@ -401,7 +427,7 @@ public:
 		for (size_t loop = 0; loop < m_EnemyPop.size(); ++loop) {
 			if (std::fabsf(m_Frame - static_cast<float>(m_EnemyPop.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
 				m_EnemyPop.at(loop).m_EnemyScript.SetActive();
-				break;
+				continue;
 			}
 			if (m_EnemyPop.at(loop).m_EnemyScript.IsActive()) {
 				m_EnemyPop.at(loop).m_EnemyScript.Update();
