@@ -197,6 +197,11 @@ private:
 	ObjectManager(ObjectManager&&) = delete;
 	ObjectManager& operator=(const ObjectManager&) = delete;
 	ObjectManager& operator=(ObjectManager&&) = delete;
+	virtual ~ObjectManager(void) noexcept {
+		DeleteAll();
+		this->m_ModelList.clear();
+		this->m_ObjectList.clear();
+	}
 private:
 	void			AddObject(const SharedObj& NewObj) noexcept;
 	void			LoadModelAfter(const SharedObj& pObj, const SharedObj& pAnim, std::string_view filepath, std::string_view objfilename = "model") noexcept;

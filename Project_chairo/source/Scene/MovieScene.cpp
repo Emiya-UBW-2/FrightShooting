@@ -3,11 +3,11 @@
 #include "../Util/Localize.hpp"
 
 void MovieScene::Load_Sub(void) noexcept {
-	ObjectManager::Create();
-
 	m_StoryScript.Load("01");
 }
 void MovieScene::Init_Sub(void) noexcept {
+	m_StoryScript.Init();
+
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
 	auto* LightParts = Draw::LightPool::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
@@ -108,5 +108,4 @@ void MovieScene::UIDraw_Sub(void) noexcept {
 }
 void MovieScene::Dispose_Sub(void) noexcept {
 	ObjectManager::Instance()->DeleteAll();
-	ObjectManager::Release();
 }

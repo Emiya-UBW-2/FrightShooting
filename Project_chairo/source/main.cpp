@@ -34,6 +34,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	DXLibRef::KeyGuide::Create();
 	Sound::SoundPool::Create();
 
+	ObjectManager::Create();
+
 	GameRule::Create();
 
 	GameRule::Instance()->SetNextStage("Stage01");
@@ -127,6 +129,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			break;
 		}
 	}
+
+	ObjectManager::Release();
 
 	GameRule::Release();
 

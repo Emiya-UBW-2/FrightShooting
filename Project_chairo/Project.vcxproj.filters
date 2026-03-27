@@ -24,6 +24,9 @@
     <Filter Include="ソース ファイル\MainScene">
       <UniqueIdentifier>{4d3d0e26-709f-4969-a8ae-7bbe1fac924d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\UI">
+      <UniqueIdentifier>{fbbf4eac-1c7f-4865-810e-88f8563680d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -65,12 +68,6 @@
     <ClCompile Include="source\Util\Localize.cpp">
       <Filter>ソース ファイル\Util</Filter>
     </ClCompile>
-    <ClCompile Include="source\OptionWindow.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="source\TitleUI.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="source\Draw\PostPass.cpp">
       <Filter>ソース ファイル\Draw</Filter>
     </ClCompile>
@@ -82,9 +79,6 @@
     </ClCompile>
     <ClCompile Include="source\Draw\MV1.cpp">
       <Filter>ソース ファイル\Draw</Filter>
-    </ClCompile>
-    <ClCompile Include="source\PauseUI.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="source\Draw\KeyGuide.cpp">
       <Filter>ソース ファイル\Draw</Filter>
@@ -101,7 +95,7 @@
     <ClCompile Include="source\MainScene\BaseObject.cpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClCompile>
-    <ClCompile Include="source\MainScene\PlayerManager.cpp">
+    <ClCompile Include="source\MainScene\GameRule.cpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClCompile>
     <ClCompile Include="source\Util\Algorithm.cpp">
@@ -112,6 +106,24 @@
     </ClCompile>
     <ClCompile Include="source\Scene\MovieScene.cpp">
       <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\UI\PauseUI.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="source\UI\TitleUI.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="source\UI\MainUI.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="source\UI\OptionWindow.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainScene\Script.cpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainScene\Ammo.cpp">
+      <Filter>ソース ファイル\MainScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -160,12 +172,6 @@
     <ClInclude Include="source\Util\Localize.hpp">
       <Filter>ソース ファイル\Util</Filter>
     </ClInclude>
-    <ClInclude Include="source\OptionWindow.hpp">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="source\TitleUI.hpp">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="source\Draw\PostPass.hpp">
       <Filter>ソース ファイル\Draw</Filter>
     </ClInclude>
@@ -177,9 +183,6 @@
     </ClInclude>
     <ClInclude Include="source\Draw\MV1.hpp">
       <Filter>ソース ファイル\Draw</Filter>
-    </ClInclude>
-    <ClInclude Include="source\PauseUI.hpp">
-      <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="source\Draw\KeyGuide.hpp">
       <Filter>ソース ファイル\Draw</Filter>
@@ -196,7 +199,7 @@
     <ClInclude Include="source\MainScene\BaseObject.hpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClInclude>
-    <ClInclude Include="source\MainScene\PlayerManager.hpp">
+    <ClInclude Include="source\MainScene\GameRule.hpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClInclude>
     <ClInclude Include="source\MainScene\Common.hpp">
@@ -204,6 +207,24 @@
     </ClInclude>
     <ClInclude Include="source\Scene\MovieScene.hpp">
       <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\UI\PauseUI.hpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="source\UI\TitleUI.hpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="source\UI\MainUI.hpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="source\UI\OptionWindow.hpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MainScene\Script.hpp">
+      <Filter>ソース ファイル\MainScene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MainScene\Ammo.hpp">
+      <Filter>ソース ファイル\MainScene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

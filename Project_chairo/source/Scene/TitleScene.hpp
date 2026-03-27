@@ -6,8 +6,8 @@
 #pragma warning(disable:5039)
 #pragma warning(disable:5045)
 
-#include "../OptionWindow.hpp"
-#include "../TitleUI.hpp"
+#include "../UI/OptionWindow.hpp"
+#include "../UI/TitleUI.hpp"
 
 #include "../Util/Enum.hpp"
 #include "../Util/SceneManager.hpp"

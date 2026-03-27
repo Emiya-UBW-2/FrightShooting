@@ -75,11 +75,11 @@ public:
 	}
 };
 struct StoryModel {
-	std::shared_ptr<MovieObj> m_MovieObj;
+	std::string					m_ObjPath{ "" };
+	std::shared_ptr<MovieObj>	m_MovieObj;
 	Util::Matrix4x4				m_Mat;
-	int						m_UniqueID{};
-
-	int						m_AnimID{ InvalidID };
+	int							m_UniqueID{};
+	int							m_AnimID{ InvalidID };
 	//char		padding[4]{};
 };
 struct StoryPop {
@@ -124,12 +124,9 @@ public:
 					if (Args.at(0) == "SetModel") {
 						m_StoryPop.back().m_Models.emplace_back();
 						auto& b = m_StoryPop.back().m_Models.back();
-						ObjectManager::Instance()->LoadModel(Args.at(1));
-						b.m_MovieObj = std::make_shared<MovieObj>();
-						ObjectManager::Instance()->InitObject(b.m_MovieObj, b.m_MovieObj, Args.at(1));
-
+						b.m_ObjPath = Args.at(1);
+						ObjectManager::Instance()->LoadModel(b.m_ObjPath);
 						b.m_UniqueID = std::stoi(Args.at(2));
-
 						b.m_Mat =
 							Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(6))) *
 							Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::stof(Args.at(7))) *
@@ -138,7 +135,7 @@ public:
 					}
 					if (Args.at(0) == "SetModelAnimation") {
 						for (auto& b : m_StoryPop.back().m_Models) {
-							if (b.m_MovieObj->GetFilePath() == Args.at(1) && b.m_UniqueID == std::stoi(Args.at(2))) {
+							if (b.m_ObjPath == Args.at(1) && b.m_UniqueID == std::stoi(Args.at(2))) {
 								b.m_AnimID = std::stoi(Args.at(3));
 								break;
 							}
@@ -149,6 +146,16 @@ public:
 			FileStream.Close();
 		}
 		m_Frame = 0.f;
+	}
+	void Init() noexcept {
+		for (auto& s : m_StoryPop) {
+			for (auto& b : s.m_Models) {
+				if (b.m_ObjPath != "") {
+					b.m_MovieObj = std::make_shared<MovieObj>();
+					ObjectManager::Instance()->InitObject(b.m_MovieObj, b.m_MovieObj, b.m_ObjPath);
+				}
+			}
+		}
 	}
 	void Update() noexcept {
 		for (int loop = 0; loop < static_cast<int>(m_StoryPop.size()); ++loop) {
@@ -199,7 +206,7 @@ class MovieScene : public Util::SceneBase {
 	float							m_Fade{ 1.f };
 
 	bool							m_Exit{ false };
-	char		padding[3]{};
+	char		padding[7]{};
 
 public:
 	MovieScene(void) noexcept { SetID(static_cast<int>(EnumScene::Movie)); }

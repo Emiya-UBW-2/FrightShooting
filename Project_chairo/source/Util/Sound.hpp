@@ -9,14 +9,6 @@
 #pragma warning( pop )
 
 namespace Sound {
-	// 共通のSEのEnum
-	enum class SoundSelectCommon {
-		UI_Select,
-		UI_CANCEL,
-		UI_OK,
-		UI_NG,
-		Num,
-	};
 	//サウンドの分類
 	enum class SoundType {
 		SE,
@@ -234,7 +226,11 @@ namespace Sound {
 		SoundPool(SoundPool&&) = delete;
 		SoundPool& operator=(const SoundPool&) = delete;
 		SoundPool& operator=(SoundPool&&) = delete;
-		// デストラクタはシングルトンなので呼ばれません
+		virtual ~SoundPool(void) noexcept {
+			for (auto& hs : this->m_SoundHas) {
+				hs.clear();
+			}
+		}
 	public:
 		// 特定のIDにサウンドを追加
 		SoundUniqueID			Add(SoundType Type, size_t buffersize, std::string path_t, bool is3Dsound = true) noexcept {

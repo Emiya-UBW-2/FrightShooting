@@ -1,53 +1,7 @@
 ﻿#pragma warning(disable:5259)
 
 #include "Character.hpp"
-#include "PlayerManager.hpp"
-
-void Enemy::Init_Sub(void) noexcept {
-	this->m_SpeedTarget = GetSpeedMax();
-	this->m_Speed = this->m_SpeedTarget;
-
-	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
-
-	m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
-	m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
-
-	m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
-	m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
-}
-void Enemy::Update_Sub(void) noexcept {
-	//
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
-	// 進行方向に前進
-	{
-		this->m_Speed = GetSpeedMax();
-	}
-	// 移動ベクトルを加算した仮座標を作成
-	{
-		Util::VECTOR3D PosBefore = RailMat.pos();
-		Util::VECTOR3D PosAfter = RailMat.pos();// +Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
-		//当たり判定
-
-		RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
-		SetMatrix(RailMat);
-	}
-	//アニメアップデート
-	{
-		for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
-			SetAnim(loop).SetPer(0.f);
-		}
-		SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
-		SetModel().FlipAnimAll();
-	}
-	//
-	m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos(), 0.25f);
-	m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos(), 0.25f);
-
-	m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos(), 0.05f);
-	m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos(), 0.05f);
-}
+#include "GameRule.hpp"
 
 void MyPlane::Init_Sub(void) noexcept {
 	this->m_SpeedTarget = GetSpeedMax();
@@ -55,12 +9,6 @@ void MyPlane::Init_Sub(void) noexcept {
 
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
-
-	m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
-	m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
-
-	m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
-	m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
 }
 void MyPlane::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -264,7 +212,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			if (m_OutsidePer > 0.f) {
 				m_OutsidePer = std::max(m_OutsidePer - DrawerMngr->GetDeltaTime() / 0.5f, 0.f);
 				auto Mat = RailMat.rotation();
-				Util::Easing(&Mat, m_OutsideMatAfter, 0.9f);
+				Util::Easing(&Mat, m_OutsideMatAfter, 0.875f);
 				RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
 			}
 			break;
@@ -276,18 +224,16 @@ void MyPlane::Update_Sub(void) noexcept {
 
 		RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
 
-		auto Eye = RailMat;
-
 		switch (GameRule::Instance()->GetGameType()) {
 		case GameType::Normal:
-			EyeMat = Eye;
+			EyeMat = RailMat;
 			break;
 		case GameType::AllRange:
 			if (m_OutsidePer > 0.f) {
-				EyeMat = m_OutsideMatAfter.rotation() * Util::Matrix4x4::Mtrans(Eye.pos());
+				EyeMat = m_OutsideMatAfter.rotation() * Util::Matrix4x4::Mtrans(RailMat.pos());
 			}
 			else {
-				EyeMat = Eye;
+				EyeMat = RailMat;
 			}
 			break;
 		case GameType::Max:
@@ -319,18 +265,18 @@ void MyPlane::Update_Sub(void) noexcept {
 	//射撃
 	{
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Missile)) {
-			BombPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
+			AmmoPool::Instance()->ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
 		}
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::MultiMissile)) {
-			MultiBombPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
+			AmmoPool::Instance()->ShotMultiBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
 		}
 		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Gun)) {
 			m_ShootTimer = 0.f;
 		}
 		else {
 			if (m_ShootTimer == 0.f) {
-				ShotEffectPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-				AmmoPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f, GetObjectID());
+				EffectPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+				AmmoPool::Instance()->ShotAmmo(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f, GetObjectID());
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 200.f * Scale3DRate);
 				m_ShootTimer = 0.1f;
 			}

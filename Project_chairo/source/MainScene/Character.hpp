@@ -19,6 +19,7 @@
 #include <thread>
 
 #include "Common.hpp"
+#include "Ammo.hpp"
 
 enum class CharaAnim {
 	Stand,
@@ -50,108 +51,6 @@ static const char* CharaFrameName[static_cast<int>(CharaFrame::Max)] = {
 	"右翼端",
 	"ノズル1",
 	"ノズル2",
-};
-
-class Enemy :public BaseObject {
-	Util::Matrix3x3		m_Roll;
-	float				m_Speed{ 0.f };
-	float				m_SpeedTarget{ 0.f };
-	float				m_ShootTimer{};
-	float				m_RollPer{};
-	char		padding[4]{};
-
-	size_t					m_EngineIndex{};
-	Sound::SoundUniqueID	m_EngineID{ InvalidID };
-	Sound::SoundUniqueID	m_ShotID{ InvalidID };
-
-	Util::Matrix4x4			RailMat;
-	char		padding2[4]{};
-
-	int						m_HitPoint{ m_HitPointMax };
-	static constexpr int	m_HitPointMax{ 100 };
-
-	LineDraw				m_LineDraw1;
-	LineDraw				m_LineDraw2;
-
-	LineDraw				m_LineDraw3;
-	LineDraw				m_LineDraw4;
-public:
-	Enemy(void) noexcept {}
-	Enemy(const Enemy&) = delete;
-	Enemy(Enemy&&) = delete;
-	Enemy& operator=(const Enemy&) = delete;
-	Enemy& operator=(Enemy&&) = delete;
-	virtual ~Enemy(void) noexcept {}
-private:
-	int				GetFrameNum(void) noexcept override { return static_cast<int>(CharaFrame::Max); }
-	const char* GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
-public:
-	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
-	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
-
-	float			GetSpeed() const { return this->m_Speed; }
-	float			GetSpeedMax(void) const noexcept {
-		return 100.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
-	}
-	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
-		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
-		m_Roll = Util::Matrix3x3::identity();
-	}
-	void			SetAmmo(bool IsHoming, Util::Matrix3x3 Mat) noexcept {
-		ShotEffectPool::Instance()->Shot(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
-		AmmoPool::Instance()->Shot(Mat.Get44DX() * GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)),
-			(2.5f) * Scale3DRate, GetObjectID());
-
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
-
-		if (IsHoming) {
-			//TODO:ホーミング
-		}
-	}
-	auto			GetRailMat(void) const noexcept {
-		return RailMat;
-	}
-public:
-	void Load_Sub(void) noexcept override {
-		this->m_EngineID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/engine.wav", true);
-		//Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, heartID)->Play3D(GetMat().pos(), 10.f * Scale3DRate);
-
-		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
-	}
-	void Init_Sub(void) noexcept override;
-	void Update_Sub(void) noexcept override;
-	void SetShadowDraw_Sub(void) const noexcept override {
-		GetModel().DrawModel();
-	}
-	void CheckDraw_Sub(void) noexcept override {}
-	void Draw_Sub(void) const noexcept override {
-		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
-			if (!GetModel().GetMeshSemiTransState(loop)) {
-				GetModel().DrawMesh(loop);
-			}
-		}
-	}
-	void DrawFront_Sub(void) const noexcept override {
-		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
-			if (GetModel().GetMeshSemiTransState(loop)) {
-				GetModel().DrawMesh(loop);
-			}
-		}
-
-		m_LineDraw1.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
-		m_LineDraw2.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
-
-		m_LineDraw3.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
-		m_LineDraw4.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
-	}
-	void ShadowDraw_Sub(void) const noexcept override {
-		GetModel().DrawModel();
-	}
-	void Dispose_Sub(void) noexcept override {
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
-
-		SetModel().Dispose();
-	}
 };
 
 class MyPlane :public BaseObject {
@@ -228,6 +127,15 @@ public:
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 		EyeMat = RailMat;
 		m_Roll = Util::Matrix3x3::identity();
+
+		SetMatrix(
+			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
+			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
+
+		m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
+		m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
+		m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
+		m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
 	}
 	auto			GetEyeMatrix(void) const noexcept {
 		return EyeMat;

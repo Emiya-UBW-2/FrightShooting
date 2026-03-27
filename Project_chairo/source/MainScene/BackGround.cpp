@@ -2,6 +2,7 @@
 #include "BackGround.hpp"
 
 #include "../MainScene/Common.hpp"
+#include "GameRule.hpp"
 
 const BackGround* Util::SingletonBase<BackGround>::m_Singleton = nullptr;
 

@@ -5,32 +5,26 @@
 #include "../MainScene/Character.hpp"
 
 void MainScene::Load_Sub(void) noexcept {
-	ObjectManager::Create();
-	PlayerManager::Create();
 	BackGround::Create();
+
+	PlayerManager::Create();
 	PlayerManager::Instance()->Load();
 
 	m_AimPoint = std::make_unique<AimPoint>();
 	m_AimPoint->Load();
 
 	AmmoPool::Create();
-	BombPool::Create();
-	MultiBombPool::Create();
+	EffectPool::Create();
 
-	ShotEffectPool::Create();
-
-	BombPool::Instance()->Load();
-	MultiBombPool::Instance()->Load();
-	ShotEffectPool::Instance()->Load();
+	AmmoPool::Instance()->Load();
+	EffectPool::Instance()->Load();
 
 	m_StageScript.Load(GameRule::Instance()->GetNextStage());
 	BackGround::Instance()->Load();
 }
 void MainScene::Init_Sub(void) noexcept {
 	AmmoPool::Instance()->Init();
-	BombPool::Instance()->Init();
-	MultiBombPool::Instance()->Init();
-	ShotEffectPool::Instance()->Init();
+	EffectPool::Instance()->Init();
 	BackGround::Instance()->Init();
 	PlayerManager::Instance()->Init();
 
@@ -202,7 +196,7 @@ void MainScene::Update_Sub(void) noexcept {
 						a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
 					if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
 						if (Player->IsRollingActive()) {
-							AmmoPool::Instance()->Shot(
+							AmmoPool::Instance()->ShotAmmo(
 								Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), a->GetVector().normalized()) *
 								Util::Matrix4x4::Mtrans(Player->GetMat().pos()), 25.f + 200.f,
 								Player->GetObjectID());
@@ -217,7 +211,7 @@ void MainScene::Update_Sub(void) noexcept {
 				}
 			}
 		}
-		for (auto& a : BombPool::Instance()->GetBombPer()) {
+		for (auto& a : AmmoPool::Instance()->GetBombPer()) {
 			if (a->IsActive()) {
 				if (a->GetShooterID() == Player->GetObjectID()) {
 					//ホーミング用処理
@@ -273,10 +267,10 @@ void MainScene::SetShadowDraw_Sub(void) noexcept {
 	ObjectManager::Instance()->Draw_SetShadow();
 }
 void MainScene::Draw_Sub(void) noexcept {
-	m_AimPoint->CalcPoint();
 	BackGround::Instance()->Draw();
 	ObjectManager::Instance()->Draw();
 	//カーソル
+	m_AimPoint->CalcPoint();
 	m_AimPoint->Draw();
 }
 void MainScene::DrawFront_Sub(void) noexcept {
@@ -311,18 +305,17 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	//
 }
 void MainScene::Dispose_Sub(void) noexcept {
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
+
 	this->m_MainUI->Dispose();
 	this->m_MainUI.reset();
 
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
-	BackGround::Release();
-	PlayerManager::Release();
+	m_StageScript.Dispose();
+
 	ObjectManager::Instance()->DeleteAll();
-	ObjectManager::Release();
 
+	PlayerManager::Release();
+	BackGround::Release();
 	AmmoPool::Release();
-	BombPool::Release();
-	MultiBombPool::Release();
-
-	ShotEffectPool::Release();
+	EffectPool::Release();
 }
