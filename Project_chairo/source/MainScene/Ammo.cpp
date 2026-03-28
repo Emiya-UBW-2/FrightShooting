@@ -53,11 +53,14 @@ void Bomb::Update_Sub(void) noexcept {
 	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
 
 	if (m_IsHoming) {
+		{
+			m_HomingTarget = (*ObjectManager::Instance()->GetObj(m_HomingID))->GetMat().pos();
+		}
 		float Length = this->Vector.magnitude();
 		Util::Easing(
 			&this->Vector,
 			(m_HomingTarget - GetMat().pos()).normalized() * Length,
-			0.95f);
+			0.9f);
 		this->Vector = this->Vector.normalized() * Length;
 	}
 

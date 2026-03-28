@@ -251,7 +251,7 @@ public:
 		return m_IsActive;
 	}
 	bool IsAlive(void) const noexcept {
-		return !m_IsDown;
+		return IsActive() && !m_IsDown;
 	}
 	void SetDown(void) noexcept {
 		m_IsDown = true;

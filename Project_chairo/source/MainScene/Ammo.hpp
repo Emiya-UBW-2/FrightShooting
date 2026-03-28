@@ -214,10 +214,12 @@ private:
 	int Shooter{ InvalidID };
 	char		padding[4]{};
 
+	bool m_SeekerFlag{};
 	bool m_IsHoming{};
-	char		padding2[7]{};
+	char		padding2[6]{};
 	Util::VECTOR3D m_HomingTarget{};
-	char		padding3[4]{};
+	int			m_HomingID{};
+	//char		padding3[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -229,6 +231,7 @@ public:
 		Shooter = ID;
 
 		m_LineDraw.Set(GetMat().pos());
+		m_SeekerFlag = true;
 	}
 	bool IsActive() const noexcept {
 		return this->Timer != 0.f;
@@ -239,10 +242,19 @@ public:
 	auto GetShooterID() const noexcept {
 		return this->Shooter;
 	}
+	auto GetHomingID() const noexcept {
+		return this->m_HomingID;
+	}
+	auto IsSeeker() const noexcept {
+		return this->m_SeekerFlag;
+	}
 
-	void SetHomingTarget(bool IsHoming, Util::VECTOR3D& pos) noexcept {
+	void SetHomingTarget(bool IsHoming,int ID) noexcept {
 		m_IsHoming = IsHoming;
-		m_HomingTarget = pos;
+		m_HomingID = ID;
+		if (m_IsHoming) {
+			m_SeekerFlag = false;
+		}
 	}
 public:
 	void SetHit(const Util::VECTOR3D& pos) noexcept {

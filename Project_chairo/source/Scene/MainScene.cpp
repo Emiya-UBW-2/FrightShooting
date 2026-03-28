@@ -216,6 +216,11 @@ void MainScene::Update_Sub(void) noexcept {
 	//更新
 	if (this->m_Fade <= 1.f) {
 		m_StageScript.Update();
+		//ホーミング対象を探す
+		for (auto& s : m_StageScript.EnemyPop()) {
+			if (s.m_EnemyScript.IsAlive()) {
+			}
+		}
 		//
 		for (auto& a : AmmoPool::Instance()->GetAmmoPer()) {
 			if (a->IsActive()) {
@@ -261,19 +266,34 @@ void MainScene::Update_Sub(void) noexcept {
 			if (a->IsActive()) {
 				if (a->GetShooterID() == Player->GetObjectID()) {
 					//ホーミング用処理
-					//一番近い敵を探す
-					float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
-					Util::VECTOR3D Pos;
-					for (auto& s : m_StageScript.EnemyPop()) {
-						if (s.m_EnemyScript.IsActive() && s.m_EnemyScript.IsAlive()) {
-							auto Vec = a->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
-							if (Mag > Vec.sqrMagnitude()) {
-								Mag = Vec.sqrMagnitude();
-								Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+					if (a->IsSeeker()) {
+						//一番近い敵を探す
+						float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
+						int ID = InvalidID;
+						for (auto& s : m_StageScript.EnemyPop()) {
+							if (s.m_EnemyScript.IsAlive()) {
+								auto Vec = a->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
+								auto sID = s.m_EnemyScript.EnemyObj()->GetObjectID();
+								if (Mag > Vec.sqrMagnitude()) {
+									bool IsHitID = false;
+									//他のボムと同じロックオンIDを取らないようにする
+									for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+										if (a2->IsActive() && (a != a2)) {
+											if (sID == a2->GetHomingID()) {
+												IsHitID = true;
+												break;
+											}
+										}
+									}
+									if (!IsHitID) {
+										Mag = Vec.sqrMagnitude();
+										ID = sID;
+									}
+								}
 							}
 						}
+						a->SetHomingTarget(ID != InvalidID, ID);
 					}
-					a->SetHomingTarget((Mag != (1000.f * Scale3DRate) * (1000.f * Scale3DRate)), Pos);
 					//ヒット判定
 					for (auto& s : m_StageScript.EnemyPop()) {
 						if (s.m_EnemyScript.IsActive()) {
