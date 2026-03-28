@@ -1,0 +1,12 @@
+SetPoint(  0, 2,0,-1720, 0.0,0.0,0.0);
+PutTargetAmmo(120,0);
+PutTargetAmmo(150,0);
+PutTargetAmmo(180,0);
+PutTargetAmmo(210,0);
+PutTargetAmmo(240,0);
+PutTargetAmmo(270,0);
+PutTargetAmmo(300,0);
+PutTargetAmmo(330,0);
+PutTargetAmmo(360,0);
+PutTargetAmmo(390,0);
+Delete(500);

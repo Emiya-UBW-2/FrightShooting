@@ -1,6 +1,6 @@
 SetStageModel(data\model\Map2\model.mv1);
 SetGameType(AllRange);
 
-SetEnemy(0,Tank11);
+SetEnemy(0,Tank0101);
 
 GoNextStageAllRange(Stage01);//全エネミーを排除したら次ステージへ
