@@ -47,22 +47,20 @@ void MovieScene::Update_Sub(void) noexcept {
 		[]() {
 			auto* Localize = Util::LocalizePool::Instance();
 			auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
-			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::Tab), Localize->Get(333));
-
-			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::UP), "");
-			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::DOWN), "");
-			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::LEFT), "");
-			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::RIGHT), Localize->Get(332));
-			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::Diside), Localize->Get(330));
+			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::Esc), Localize->Get(351));
 		}
 	);
 	CameraParts->SetCamInfo(CameraParts->GetCamera().GetCamFov(), 1.f * Scale3DRate, 200.f * Scale3DRate);
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
-	//ポーズメニュー
 	if (m_StoryScript.GetIsEnd()) {
 		this->m_Exit = true;
 	}
+	auto* KeyMngr = Util::KeyParam::Instance();
+	if (KeyMngr->GetMenuKeyReleaseTrigger(Util::EnumMenu::Esc)) {
+		this->m_Exit = true;
+	}
+
 	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
 	if (m_Exit) {
 		if (this->m_Fade >= 2.f) {
