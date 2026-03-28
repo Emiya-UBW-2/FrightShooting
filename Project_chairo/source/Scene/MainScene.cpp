@@ -22,6 +22,8 @@ void MainScene::Load_Sub(void) noexcept {
 	m_NowStage = GameRule::Instance()->GetNextStage();
 	m_StageScript.Load(m_NowStage);
 	BackGround::Instance()->Load();
+
+	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
 }
 void MainScene::Init_Sub(void) noexcept {
 	m_NextEvent = false;
@@ -319,6 +321,25 @@ void MainScene::Draw_Sub(void) noexcept {
 }
 void MainScene::DrawFront_Sub(void) noexcept {
 	ObjectManager::Instance()->DrawFront();
+
+	auto* DrawerMngr = Draw::MainDraw::Instance();
+	for (auto& s : m_StageScript.EnemyPop()) {
+		//敵が生きている
+		if (s.m_EnemyScript.IsAlive()) {
+			if (s.m_EnemyScript.EnemyObj()->IsDrawAimPoint()) {
+				SetDrawBright(0, 255, 0);
+				m_Cursor->DrawRotaGraph(
+					static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().x),
+					static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().y),
+					50.f*Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth()))
+					/(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z)
+					
+					,
+					0.f, true);
+				SetDrawBright(255, 255, 255);
+			}
+		}
+	}
 }
 void MainScene::DepthDraw_Sub(void) noexcept {
 	ObjectManager::Instance()->Draw_Depth();

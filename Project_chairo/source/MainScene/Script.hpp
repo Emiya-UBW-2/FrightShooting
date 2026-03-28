@@ -34,6 +34,10 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 };
 
 class Enemy :public BaseObject {
+	Util::VECTOR3D				m_AimPoint2D;
+	bool						m_IsDrawAimPoint{ false };
+	char		padding[7]{};
+
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 
 	Util::Matrix4x4			RailMat;
@@ -58,6 +62,10 @@ private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(EnemyFrame::Max); }
 	const char* GetFrameStr(int id) noexcept override { return EnemyFrameName[id]; }
 public:
+	const auto& GetAimPoint2D(void) const noexcept { return m_AimPoint2D; }
+	const auto& IsDrawAimPoint(void) const noexcept { return m_IsDrawAimPoint; }
+
+
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
 
@@ -145,11 +153,23 @@ public:
 		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle2))) {
 			m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle2)).pos(), 0.05f);
 		}
+
+		this->m_IsDrawAimPoint = false;
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
 	}
-	void CheckDraw_Sub(void) noexcept override {}
+	void CheckDraw_Sub(void) noexcept override {
+		{
+			auto Pos2D = ConvWorldPosToScreenPos(GetMat().pos().get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				this->m_AimPoint2D.x = Pos2D.x;
+				this->m_AimPoint2D.y = Pos2D.y;
+				this->m_AimPoint2D.z = (GetMat().pos()-GetCameraPosition()).magnitude();
+				this->m_IsDrawAimPoint = true;
+			}
+		}
+	}
 	void Draw_Sub(void) const noexcept override {
 		for (int loop = 0; loop < GetModel().GetMeshNum(); ++loop) {
 			if (!GetModel().GetMeshSemiTransState(loop)) {

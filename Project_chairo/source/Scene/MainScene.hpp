@@ -58,6 +58,8 @@ public:
 };
 
 class MainScene : public Util::SceneBase {
+	const Draw::GraphHandle* m_Cursor{};
+
 	StageScript						m_StageScript;
 
 	std::unique_ptr<MainUI>			m_MainUI{};
