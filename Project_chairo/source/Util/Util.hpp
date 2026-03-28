@@ -414,7 +414,7 @@ namespace Util {
 	/*------------------------------------------------------------------------------------------------------------------------------------------*/
 	// 汎用セーブデータ
 	/*------------------------------------------------------------------------------------------------------------------------------------------*/
-	typedef std::pair<std::string, int64_t> SaveParam;
+	typedef std::pair<std::string, std::string> SaveParam;
 	class SaveData : public SingletonBase<SaveData> {
 	private:
 		friend class SingletonBase<SaveData>;
@@ -438,7 +438,7 @@ namespace Util {
 			return nullptr;
 		}
 	public:
-		void SetParam(std::string_view Name, int64_t value) noexcept {
+		void SetParam(std::string_view Name, std::string value) noexcept {
 			auto* Data = GetData(Name);
 			if (Data) {
 				Data->second = value;
@@ -447,18 +447,18 @@ namespace Util {
 				this->m_data.emplace_back(std::make_pair((std::string)Name, value));
 			}
 		}
-		auto GetParam(std::string_view Name) noexcept {
+		std::string_view GetParam(std::string_view Name) noexcept {
 			auto* Data = GetData(Name);
 			if (Data) {
 				return Data->second;
 			}
-			return (int64_t)InvalidID;
+			return "";
 		}
 	public:
 		void Save(void) noexcept {
 			std::ofstream outputfile("Save/new.svf");
 			for (auto& d : this->m_data) {
-				outputfile << d.first + "=" + std::to_string(d.second) + "\n";
+				outputfile << d.first + "=" + d.second + "\n";
 			}
 			outputfile.close();
 		}

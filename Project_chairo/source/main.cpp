@@ -24,9 +24,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	Util::SaveData::Create();
 
-	Util::SaveData::Instance()->SetParam("Stage0101_001", 0);
-	Util::SaveData::Instance()->SetParam("Stage0102_001", 0);
-
 	Util::SceneManager::Create();
 	Util::KeyParam::Create();
 	Draw::FontPool::Create();
@@ -40,7 +37,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	ObjectManager::Create();
 	GameRule::Create();
 
-	GameRule::Instance()->SetNextStage("Stage0101");
+	auto StageString = Util::SaveData::Instance()->GetParam("Stage");
+	GameRule::Instance()->SetNextStage((StageString == "") ? "Stage0101" : StageString);
 
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* pOption = Util::OptionParam::Instance();

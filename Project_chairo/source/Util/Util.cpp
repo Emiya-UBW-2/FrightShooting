@@ -21,7 +21,7 @@ namespace Util {
 			}
 			auto LEFT = File::InputFileStream::getleft(ALL, "=");
 			auto RIGHT = File::InputFileStream::getright(ALL, "=");
-			this->m_data.emplace_back(std::make_pair(LEFT, std::stoi(RIGHT)));
+			this->m_data.emplace_back(std::make_pair(LEFT, RIGHT));
 		}
 		return true;
 	}

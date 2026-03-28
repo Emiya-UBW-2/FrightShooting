@@ -27,13 +27,16 @@ void MainScene::Init_Sub(void) noexcept {
 	m_NextEvent = false;
 	if (m_StageScript.GetStartEvent() != "") {
 		std::string SaveName = m_NowStage + "_" + m_StageScript.GetStartEvent();
-		if (Util::SaveData::Instance()->GetParam(SaveName) != 1) {
-			Util::SaveData::Instance()->SetParam(SaveName, 1);
+		if (Util::SaveData::Instance()->GetParam(SaveName) != "1") {
+			Util::SaveData::Instance()->SetParam(SaveName, "1");
 			GameRule::Instance()->SetNextEvent(m_StageScript.GetStartEvent());
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
 			SceneBase::SetEndScene();
 			m_NextEvent = true;
 		}
+	}
+	if (!m_NextEvent) {
+		Util::SaveData::Instance()->SetParam("Stage", m_NowStage);
 	}
 
 	AmmoPool::Instance()->Init();
@@ -195,7 +198,7 @@ void MainScene::Update_Sub(void) noexcept {
 		if (this->m_FadeStage >= 2.f) {
 			GameRule::Instance()->SetNextStage(m_StageScript.GetNextStage());
 			std::string SaveName = m_NowStage + "_" + m_StageScript.GetStartEvent();
-			Util::SaveData::Instance()->SetParam(SaveName, 0);
+			Util::SaveData::Instance()->SetParam(SaveName, "0");
 
 			if (m_StageScript.GetEndEvent() != "") {
 				GameRule::Instance()->SetNextEvent(m_StageScript.GetEndEvent());
@@ -347,6 +350,8 @@ void MainScene::UIDraw_Sub(void) noexcept {
 }
 void MainScene::Dispose_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
+
+	//Util::SaveData::Instance()->Save();
 
 	this->m_MainUI->Dispose();
 	this->m_MainUI.reset();
