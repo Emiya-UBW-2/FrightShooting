@@ -1,0 +1,14 @@
+SetPoint(  0, -5,30,-100, 0.0,0.0,0.0);
+SetPoint( 20, -5,20,-120, 0.0,0.0,0.0);
+SetPoint( 60, -5,15,-160, 0.0,0.0,0.0);
+PutTargetAmmo(70,0);
+PutTargetAmmo(80,0);
+PutTargetAmmo(90,0);
+PutTargetAmmo(100,0);
+PutTargetAmmo(110,0);
+SetPoint(120, -5,15,-220, 0.0,0.0,0.0);
+SetPoint(180, -5,15,-280, 0.0,0.0,0.0);
+SetPoint(200, -5,15,-300, 0.0,0.0,90.0);
+SetPoint(240, -25,20,-340, 0.0,15.0,90.0);
+SetPoint(300, -50,30,-400, 0.0,35.0,90.0);
+Delete(300);
