@@ -292,6 +292,18 @@ public:
 						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
 					}
+					if (Args.at(0) == "PutTargetAmmoLoop") {
+						//撃ち始めるまでの時間,撃つ間隔,何回撃つか,クールダウン時間
+						auto startTime = std::stoi(Args.at(1));//Frame
+						auto shotFrame = std::stoi(Args.at(2));//Frame
+						auto shotCount = std::stoi(Args.at(3));
+						auto shotCoolDown = std::stoi(Args.at(4));//Frame
+						for (int loop = 0; loop < 1000; ++loop) {
+							m_EnemyAmmo.emplace_back();
+							m_EnemyAmmo.back().m_Frame = startTime + (loop % shotCount) * shotFrame + (loop / shotCount) * shotCoolDown;
+							m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
+						}
+					}
 					if (Args.at(0) == "PutHomingAmmo") {//todo:ホーミング弾は未実装
 						m_EnemyAmmo.emplace_back();
 						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
