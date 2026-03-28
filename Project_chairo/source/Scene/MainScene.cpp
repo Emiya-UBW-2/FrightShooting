@@ -19,10 +19,23 @@ void MainScene::Load_Sub(void) noexcept {
 	AmmoPool::Instance()->Load();
 	EffectPool::Instance()->Load();
 
-	m_StageScript.Load(GameRule::Instance()->GetNextStage());
+	m_NowStage = GameRule::Instance()->GetNextStage();
+	m_StageScript.Load(m_NowStage);
 	BackGround::Instance()->Load();
 }
 void MainScene::Init_Sub(void) noexcept {
+	m_NextEvent = false;
+	if (m_StageScript.GetStartEvent() != "") {
+		std::string SaveName = m_NowStage + "_" + m_StageScript.GetStartEvent();
+		if (Util::SaveData::Instance()->GetParam(SaveName) != 1) {
+			Util::SaveData::Instance()->SetParam(SaveName, 1);
+			GameRule::Instance()->SetNextEvent(m_StageScript.GetStartEvent());
+			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
+			SceneBase::SetEndScene();
+			m_NextEvent = true;
+		}
+	}
+
 	AmmoPool::Instance()->Init();
 	EffectPool::Instance()->Init();
 	BackGround::Instance()->Init();
@@ -70,6 +83,9 @@ void MainScene::Init_Sub(void) noexcept {
 
 }
 void MainScene::Update_Sub(void) noexcept {
+	if (m_NextEvent) {
+		return;
+	}
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* CameraParts = Camera::Camera3D::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
@@ -155,6 +171,20 @@ void MainScene::Update_Sub(void) noexcept {
 		}
 		break;
 	case GameType::AllRange:
+	{
+		if (this->m_Fade <= 0.f) {
+			bool IsClear = true;
+			for (auto& s : m_StageScript.EnemyPop()) {
+				//敵が生きている
+				if (s.m_EnemyScript.IsAlive()) {
+					IsClear = false;
+				}
+			}
+			if (IsClear) {
+				this->m_NextStage = true;
+			}
+		}
+	}
 		break;
 	case GameType::Max:
 	default:
@@ -163,8 +193,19 @@ void MainScene::Update_Sub(void) noexcept {
 	this->m_FadeStage = std::clamp(this->m_FadeStage + (this->m_NextStage ? 3.f : -3.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
 	if (this->m_NextStage) {
 		if (this->m_FadeStage >= 2.f) {
-			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
-			SceneBase::SetEndScene();
+			GameRule::Instance()->SetNextStage(m_StageScript.GetNextStage());
+			std::string SaveName = m_NowStage + "_" + m_StageScript.GetStartEvent();
+			Util::SaveData::Instance()->SetParam(SaveName, 0);
+
+			if (m_StageScript.GetEndEvent() != "") {
+				GameRule::Instance()->SetNextEvent(m_StageScript.GetEndEvent());
+				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
+				SceneBase::SetEndScene();
+			}
+			else {
+				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
+				SceneBase::SetEndScene();
+			}
 		}
 	}
 	//更新

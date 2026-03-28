@@ -70,10 +70,12 @@ class MainScene : public Util::SceneBase {
 	float							m_FadeStage{ 1.f };
 	bool							m_Exit{ false };
 	bool							m_NextStage{ false };
-	char		padding[2]{};
+	bool							m_NextEvent{ false };
+	char		padding[1]{};
 
 	float							m_DamagePer{ 0.f };
 	float							m_DamageWatch{ 0.f };
+	std::string						m_NowStage{};
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

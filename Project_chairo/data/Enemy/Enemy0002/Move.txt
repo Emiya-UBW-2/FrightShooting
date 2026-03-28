@@ -1,7 +1,6 @@
 SetPoint(  0, -5,30,-100, 0.0,0.0,0.0);
 SetPoint( 20, -5,20,-120, 0.0,0.0,0.0);
 SetPoint( 60, -5,15,-160, 0.0,0.0,0.0);
-PutFixedAmmo(60,0,180);
 PutTargetAmmo(70,0);
 PutTargetAmmo(80,0);
 PutTargetAmmo(90,0);

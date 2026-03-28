@@ -54,6 +54,7 @@ private:
 private:
 	std::string			m_ModelName;
 	std::string			m_StageName;
+	std::string			m_EventName;
 	GameType			m_GameType{ GameType::AllRange };
 private:
 	GameRule(void) noexcept {}
@@ -72,6 +73,11 @@ public:
 		m_StageName = str;
 	}
 	const auto& GetNextStage(void) const noexcept { return m_StageName; }
+
+	void SetNextEvent(std::string_view str) noexcept {
+		m_EventName = str;
+	}
+	const auto& GetNextEvent(void) const noexcept { return m_EventName; }
 
 	void SetGameType(GameType type) noexcept {
 		m_GameType = type;

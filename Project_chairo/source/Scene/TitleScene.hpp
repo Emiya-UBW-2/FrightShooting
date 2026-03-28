@@ -75,7 +75,6 @@ protected:
 		this->m_TitleUI.Update();
 		if (this->m_TitleUI.IsEnd()) {
 			this->m_OptionWindow.SetActive(false);
-			//SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
 			SceneBase::SetEndScene();
 		}

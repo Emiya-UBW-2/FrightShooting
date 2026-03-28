@@ -104,7 +104,7 @@ public:
 		{
 			m_StoryPop.clear();
 			File::InputFileStream FileStream;
-			FileStream.Open("data/Story/" + Path + ".txt");
+			FileStream.Open("data/Event/" + Path + ".txt");
 			while (true) {
 				if (FileStream.ComeEof()) { break; }
 				std::vector<std::string> Args;
@@ -146,6 +146,7 @@ public:
 			FileStream.Close();
 		}
 		m_Frame = 0.f;
+		m_IsEnd = false;
 	}
 	void Init() noexcept {
 		for (auto& s : m_StoryPop) {

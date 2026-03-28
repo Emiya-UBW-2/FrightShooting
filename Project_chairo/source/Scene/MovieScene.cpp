@@ -2,8 +2,10 @@
 
 #include "../Util/Localize.hpp"
 
+#include "../MainScene/GameRule.hpp"
+
 void MovieScene::Load_Sub(void) noexcept {
-	m_StoryScript.Load("01");
+	m_StoryScript.Load(GameRule::Instance()->GetNextEvent());
 }
 void MovieScene::Init_Sub(void) noexcept {
 	m_StoryScript.Init();

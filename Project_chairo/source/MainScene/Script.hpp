@@ -388,16 +388,25 @@ class StageScript {
 	//char		padding[4]{};
 	float					m_Frame{};
 	float					m_ZPosGoal{};
+	std::string				m_SetStartEvent {};
+	std::string				m_SetEndEvent{};
+	std::string				m_NextStage{};
 public:
-	auto& EnemyPop(void) noexcept {
-		return m_EnemyPop;
-	}
+	auto& EnemyPop(void) noexcept { return m_EnemyPop; }
 	const auto& GetZPosGoal(void) const noexcept { return m_ZPosGoal; }
+
+	const auto& GetStartEvent(void) const noexcept { return m_SetStartEvent; }
+	const auto& GetEndEvent(void) const noexcept { return m_SetEndEvent; }
+	const auto& GetNextStage(void) const noexcept { return m_NextStage; }
 public:
 	void Load(std::string Path) noexcept {
 		//
 		{
+			m_SetStartEvent = "";
+			m_SetEndEvent = "";
+			m_NextStage = "";
 			m_EnemyPop.clear();
+
 			File::InputFileStream FileStream;
 			FileStream.Open("data/Stage/" + Path + ".txt");
 			while (true) {
@@ -419,10 +428,16 @@ public:
 					}
 					else if (Args.at(0) == "GoNextStageNormal") {
 						m_ZPosGoal = std::stof(Args.at(1)) * Scale3DRate;
-						GameRule::Instance()->SetNextStage(Args.at(2));
+						m_NextStage = Args.at(2);
 					}
 					else if (Args.at(0) == "GoNextStageAllRange") {
-						GameRule::Instance()->SetNextStage(Args.at(1));
+						m_NextStage = Args.at(1);
+					}
+					else if (Args.at(0) == "StartEvent") {
+						m_SetStartEvent = Args.at(1);
+					}
+					else if (Args.at(0) == "EndEvent") {
+						m_SetEndEvent = Args.at(1);
 					}
 					else if (Args.at(0) == "SetEnemy") {
 						m_EnemyPop.emplace_back();
