@@ -695,14 +695,14 @@ namespace Util {
 					AssignID(EnumMenu::Esc, 0, EnumInput::Key_ESCAPE);
 					AssignID(EnumMenu::Tab, 0, EnumInput::Key_TAB);
 					//
-					AssignID(EnumMenu::Diside, 0, EnumInput::Mouse_Left);
-					AssignID(EnumMenu::Diside, 1, EnumInput::Key_F);
-					AssignID(EnumMenu::Cancel, 0, EnumInput::Mouse_Right);
-					AssignID(EnumMenu::Cancel, 1, EnumInput::Key_R);
-					AssignID(EnumMenu::LEFT, 0, EnumInput::Key_A);
-					AssignID(EnumMenu::UP, 0, EnumInput::Key_W);
-					AssignID(EnumMenu::RIGHT, 0, EnumInput::Key_D);
-					AssignID(EnumMenu::DOWN, 0, EnumInput::Key_S);
+					AssignID(EnumMenu::Diside, 0, EnumInput::Key_Z);
+					AssignID(EnumMenu::Diside, 1, EnumInput::Mouse_Left);
+					AssignID(EnumMenu::Cancel, 0, EnumInput::Key_X);
+					AssignID(EnumMenu::Cancel, 1, EnumInput::Mouse_Right);
+					AssignID(EnumMenu::LEFT, 0, EnumInput::Key_LEFT);
+					AssignID(EnumMenu::UP, 0, EnumInput::Key_UP);
+					AssignID(EnumMenu::RIGHT, 0, EnumInput::Key_RIGHT);
+					AssignID(EnumMenu::DOWN, 0, EnumInput::Key_DOWN);
 					break;
 				case InputType::XInput:
 					AssignID(EnumMenu::Esc, 0, EnumInput::XInput_ESCAPE);
