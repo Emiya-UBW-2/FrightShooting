@@ -49,7 +49,7 @@ namespace File {
 #endif
 		}
 		// 1行そのまま取得し、次の行に探索ポイントを移る
-		std::string SeekLineAndGetStr(void) noexcept {
+		std::string SeekLineAndGetStr(void) const noexcept {
 #if USE_DXLIB
 			const int charLength = 512;
 			char mstr[charLength] = "";
