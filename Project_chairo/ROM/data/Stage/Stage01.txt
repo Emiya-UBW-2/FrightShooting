@@ -1,2 +1,0 @@
-SetEnemy(20,Enemy01);
-SetEnemy(30,Enemy02);

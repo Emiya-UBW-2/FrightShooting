@@ -1,2 +1,0 @@
-SetModel(data/model/Plane2/);
-HitPoint(10);
