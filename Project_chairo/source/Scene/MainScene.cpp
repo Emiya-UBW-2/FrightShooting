@@ -24,6 +24,8 @@ void MainScene::Load_Sub(void) noexcept {
 	BackGround::Instance()->Load();
 
 	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
+
+	HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/fall.wav", true);
 }
 void MainScene::Init_Sub(void) noexcept {
 	m_NextEvent = false;
@@ -233,6 +235,7 @@ void MainScene::Update_Sub(void) noexcept {
 							Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
 								a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
 							if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 								a->SetHit(Result.SegB_MinDist_Pos);
 								s.m_EnemyScript.SetDown();
 								break;
@@ -254,6 +257,7 @@ void MainScene::Update_Sub(void) noexcept {
 							a->SetHit(Result.SegB_MinDist_Pos);
 						}
 						else {
+							Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 							a->SetHit(Result.SegB_MinDist_Pos);
 							Player->SetDamage(0);
 						}
@@ -301,6 +305,7 @@ void MainScene::Update_Sub(void) noexcept {
 							Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
 								a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
 							if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 								a->SetHit(Result.SegB_MinDist_Pos);
 								s.m_EnemyScript.SetDown();
 								break;

@@ -38,8 +38,6 @@ class Enemy :public BaseObject {
 	bool						m_IsDrawAimPoint{ false };
 	char		padding[3]{};
 
-	Sound::SoundUniqueID	m_ShotID{ InvalidID };
-
 	Util::Matrix4x4			RailMat;
 	char		padding2[4]{};
 
@@ -93,8 +91,6 @@ public:
 		AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()),
 			(2.5f) * Scale3DRate, GetObjectID());
 
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
-
 		if (IsHoming) {
 			//TODO:ホーミング
 		}
@@ -104,7 +100,6 @@ public:
 	}
 public:
 	void Load_Sub(void) noexcept override {
-		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
 	}
 	void Init_Sub(void) noexcept override {
 	}

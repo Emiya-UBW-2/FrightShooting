@@ -108,8 +108,6 @@ private:
 	float YVecAdd{};
 	float Timer{};
 	float DrawTimer{};
-	Sound::SoundUniqueID HitGroundID{ InvalidID };
-	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	std::array<std::shared_ptr<AmmoHitEffect>, 10>	m_AmmoEffectPer{};
 	int Shooter{ InvalidID };
 	char		padding[4]{};
@@ -143,12 +141,9 @@ public:
 				this->Vector.normalized() * -1.f
 			);
 		}
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(pos, 500.f * Scale3DRate);
 	}
 public:
 	void Load_Sub(void) noexcept override {
-		HitGroundID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitGround.wav", true);
-		HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitHuman.wav", true);
 	}
 	void Init_Sub(void) noexcept override {
 		for (auto& ae : this->m_AmmoEffectPer) {
@@ -209,8 +204,6 @@ private:
 	float Timer{};
 	float DrawTimer{};
 	float m_Scale{};
-	Sound::SoundUniqueID HitGroundID{ InvalidID };
-	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	int Shooter{ InvalidID };
 	char		padding[4]{};
 
@@ -261,12 +254,9 @@ public:
 		this->Vector = pos - GetMat().pos();
 		this->Timer = 0.f;
 		this->DrawTimer = this->Timer + 0.25f;
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(pos, 500.f * Scale3DRate);
 	}
 public:
 	void Load_Sub(void) noexcept override {
-		HitGroundID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitGround.wav", true);
-		HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitHuman.wav", true);
 		this->m_Graph = Draw::GraphPool::Instance()->Get("data/Image/Light.png")->Get();
 	}
 	void Init_Sub(void) noexcept override {}
@@ -330,8 +320,6 @@ private:
 	float Timer{};
 	float DrawTimer{};
 	float m_Scale{};
-	Sound::SoundUniqueID HitGroundID{ InvalidID };
-	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	int Shooter{ InvalidID };
 	char		padding[4]{};
 
@@ -368,12 +356,9 @@ public:
 		this->Vector = pos - GetMat().pos();
 		this->Timer = 0.f;
 		this->DrawTimer = this->Timer + 0.25f;
-		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitGroundID)->Play3D(pos, 500.f * Scale3DRate);
 	}
 public:
 	void Load_Sub(void) noexcept override {
-		HitGroundID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitGround.wav", true);
-		HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/HitHuman.wav", true);
 		this->m_Graph = Draw::GraphPool::Instance()->Get("data/Image/Light.png")->Get();
 	}
 	void Init_Sub(void) noexcept override {}

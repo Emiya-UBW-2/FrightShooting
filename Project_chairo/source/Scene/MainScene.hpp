@@ -78,6 +78,8 @@ class MainScene : public Util::SceneBase {
 	float							m_DamagePer{ 0.f };
 	float							m_DamageWatch{ 0.f };
 	std::string						m_NowStage{};
+
+	Sound::SoundUniqueID HitHumanID{ InvalidID };
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

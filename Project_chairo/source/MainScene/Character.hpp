@@ -61,9 +61,12 @@ class MyPlane :public BaseObject {
 	float				m_RollPer{};
 	char		padding[4]{};
 
+	size_t					m_CockPitIndex{};
+	Sound::SoundUniqueID	m_CockPitID{ InvalidID };
 	size_t					m_EngineIndex{};
 	Sound::SoundUniqueID	m_EngineID{ InvalidID };
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
+	Sound::SoundUniqueID	ShotSoundID{ InvalidID };
 
 	Util::Matrix4x4			RailMat;
 	Util::Matrix4x4			EyeMat;
@@ -154,8 +157,10 @@ public:
 	int				GetDamageID(void) const noexcept { return DamageID; }
 public:
 	void Load_Sub(void) noexcept override {
+		this->m_CockPitID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/fighter-cockpit1.wav", true);
 		this->m_EngineID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/engine.wav", true);
-		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun/auto1911/2.wav", true);
+		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun.wav", true);
+		ShotSoundID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/rolling_rocket.wav", true);
 	}
 	void Init_Sub(void) noexcept override;
 	void Update_Sub(void) noexcept override;
@@ -191,6 +196,7 @@ public:
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
 		SetModel().Dispose();
 	}

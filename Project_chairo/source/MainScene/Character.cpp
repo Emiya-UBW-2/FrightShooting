@@ -7,12 +7,18 @@ void MyPlane::Init_Sub(void) noexcept {
 	this->m_SpeedTarget = GetSpeedMax();
 	this->m_Speed = this->m_SpeedTarget;
 
+	m_CockPitIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->SetLocalVolume(0);
+
 	m_EngineIndex = Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->Play3D(GetMat().pos(), 500.f * Scale3DRate, DX_PLAYTYPE_LOOP);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(0);
 }
 void MyPlane::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* KeyMngr = Util::KeyParam::Instance();
+	//
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->SetPosition(m_CockPitIndex, GetMat().pos());
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->SetLocalVolume(64);
 	//
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
@@ -265,9 +271,11 @@ void MyPlane::Update_Sub(void) noexcept {
 	//射撃
 	{
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Missile)) {
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, ShotSoundID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
 			AmmoPool::Instance()->ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
 		}
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::MultiMissile)) {
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, ShotSoundID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
 			AmmoPool::Instance()->ShotMultiBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
 		}
 		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Gun)) {
