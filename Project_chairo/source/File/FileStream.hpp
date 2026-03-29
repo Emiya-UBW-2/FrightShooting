@@ -10,7 +10,7 @@
 #pragma warning( pop )
 
 namespace File {
-#define USE_DXLIB (false)
+#define USE_DXLIB (true)
 
 #if USE_DXLIB
 #define NOMINMAX
@@ -22,7 +22,7 @@ namespace File {
 	//ファイル読み込み
 	class InputFileStream {
 #if USE_DXLIB
-		int mdata{ InvalidID };
+		int mdata{ -1 };
 #else
 		std::ifstream stream{};
 #endif
@@ -43,7 +43,7 @@ namespace File {
 		//ファイルを開き、探索ポイントを始点に移動
 		void Open(std::string_view FilePath) noexcept {
 #if USE_DXLIB
-			mdata = DxLib::FileRead_open(FilePath, FALSE);
+			mdata = DxLib::FileRead_open(FilePath.data(), FALSE);
 #else
 			stream.open(FilePath);
 #endif
@@ -72,9 +72,9 @@ namespace File {
 		//　閉じる
 		void Close(void) noexcept {
 #if USE_DXLIB
-			if (mdata != InvalidID) {
+			if (mdata != -1) {
 				DxLib::FileRead_close(mdata);
-				mdata = InvalidID;
+				mdata = -1;
 			}
 #else
 			stream.close();

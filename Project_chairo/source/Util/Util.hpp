@@ -1,5 +1,6 @@
 ﻿#pragma once
 #define NOMINMAX
+#pragma warning(disable:4464)
 #pragma warning(disable:4505)
 #pragma warning(disable:4514)
 #pragma warning(disable:4668)
@@ -16,6 +17,7 @@
 
 #include "Enum.hpp"
 #include "Algorithm.hpp"
+#include "../File/FileStream.hpp"
 
 namespace Util {
 	// --------------------------------------------------------------------------------------------------
@@ -456,11 +458,10 @@ namespace Util {
 		}
 	public:
 		void Save(void) noexcept {
-			std::ofstream outputfile("Save/new.svf");
+			File::OutputFileStream Ostream("Save/new.svf");
 			for (auto& d : this->m_data) {
-				outputfile << d.first + "=" + d.second + "\n";
+				Ostream.AddLine(d.first + "=" + d.second);
 			}
-			outputfile.close();
 		}
 		bool Load(void) noexcept;
 		void Reset(void) noexcept {

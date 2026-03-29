@@ -347,7 +347,22 @@ void MainScene::DrawFront_Sub(void) noexcept {
 		//敵が生きている
 		if (s.m_EnemyScript.IsAlive()) {
 			if (s.m_EnemyScript.EnemyObj()->IsDrawAimPoint()) {
-				SetDrawBright(0, 255, 0);
+				auto sID = s.m_EnemyScript.EnemyObj()->GetObjectID();
+				bool IsHitID = false;
+				for (auto& a : AmmoPool::Instance()->GetBombPer()) {
+					if (a->IsActive()) {
+						if (sID == a->GetHomingID()) {
+							IsHitID = true;
+							break;
+						}
+					}
+				}
+				if (IsHitID) {
+					SetDrawBright(255, 0, 0);
+				}
+				else {
+					SetDrawBright(0, 255, 0);
+				}
 				m_Cursor->DrawRotaGraph(
 					static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().x),
 					static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().y),

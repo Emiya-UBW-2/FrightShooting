@@ -197,7 +197,7 @@ namespace Draw {
 					FontXCenter::MIDDLE, FontYCenter::MIDDLE,
 					static_cast<int>((x2 + x1) / 2.f), static_cast<int>((y2 + y1) / 2.f),
 					Color.GetColor(), ColorPalette::Black,
-					Util::SjistoUTF8((this->m_String != "") ? this->m_String : Localize->Get(this->m_StringID)));
+					(this->m_String != "") ? this->m_String : Localize->Get(this->m_StringID));
 			}
 			else {
 			}

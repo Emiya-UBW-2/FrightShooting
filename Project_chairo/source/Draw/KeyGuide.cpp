@@ -21,7 +21,7 @@ namespace DXLibRef {
 	int KeyGuide::KeyGuideOnce::GetDrawSize(void) const noexcept {
 		int ofs = (this->m_GuideGraph) ? this->m_GuideGraph->GetDrawSize() : 0;
 		if (GuideString != "") {
-			ofs += Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->GetStringWidth(Util::SjistoUTF8(GuideString)) + 12;
+			ofs += Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->GetStringWidth(GuideString) + 12;
 		}
 		return ofs;
 	}
@@ -35,7 +35,7 @@ namespace DXLibRef {
 			Draw::FontPool::Instance()->Get(Draw::FontType::MS_Gothic, LineHeight, 3)->DrawString(
 				Draw::FontXCenter::LEFT, Draw::FontYCenter::MIDDLE,
 				x + ofs, y + 24 / 2,
-				ColorPalette::White, ColorPalette::Black, Util::SjistoUTF8(GuideString));
+				ColorPalette::White, ColorPalette::Black, GuideString);
 		}
 	}
 	// 

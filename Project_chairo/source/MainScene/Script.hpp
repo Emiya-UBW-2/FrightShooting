@@ -36,7 +36,7 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 class Enemy :public BaseObject {
 	Util::VECTOR3D				m_AimPoint2D;
 	bool						m_IsDrawAimPoint{ false };
-	char		padding[7]{};
+	char		padding[3]{};
 
 	Sound::SoundUniqueID	m_ShotID{ InvalidID };
 

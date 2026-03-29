@@ -47,7 +47,7 @@ void MovieScene::Update_Sub(void) noexcept {
 		[]() {
 			auto* Localize = Util::LocalizePool::Instance();
 			auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
-			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::Esc), Localize->Get(351));
+			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::Tab), Localize->Get(351));
 		}
 	);
 	CameraParts->SetCamInfo(CameraParts->GetCamera().GetCamFov(), 1.f * Scale3DRate, 200.f * Scale3DRate);
@@ -57,7 +57,7 @@ void MovieScene::Update_Sub(void) noexcept {
 		this->m_Exit = true;
 	}
 	auto* KeyMngr = Util::KeyParam::Instance();
-	if (KeyMngr->GetMenuKeyReleaseTrigger(Util::EnumMenu::Esc)) {
+	if (KeyMngr->GetMenuKeyReleaseTrigger(Util::EnumMenu::Tab)) {
 		this->m_Exit = true;
 	}
 
