@@ -30,9 +30,8 @@ void MainScene::Load_Sub(void) noexcept {
 void MainScene::Init_Sub(void) noexcept {
 	m_NextEvent = false;
 	if (m_StageScript.GetStartEvent() != "") {
-		std::string SaveName = m_NowStage + "_" + m_StageScript.GetStartEvent();
-		if (Util::SaveData::Instance()->GetParam(SaveName) != "1") {
-			Util::SaveData::Instance()->SetParam(SaveName, "1");
+		if (!GameRule::Instance()->GetIsStartEvent()) {
+			GameRule::Instance()->SetIsStartEvent(true);
 			GameRule::Instance()->SetNextEvent(m_StageScript.GetStartEvent());
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
 			SceneBase::SetEndScene();
@@ -201,9 +200,7 @@ void MainScene::Update_Sub(void) noexcept {
 	if (this->m_NextStage) {
 		if (this->m_FadeStage >= 2.f) {
 			GameRule::Instance()->SetNextStage(m_StageScript.GetNextStage());
-			std::string SaveName = m_NowStage + "_" + m_StageScript.GetStartEvent();
-			Util::SaveData::Instance()->SetParam(SaveName, "0");
-
+			GameRule::Instance()->SetIsStartEvent(false);
 			if (m_StageScript.GetEndEvent() != "") {
 				GameRule::Instance()->SetNextEvent(m_StageScript.GetEndEvent());
 				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));

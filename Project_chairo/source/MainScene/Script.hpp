@@ -123,7 +123,7 @@ public:
 			auto Vec2XZ = Vec2; Vec2XZ.y = 0.f;
 
 			auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
-			auto Vec2TY = Vec2; Vec1TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+			auto Vec2TY = Vec2; Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
 
 			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1LR),
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(),Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *

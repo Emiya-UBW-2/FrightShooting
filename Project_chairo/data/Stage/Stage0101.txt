@@ -28,4 +28,3 @@ SetEnemy(1710,Enemy0010);
 SetEnemy(1720,Enemy0011);
 
 GoNextStageNormal(-2000,Stage0102);//次ステージに行くZ座標と次ステージ名
-EndEvent(002);//ステージ終わりに通るイベント

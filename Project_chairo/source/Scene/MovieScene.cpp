@@ -76,6 +76,7 @@ void MovieScene::Update_Sub(void) noexcept {
 	}
 }
 void MovieScene::BGDraw_Sub(void) noexcept {
+	ObjectManager::Instance()->Draw();
 }
 void MovieScene::SetShadowDrawRigid_Sub(void) noexcept {
 }

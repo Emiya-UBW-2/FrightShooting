@@ -52,6 +52,9 @@ class GameRule : public Util::SingletonBase<GameRule> {
 private:
 	friend class Util::SingletonBase<GameRule>;
 private:
+	bool					m_IsStartEvent{ false };
+	char		padding[7]{};
+
 	std::string			m_ModelName;
 	std::string			m_StageName;
 	std::string			m_EventName;
@@ -64,6 +67,12 @@ private:
 	GameRule& operator=(GameRule&&) = delete;
 	virtual ~GameRule(void) noexcept { Dispose(); }
 public:
+	void SetIsStartEvent(bool value) noexcept {
+		m_IsStartEvent = value;
+	}
+	const auto& GetIsStartEvent(void) const noexcept { return m_IsStartEvent; }
+
+
 	void SetStageModel(std::string_view str) noexcept {
 		m_ModelName = str;
 	}
