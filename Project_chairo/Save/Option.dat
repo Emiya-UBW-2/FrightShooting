@@ -1,4 +1,4 @@
-VSync=False
+﻿VSync=False
 FPSLimit=1000
 WindowMode=Window
 GraphicsPreset=Ultra

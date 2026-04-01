@@ -106,7 +106,14 @@ namespace File {
 	public:
 		//ファイルを開き、探索ポイントを始点に移動
 		void Open(std::string_view FilePath) noexcept {
-			stream.open(FilePath);
+			auto create_utf8bom_stream = [](std::string_view path) {
+				std::ofstream ofs(path.data());
+				const unsigned char bom[] = { 0xEF, 0xBB, 0xBF };
+				ofs.write(reinterpret_cast<const char*>(bom), sizeof(bom));
+				return ofs; //apply RVO
+				};
+
+			stream = create_utf8bom_stream(FilePath);
 		}
 		// 1行書き込む
 		void AddLine(const std::string& Str) noexcept {

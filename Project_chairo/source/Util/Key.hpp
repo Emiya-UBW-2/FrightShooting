@@ -548,10 +548,10 @@ namespace Util {
 	};
 
 	static const char* DInputInputStr[static_cast<size_t>(EnumInput::DInput_Max) - static_cast<size_t>(EnumInput::DInput_Begin)] = {
-		"D□",
-		"D×",
-		"D〇",
-		"D△",
+		"D1",//□
+		"D2",//×
+		"D3",//〇
+		"D4",//△
 		"DL1",
 		"DR1",
 		"DL2",
