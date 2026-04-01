@@ -5,6 +5,7 @@
 #include "../Util/Enum.hpp"
 #include "../Util/Sound.hpp"
 #include "../Draw/PostPass.hpp"
+#include "../Draw/KeyGuide.hpp"
 
 void OptionWindow::SetActive(bool value) noexcept {
 	auto* pOption = Util::OptionParam::Instance();
@@ -76,6 +77,14 @@ void OptionWindow::UpdateColumnStr(void) noexcept {
 		for (int loop = 2; loop < this->m_NowTabMax; ++loop) {
 			auto& param = this->m_Param[loop];
 			param.m_Str = Util::KeyParam::GetKeyStr(KeyMngr->GetKeyAssign(static_cast<Util::EnumBattle>(loop - 2), 0));
+			
+			if (param.m_Str != "NONE") {
+				auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
+				param.m_Graph = &KeyGuideParts->GetGraphHandle(DXLibRef::KeyGuide::GetPADStoOffset(static_cast<Util::EnumBattle>(loop - 2)));
+			}
+			else {
+				param.m_Graph = nullptr;
+			}
 			this->m_DrawUI->Get(param.m_MaxID).SetActive(true);
 		}
 	}
@@ -100,7 +109,12 @@ void OptionWindow::UpdateColumnStr(void) noexcept {
 	}
 	for (int loop = 0; loop < this->m_NowTabMax; ++loop) {
 		auto& param = this->m_Param[loop];
-		this->m_DrawUI->Get(param.m_ID).GetParts("String0")->SetString(param.m_Str);
+		if (this->m_DrawUI->Get(param.m_ID).GetParts("String0")) {
+			this->m_DrawUI->Get(param.m_ID).GetParts("String0")->SetString(param.m_Str);
+		}
+		if (this->m_DrawUI->Get(param.m_ID).GetParts("Graph0")) {
+			this->m_DrawUI->Get(param.m_ID).GetParts("Graph0")->SetGraph(param.m_Graph);
+		}
 	}
 }
 void OptionWindow::SetTab(void) noexcept {

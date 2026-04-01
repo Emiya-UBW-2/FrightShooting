@@ -45,6 +45,7 @@ namespace DXLibRef {
 
 			~KeyGuideGraph(void) noexcept {}
 		public:
+			const auto& GetGraphHandle() const noexcept { return this->GuideImg; }
 			void AddGuide(int x, int y, int xs, int ys, const Draw::GraphHandle& baseImage) noexcept {
 				GuideImg.DerivationGraph(x, y, xs, ys, baseImage);
 				xsize = xs;
@@ -76,6 +77,7 @@ namespace DXLibRef {
 				}
 				GuideString = "";
 			}
+			const auto& GetGraphHandle() const noexcept { return this->m_GuideGraph->GetGraphHandle(); }
 			int GetDrawSize(void) const noexcept;
 			void Draw(int x, int y) const noexcept;
 		};
@@ -118,5 +120,6 @@ namespace DXLibRef {
 			this->m_DerivationGuideImage[static_cast<size_t>(graphOffset)]->Draw(x, y);
 		}
 		int GetDrawSize(int graphOffset) const noexcept { return this->m_DerivationGuideImage[static_cast<size_t>(graphOffset)]->GetDrawSize(); }
+		const auto& GetGraphHandle(int graphOffset) const noexcept { return this->m_DerivationGuideImage[static_cast<size_t>(graphOffset)]->GetGraphHandle(); }
 	};
 }

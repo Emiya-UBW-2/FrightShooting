@@ -159,6 +159,7 @@ public:
 		//
 		{
 			m_StoryPop.clear();
+			m_Models.clear();
 			File::InputFileStream FileStream;
 			FileStream.Open("data/Event/" + Path + ".txt");
 			while (true) {

@@ -16,6 +16,7 @@
 
 class OptionWindow {
 	struct ParamButton {
+		const Draw::GraphHandle* m_Graph{};
 		std::string		m_Str{};
 		int				m_ID{};
 		int				m_MinID{};

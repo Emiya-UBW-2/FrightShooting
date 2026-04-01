@@ -126,6 +126,7 @@ namespace Draw {
 			char		padding[7]{};
 		public:
 			void			SetString(std::string_view value) noexcept { this->m_String = value; }
+			void			SetGraph(const GraphHandle* value) noexcept { this->m_ImageHandle = value; }
 			const auto& GetName(void) const noexcept { return this->m_Name; }
 			bool			IsHitCheck(void) const noexcept { return this->m_IsHitCheck; }
 		public:
