@@ -146,11 +146,14 @@ public:
 	void			SetDamageOff() noexcept {
 		DamageID = InvalidID;
 	}
+	void			SetHitPoint(int hp) noexcept {
+		m_HitPoint = std::clamp(hp, 0, m_HitPointMax);
+	}
 	void			SetDamageOn(int damage) noexcept {
 		if (m_DamageInterval != 0.f) { return; }
 		m_DamageInterval = 1.0f;
 		DamageID = 0;
-		m_HitPoint = std::clamp(m_HitPoint - damage, 0, m_HitPointMax);
+		SetHitPoint(m_HitPoint - damage);
 	}
 	bool				IsDamageOn(void) const noexcept { return DamageID != InvalidID; }
 public:

@@ -27,4 +27,4 @@ SetEnemy(1700,Enemy0009);
 SetEnemy(1710,Enemy0010);
 SetEnemy(1720,Enemy0011);
 
-GoNextStageNormal(-2000,Stage0102);//次ステージに行くZ座標と次ステージ名
+GoNextStageNormal(Stage0102);//最後の敵が倒れたら次ステージに移る

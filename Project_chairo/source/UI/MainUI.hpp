@@ -4,8 +4,8 @@
 
 #include "OptionWindow.hpp"
 #include "../UI/PauseUI.hpp"
-
 #include "../Draw/KeyGuide.hpp"
+#include "../MainScene/GameRule.hpp"
 
 class MainUI {
 	OptionWindow					m_OptionWindow;
@@ -15,6 +15,10 @@ class MainUI {
 	bool							m_IsExit{ false };
 	char		padding[5]{};
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
+	float							m_HPPrev{};
+	float							m_HPChangeTime{};
+	float							m_HPRe{};
+	float							m_HPRe2{};
 public:
 	MainUI(void) noexcept {}
 	MainUI(const MainUI&) = delete;
@@ -50,10 +54,17 @@ public:
 			auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 			KeyGuideParts->SetGuideFlip();
 			});
+
+		auto& Watch = PlayerManager::Instance()->SetPlane();
+
+		m_HPPrev = Watch->GetHitPointPer();
+		m_HPChangeTime = 0.f;
+		m_HPRe = Watch->GetHitPointPer();
 	}
 	void Update() noexcept {
 		auto* KeyMngr = Util::KeyParam::Instance();
 		auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 		if (KeyMngr->GetMenuKeyTrigger(Util::EnumMenu::Tab)) {
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_OKID)->Play(DX_PLAYTYPE_BACK, TRUE);
 			this->m_IsPauseActive ^= 1;
@@ -68,8 +79,34 @@ public:
 			this->m_IsExit = true;
 		}
 		this->m_OptionWindow.Update();
+
+		auto& Watch = PlayerManager::Instance()->SetPlane();
+		if (m_HPPrev != Watch->GetHitPointPer()) {
+			m_HPPrev = Watch->GetHitPointPer();
+			m_HPRe = m_HPRe2;
+			m_HPChangeTime = 2.f;
+		}
+
+		m_HPChangeTime = std::max(m_HPChangeTime - DrawerMngr->GetDeltaTime(), 0.f);
+		if (m_HPChangeTime <= 1.f) {
+			m_HPRe2 = Util::Lerp(Watch->GetHitPointPer(), m_HPRe, m_HPChangeTime);
+		}
+		else {
+			m_HPRe2 = m_HPRe;
+		}
 	}
 	void Draw() noexcept {
+
+		auto& Watch = PlayerManager::Instance()->SetPlane();
+
+		int XP = 64, YP = 1080 - 92, XS = 400, YS = 32;
+		int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetHitPointPer())), 0, 255);
+		int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetHitPointPer())), 0, 255);
+		DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Black, true);
+		DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * m_HPRe2), YP + YS, ColorPalette::Red, true);
+		DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * Watch->GetHitPointPer()), YP + YS, GetColor(R,G,0), true);
+		DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Gray30, false, 3);
+
 		this->m_PauseUI.Draw();
 		this->m_OptionWindow.Draw();
 	}

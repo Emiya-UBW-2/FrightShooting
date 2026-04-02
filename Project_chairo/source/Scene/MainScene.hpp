@@ -59,6 +59,7 @@ public:
 
 class MainScene : public Util::SceneBase {
 	const Draw::GraphHandle* m_Cursor{};
+	const Draw::GraphHandle* m_Damage{};
 
 	StageScript						m_StageScript;
 

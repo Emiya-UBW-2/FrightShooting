@@ -24,6 +24,7 @@ void MainScene::Load_Sub(void) noexcept {
 	BackGround::Instance()->Load();
 
 	m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
+	m_Damage = Draw::GraphPool::Instance()->Get("data/Image/damage.png")->Get();
 
 	HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/fall.wav", true);
 }
@@ -78,6 +79,11 @@ void MainScene::Init_Sub(void) noexcept {
 		(Scale3DRate * 0.05f), Scale3DRate * 30.0f);
 
 	PostPassParts->SetGodRayPer(0.25f);
+
+	//
+	if (!m_NextEvent) {
+		Player->SetHitPoint(GameRule::Instance()->GetHP() + 30);
+	}
 
 	m_MainUI = std::make_unique<MainUI>();
 	m_MainUI->Init();
@@ -171,12 +177,15 @@ void MainScene::Update_Sub(void) noexcept {
 	//次ステージ処理
 	switch (GameRule::Instance()->GetGameType()) {
 	case GameType::Normal:
-		if (Watch->GetMat().pos().z < m_StageScript.GetZPosGoal()) {
-			this->m_NextStage = true;
+		if (this->m_Fade <= 0.f) {
+			auto& s = m_StageScript.EnemyPop().back();
+			//最後の敵が死んだら
+			if (s.m_EnemyScript.IsActive() && !s.m_EnemyScript.IsAlive()) {
+				this->m_NextStage = true;
+			}
 		}
 		break;
 	case GameType::AllRange:
-	{
 		if (this->m_Fade <= 0.f) {
 			bool IsClear = true;
 			for (auto& s : m_StageScript.EnemyPop()) {
@@ -189,7 +198,6 @@ void MainScene::Update_Sub(void) noexcept {
 				this->m_NextStage = true;
 			}
 		}
-	}
 		break;
 	case GameType::Max:
 	default:
@@ -256,6 +264,7 @@ void MainScene::Update_Sub(void) noexcept {
 							Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 							a->SetHit(Result.SegB_MinDist_Pos);
 							Player->SetDamageOn(10);
+							m_DamageWatch = 2.f;
 						}
 						break;
 					}
@@ -313,6 +322,8 @@ void MainScene::Update_Sub(void) noexcept {
 		}
 		//
 		ObjectManager::Instance()->UpdateObject();
+		//
+		m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 1.f - Watch->GetHitPointPer());
 	}
 	if (Watch->GetHitPoint() != 0) {
 		Util::Matrix4x4 EyeMat = Watch->GetEyeMatrix();
@@ -390,6 +401,12 @@ void MainScene::ShadowDraw_Sub(void) noexcept {
 void MainScene::UIDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	//
+	if (std::clamp(static_cast<int>(255.f * m_DamageWatch * 0.5f), 0, 255) > 10) {
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * m_DamageWatch * 0.5f), 0, 255));
+		m_Damage->DrawExtendGraph(0, 0, DrawerMngr->GetDispWidth(), DrawerMngr->GetDispHeight(), true);
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+	}
+	//
 	this->m_MainUI->Draw();
 	//
 	if (this->m_Fade > 0.f) {
@@ -407,6 +424,9 @@ void MainScene::UIDraw_Sub(void) noexcept {
 }
 void MainScene::Dispose_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
+
+	auto& Player = PlayerManager::Instance()->SetPlane();
+	GameRule::Instance()->SetHP(Player->GetHitPoint());
 
 	//Util::SaveData::Instance()->Save();
 

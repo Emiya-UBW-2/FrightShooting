@@ -40,6 +40,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	auto StageString = Util::SaveData::Instance()->GetParam("Stage");
 	GameRule::Instance()->SetNextStage((StageString == "") ? "Stage0101" : StageString);
 	GameRule::Instance()->SetIsStartEvent(false);
+	GameRule::Instance()->SetHP(100);
 
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	auto* pOption = Util::OptionParam::Instance();

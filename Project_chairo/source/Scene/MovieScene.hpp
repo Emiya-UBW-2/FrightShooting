@@ -148,7 +148,6 @@ class StoryScript {
 	std::vector<StoryModel>	m_Models{};
 	std::vector<StoryPop>	m_StoryPop;
 	float					m_Frame{};
-	float					m_ZPosGoal{};
 
 	bool m_IsEnd = false;
 	char		padding[7]{};

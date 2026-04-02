@@ -402,15 +402,13 @@ struct EnemyPop {
 };
 class StageScript {
 	std::vector<EnemyPop>	m_EnemyPop;
-	//char		padding[4]{};
 	float					m_Frame{};
-	float					m_ZPosGoal{};
+	char		padding[4]{};
 	std::string				m_SetStartEvent {};
 	std::string				m_SetEndEvent{};
 	std::string				m_NextStage{};
 public:
 	auto& EnemyPop(void) noexcept { return m_EnemyPop; }
-	const auto& GetZPosGoal(void) const noexcept { return m_ZPosGoal; }
 
 	const auto& GetStartEvent(void) const noexcept { return m_SetStartEvent; }
 	const auto& GetEndEvent(void) const noexcept { return m_SetEndEvent; }
@@ -445,8 +443,7 @@ public:
 						}
 					}
 					else if (Func == "GoNextStageNormal") {
-						m_ZPosGoal = std::stof(Args.at(0)) * Scale3DRate;
-						m_NextStage = Args.at(1);
+						m_NextStage = Args.at(0);
 					}
 					else if (Func == "GoNextStageAllRange") {
 						m_NextStage = Args.at(0);
