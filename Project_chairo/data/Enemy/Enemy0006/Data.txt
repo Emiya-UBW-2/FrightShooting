@@ -1,2 +1,2 @@
 SetModel(data/model/Plane2/);
-HitPoint(10);
+HitPoint(1);

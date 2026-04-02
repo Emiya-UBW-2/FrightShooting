@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#define NOMINMAX
+
 #pragma warning(disable:4464)
 #pragma warning(disable:4505)
 #pragma warning(disable:4514)
@@ -8,7 +10,7 @@
 #pragma warning(disable:4711)
 #pragma warning(disable:5039)
 #pragma warning(disable:5045)
-#define NOMINMAX
+
 #pragma warning( push, 3 )
 #include "DxLib.h"
 #include <array>
@@ -711,7 +713,7 @@ namespace Draw {
 				Draw::Camera3DInfo tmp_cam = CameraParts->GetCameraForDraw();
 
 				// 影の結果を出力
-				tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 1.f * Scale3DRate, 3000.f * Scale3DRate);
+				tmp_cam.SetCamInfo(tmp_cam.GetCamFov(), 0.1f * Scale3DRate, 1000.f * Scale3DRate);
 				this->m_BaseShadowHandle.SetDraw_Screen();
 				tmp_cam.FlipCamInfo();
 				{

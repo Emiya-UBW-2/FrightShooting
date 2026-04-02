@@ -38,10 +38,9 @@ void MovieScene::Init_Sub(void) noexcept {
 }
 void MovieScene::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
-	auto* CameraParts = Camera::Camera3D::Instance();
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
-	PostPassParts->SetShadowScale(7.5f);
+	PostPassParts->SetShadowScale(3.5f);
 
 	KeyGuideParts->ChangeGuide(
 		[]() {
@@ -50,7 +49,6 @@ void MovieScene::Update_Sub(void) noexcept {
 			KeyGuideParts->AddGuide(DXLibRef::KeyGuide::GetPADStoOffset(Util::EnumMenu::Tab), Localize->Get(351));
 		}
 	);
-	CameraParts->SetCamInfo(CameraParts->GetCamera().GetCamFov(), 1.f * Scale3DRate, 200.f * Scale3DRate);
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	if (m_StoryScript.GetIsEnd()) {
@@ -61,7 +59,7 @@ void MovieScene::Update_Sub(void) noexcept {
 		this->m_Exit = true;
 	}
 
-	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
+	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime() / 0.5f, 0.f, 2.f);
 	if (m_Exit) {
 		if (this->m_Fade >= 2.f) {
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));

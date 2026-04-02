@@ -1,2 +1,2 @@
 SetModel(data/model/Tank/);
-HitPoint(10);
+HitPoint(1);

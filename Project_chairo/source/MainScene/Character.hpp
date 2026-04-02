@@ -143,18 +143,16 @@ public:
 	auto			GetEyeMatrix(void) const noexcept {
 		return EyeMat;
 	}
-	void			SetDamage(int ID) noexcept {
-		if (ID != InvalidID) {
-			if (m_DamageInterval != 0.f) { return; }
-			m_DamageInterval = 1.0f;
-		}
-
-		DamageID = ID;
-		if (DamageID != InvalidID) {
-			//m_HitPoint = std::clamp(m_HitPoint - 10, 0, m_HitPointMax);
-		}
+	void			SetDamageOff() noexcept {
+		DamageID = InvalidID;
 	}
-	int				GetDamageID(void) const noexcept { return DamageID; }
+	void			SetDamageOn(int damage) noexcept {
+		if (m_DamageInterval != 0.f) { return; }
+		m_DamageInterval = 1.0f;
+		DamageID = 0;
+		m_HitPoint = std::clamp(m_HitPoint - damage, 0, m_HitPointMax);
+	}
+	bool				IsDamageOn(void) const noexcept { return DamageID != InvalidID; }
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_CockPitID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/fighter-cockpit1.wav", true);

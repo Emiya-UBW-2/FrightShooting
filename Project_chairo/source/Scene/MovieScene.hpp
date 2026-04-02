@@ -164,74 +164,75 @@ public:
 			FileStream.Open("data/Event/" + Path + ".txt");
 			while (true) {
 				if (FileStream.ComeEof()) { break; }
+				std::string Func;
 				std::vector<std::string> Args;
-				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
+				File::GetArgs(FileStream.SeekLineAndGetStr(), &Func, &Args);
 				//
 				{
-					if (Args.at(0) == "SetCut") {
+					if (Func == "SetCut") {
 						if (m_StoryPop.size() > 0) {
-							m_StoryPop.back().m_EndFrame = std::stoi(Args.at(1));
+							m_StoryPop.back().m_EndFrame = std::stoi(Args.at(0));
 						}
 						m_StoryPop.emplace_back();
-						m_StoryPop.back().m_StartFrame = std::stoi(Args.at(1));
+						m_StoryPop.back().m_StartFrame = std::stoi(Args.at(0));
 					}
-					if (Args.at(0) == "EndCut") {
-						m_StoryPop.back().m_EndFrame = std::stoi(Args.at(1));
+					if (Func == "EndCut") {
+						m_StoryPop.back().m_EndFrame = std::stoi(Args.at(0));
 					}
-					if (Args.at(0) == "SetCameraPos") {
-						m_StoryPop.back().m_CameraPos = Util::VECTOR3D::vget(std::stof(Args.at(1)), std::stof(Args.at(2)), std::stof(Args.at(3))) * Scale3DRate;
+					if (Func == "SetCameraPos") {
+						m_StoryPop.back().m_CameraPos = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
 						m_StoryPop.back().m_CameraPosEnd = m_StoryPop.back().m_CameraPos;
 					}
-					if (Args.at(0) == "SetCameraTarget") {
-						m_StoryPop.back().m_CameraTarget = Util::VECTOR3D::vget(std::stof(Args.at(1)), std::stof(Args.at(2)), std::stof(Args.at(3))) * Scale3DRate;
+					if (Func == "SetCameraTarget") {
+						m_StoryPop.back().m_CameraTarget = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
 						m_StoryPop.back().m_CameraTargetEnd = m_StoryPop.back().m_CameraTarget;
 					}
-					if (Args.at(0) == "SetCameraPosEnd") {
-						m_StoryPop.back().m_CameraPosEnd = Util::VECTOR3D::vget(std::stof(Args.at(1)), std::stof(Args.at(2)), std::stof(Args.at(3))) * Scale3DRate;
+					if (Func == "SetCameraPosEnd") {
+						m_StoryPop.back().m_CameraPosEnd = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
 					}
-					if (Args.at(0) == "SetCameraTargetEnd") {
-						m_StoryPop.back().m_CameraTargetEnd = Util::VECTOR3D::vget(std::stof(Args.at(1)), std::stof(Args.at(2)), std::stof(Args.at(3))) * Scale3DRate;
+					if (Func == "SetCameraTargetEnd") {
+						m_StoryPop.back().m_CameraTargetEnd = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
 					}
-					if (Args.at(0) == "SetCameraFov") {
-						m_StoryPop.back().m_CameraFov = Util::deg2rad(std::stof(Args.at(1)));
+					if (Func == "SetCameraFov") {
+						m_StoryPop.back().m_CameraFov = Util::deg2rad(std::stof(Args.at(0)));
 						m_StoryPop.back().m_CameraFovEnd = m_StoryPop.back().m_CameraFov;
 					}
-					if (Args.at(0) == "SetCameraFovEnd") {
-						m_StoryPop.back().m_CameraFovEnd = Util::deg2rad(std::stof(Args.at(1)));
+					if (Func == "SetCameraFovEnd") {
+						m_StoryPop.back().m_CameraFovEnd = Util::deg2rad(std::stof(Args.at(0)));
 					}
-					if (Args.at(0) == "SetCameraShake") {
-						m_StoryPop.back().m_CameraShakePow = Util::deg2rad(std::stof(Args.at(1)));
+					if (Func == "SetCameraShake") {
+						m_StoryPop.back().m_CameraShakePow = Util::deg2rad(std::stof(Args.at(0)));
 					}
-					if (Args.at(0) == "SetModel") {
+					if (Func == "SetModel") {
 						m_Models.emplace_back();
 						auto& b = m_Models.back();
-						b.m_ObjPath = Args.at(1);
+						b.m_ObjPath = Args.at(0);
 						ObjectManager::Instance()->LoadModel(b.m_ObjPath);
-						b.m_UniqueID = std::stoi(Args.at(2));
+						b.m_UniqueID = std::stoi(Args.at(1));
 						b.m_Mat =
-							Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(6))) *
-							Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::stof(Args.at(7))) *
-							Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), std::stof(Args.at(8))) *
-							Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(std::stof(Args.at(3)), std::stof(Args.at(4)), std::stof(Args.at(5))) * Scale3DRate);
+							Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(5))) *
+							Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::stof(Args.at(6))) *
+							Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), std::stof(Args.at(7))) *
+							Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4))) * Scale3DRate);
 						b.m_MatEnd = b.m_Mat;
-						b.m_StartFrame = std::stoi(Args.at(9));
-						b.m_EndFrame = std::stoi(Args.at(10));
+						b.m_StartFrame = std::stoi(Args.at(8));
+						b.m_EndFrame = std::stoi(Args.at(9));
 					}
-					if (Args.at(0) == "SetModelEnd") {
+					if (Func == "SetModelEnd") {
 						for (auto& b : m_Models) {
-							if (b.m_ObjPath == Args.at(1) && b.m_UniqueID == std::stoi(Args.at(2))) {
+							if (b.m_ObjPath == Args.at(0) && b.m_UniqueID == std::stoi(Args.at(1))) {
 								b.m_MatEnd =
-									Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(6))) *
-									Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::stof(Args.at(7))) *
-									Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), std::stof(Args.at(8))) *
-									Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(std::stof(Args.at(3)), std::stof(Args.at(4)), std::stof(Args.at(5))) * Scale3DRate);
+									Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(5))) *
+									Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::stof(Args.at(6))) *
+									Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), std::stof(Args.at(7))) *
+									Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4))) * Scale3DRate);
 							}
 						}
 					}
-					if (Args.at(0) == "SetModelAnimation") {
+					if (Func == "SetModelAnimation") {
 						for (auto& b : m_Models) {
-							if (b.m_ObjPath == Args.at(1) && b.m_UniqueID == std::stoi(Args.at(2))) {
-								b.m_AnimID = std::stoi(Args.at(3));
+							if (b.m_ObjPath == Args.at(0) && b.m_UniqueID == std::stoi(Args.at(1))) {
+								b.m_AnimID = std::stoi(Args.at(2));
 								break;
 							}
 						}
@@ -252,10 +253,9 @@ public:
 		}
 	}
 	void Update() noexcept {
-		for (int loop = 0; loop < static_cast<int>(m_StoryPop.size()); ++loop) {
-			auto& Now = m_StoryPop.at(static_cast<size_t>(loop));
+		for (auto& Now : m_StoryPop) {
 			if (Now.m_StartFrame <= static_cast<int>(m_Frame) && static_cast<int>(m_Frame) < Now.m_EndFrame) {
-				float Per = static_cast<float>(m_Frame - Now.m_StartFrame) / static_cast<float>(Now.m_EndFrame - Now.m_StartFrame);
+				float Per = static_cast<float>(static_cast<int>(m_Frame) - Now.m_StartFrame) / static_cast<float>(Now.m_EndFrame - Now.m_StartFrame);
 				auto* CameraParts = Camera::Camera3D::Instance();
 				CameraParts->SetCamPos(
 					Util::Lerp(Now.m_CameraPos, Now.m_CameraPosEnd, Per),
@@ -272,36 +272,36 @@ public:
 				}
 			}
 		}
-		for (auto& m : m_Models) {
-			if (m.m_StartFrame <= static_cast<int>(m_Frame) && (static_cast<int>(m_Frame) < m.m_EndFrame)) {
-				float Per = static_cast<float>(m_Frame - m.m_StartFrame) / static_cast<float>(m.m_EndFrame - m.m_StartFrame);
-				m.m_MovieObj->SetIsDraw(true);
-				m.m_MovieObj->SetMatrix(Util::Lerp(m.m_Mat, m.m_MatEnd, Per));
-				if (m.m_AnimID != InvalidID) {
+		for (auto& b : m_Models) {
+			if (b.m_StartFrame <= static_cast<int>(m_Frame) && (static_cast<int>(m_Frame) < b.m_EndFrame)) {
+				float Per = static_cast<float>(static_cast<int>(m_Frame) - b.m_StartFrame) / static_cast<float>(b.m_EndFrame - b.m_StartFrame);
+				b.m_MovieObj->SetIsDraw(true);
+				b.m_MovieObj->SetMatrix(Util::Lerp(b.m_Mat, b.m_MatEnd, Per));
+				if (b.m_AnimID != InvalidID) {
 					//アニメアップデート
 					{
-						for (size_t loop2 = 0; loop2 < static_cast<size_t>(m.m_MovieObj->GetModel().GetAnimNum()); ++loop2) {
-							m.m_MovieObj->SetAnim(loop2).SetPer((m.m_AnimID == static_cast<int>(loop2)) ? 1.f : 0.f);
-							if (m.m_AnimID == static_cast<int>(loop2)) {
-								m.m_MovieObj->SetAnim(loop2).Update(false, 1.0f);
+						for (size_t loop2 = 0; loop2 < static_cast<size_t>(b.m_MovieObj->GetModel().GetAnimNum()); ++loop2) {
+							b.m_MovieObj->SetAnim(loop2).SetPer((b.m_AnimID == static_cast<int>(loop2)) ? 1.f : 0.f);
+							if (b.m_AnimID == static_cast<int>(loop2)) {
+								b.m_MovieObj->SetAnim(loop2).Update(false, 1.0f);
 							}
 						}
-						m.m_MovieObj->SetModel().FlipAnimAll();
+						b.m_MovieObj->SetModel().FlipAnimAll();
 					}
 				}
-				if (m.m_StartFrame == static_cast<int>(m_Frame)) {
-					m.m_MovieObj->SetPlanePosition(Util::Lerp(m.m_Mat, m.m_MatEnd, Per));
+				if (std::fabsf(m_Frame - static_cast<float>(b.m_StartFrame)) < 1.f) {//todo:等速以外の場合
+					b.m_MovieObj->SetPlanePosition(Util::Lerp(b.m_Mat, b.m_MatEnd, Per));
 				}
 			}
 			else {
-				m.m_MovieObj->SetIsDraw(false);
+				b.m_MovieObj->SetIsDraw(false);
 			}
 		}
-		auto& Next = m_StoryPop.back();
-		if (Next.m_EndFrame - 60 <= static_cast<int>(m_Frame)) {
+		if (m_StoryPop.back().m_EndFrame - 30 <= static_cast<int>(m_Frame)) {
 			m_IsEnd = true;
 		}
-		m_Frame += 1.f;
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
 	}
 };
 

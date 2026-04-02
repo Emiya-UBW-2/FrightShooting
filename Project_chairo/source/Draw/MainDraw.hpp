@@ -1,13 +1,15 @@
 ﻿#pragma once
 #define NOMINMAX
-#pragma warning( push, 3 )
-#include "DxLib.h"
-#pragma warning( pop )
 
 #pragma warning(disable:4464)
 #pragma warning(disable:4514)
 #pragma warning(disable:4668)
 #pragma warning(disable:5039)
+
+#pragma warning( push, 3 )
+#include "DxLib.h"
+#pragma warning( pop )
+
 #include "ImageDraw.hpp"
 #include "../File/FileStream.hpp"
 #include "../Util/Enum.hpp"

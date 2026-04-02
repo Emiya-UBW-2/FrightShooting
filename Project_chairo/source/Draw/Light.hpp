@@ -1,12 +1,14 @@
 ﻿#pragma once
+#define NOMINMAX
 #pragma warning(disable:4464)
 #pragma warning(disable:4668)
 #pragma warning(disable:5039)
-#define NOMINMAX
+
 #pragma warning( push, 3 )
 #include "DxLib.h"
 #include <array>
 #pragma warning( pop )
+
 #include "../Util/Util.hpp"
 #include "../Util/Algorithm.hpp"
 

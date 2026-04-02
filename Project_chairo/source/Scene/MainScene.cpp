@@ -53,8 +53,7 @@ void MainScene::Init_Sub(void) noexcept {
 
 	auto& Player = PlayerManager::Instance()->SetPlane();
 	Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
-
-	Player->SetDamage(InvalidID);
+	Player->SetDamageOff();
 	//
 	this->m_Exit = false;
 	this->m_Fade = 1.f;
@@ -133,19 +132,19 @@ void MainScene::Update_Sub(void) noexcept {
 	//
 	CameraParts->SetCamInfo(
 		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f),
-		1.f * Scale3DRate, 200.f * Scale3DRate);
+		0.1f * Scale3DRate, 300.f * Scale3DRate);
 
 	m_DamagePer = std::max(m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
 	m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 0.f);
 	if (m_DamagePer == 0.f) {
 		CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedMax()) / (Watch->GetSpeedMax() * 2.f) * Scale3DRate);
-		if (Watch->GetDamageID() != InvalidID) {
+		if (Player->IsDamageOn()) {
 			CameraParts->SetCamShake(0.2f, 25.f * Scale3DRate);
 			m_DamagePer = 0.2f;
 			m_DamageWatch = 2.f;
 		}
 	}
-	Watch->SetDamage(InvalidID);
+	Player->SetDamageOff();
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	//ポーズメニュー
@@ -234,7 +233,7 @@ void MainScene::Update_Sub(void) noexcept {
 							if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
 								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 								a->SetHit(Result.SegB_MinDist_Pos);
-								s.m_EnemyScript.SetDown();
+								s.m_EnemyScript.EnemyObj()->SetDamage(1);
 								break;
 							}
 						}
@@ -256,7 +255,7 @@ void MainScene::Update_Sub(void) noexcept {
 						else {
 							Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 							a->SetHit(Result.SegB_MinDist_Pos);
-							Player->SetDamage(0);
+							Player->SetDamageOn(10);
 						}
 						break;
 					}
@@ -304,7 +303,7 @@ void MainScene::Update_Sub(void) noexcept {
 							if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
 								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 								a->SetHit(Result.SegB_MinDist_Pos);
-								s.m_EnemyScript.SetDown();
+								s.m_EnemyScript.EnemyObj()->SetDamage(1);
 								break;
 							}
 						}

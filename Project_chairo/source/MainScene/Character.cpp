@@ -257,7 +257,7 @@ void MyPlane::Update_Sub(void) noexcept {
 		//ヒット判定
 		auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), GetMat().pos() + (PosAfter - PosBefore));
 		if (Ret.HitFlag == TRUE) {
-			SetDamage(0);
+			SetDamageOn(10);
 		}
 	}
 	//アニメアップデート

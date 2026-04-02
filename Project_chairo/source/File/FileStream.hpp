@@ -9,16 +9,18 @@
 #include <filesystem>
 #pragma warning( pop )
 
-namespace File {
 #define USE_DXLIB (true)
 
 #if USE_DXLIB
 #define NOMINMAX
+#pragma warning(disable:4668)
+#pragma warning(disable:5039)
 #pragma warning( push, 3 )
 #include "DxLib.h"
 #pragma warning( pop )
 #endif
 
+namespace File {
 	//ファイル読み込み
 	class InputFileStream {
 #if USE_DXLIB
@@ -145,12 +147,12 @@ namespace File {
 		}
 		return str;
 	}
-	static void GetArgs(const std::string& str, std::vector<std::string>* Args) noexcept {
+	static void GetArgs(const std::string& str, std::string* FuncName, std::vector<std::string>* Args) noexcept {
 		std::string ALL = ReplaceAll(ReplaceAll(str, " ", ""), "\t", "");
 		auto Func = ALL.substr(0, ALL.find("("));
-		auto Arg = File::InputFileStream::getleft(File::InputFileStream::getright(ALL, "("), ")");
+		auto Arg = InputFileStream::getleft(InputFileStream::getright(ALL, "("), ")");
+		*FuncName = Func;
 		Args->clear();
-		Args->emplace_back(Func);
 		while (true) {
 			size_t div = Arg.find(",");
 			if (div != std::string::npos) {

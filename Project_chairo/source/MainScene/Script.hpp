@@ -39,10 +39,10 @@ class Enemy :public BaseObject {
 	char		padding[3]{};
 
 	Util::Matrix4x4			RailMat;
-	char		padding2[4]{};
+	//char		padding2[4]{};
 
-	int						m_HitPoint{ m_HitPointMax };
-	static constexpr int	m_HitPointMax{ 100 };
+	int						m_HP{ };
+	int						m_HPMax{ 1 };
 
 	LineDraw				m_LineDraw1;
 	LineDraw				m_LineDraw2;
@@ -58,14 +58,21 @@ public:
 	virtual ~Enemy(void) noexcept {}
 private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(EnemyFrame::Max); }
-	const char* GetFrameStr(int id) noexcept override { return EnemyFrameName[id]; }
+	const char*		GetFrameStr(int id) noexcept override { return EnemyFrameName[id]; }
 public:
-	const auto& GetAimPoint2D(void) const noexcept { return m_AimPoint2D; }
-	const auto& IsDrawAimPoint(void) const noexcept { return m_IsDrawAimPoint; }
+	const auto&		GetAimPoint2D(void) const noexcept { return m_AimPoint2D; }
+	const auto&		IsDrawAimPoint(void) const noexcept { return m_IsDrawAimPoint; }
 
 
-	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
-	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
+	int				GetHitPoint(void) const noexcept { return m_HP; }
+	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HP) / static_cast<float>(m_HPMax); }
+	void			SetupMaxHitPoint(int value) noexcept {
+		m_HPMax = value;
+		m_HP = m_HPMax;
+	}
+	void			SetDamage(int value) noexcept {
+		m_HP = std::clamp(m_HP - value, 0, m_HPMax);
+	}
 
 	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
@@ -95,9 +102,7 @@ public:
 			//TODO:ホーミング
 		}
 	}
-	auto			GetRailMat(void) const noexcept {
-		return RailMat;
-	}
+	auto			GetRailMat(void) const noexcept { return RailMat; }
 public:
 	void Load_Sub(void) noexcept override {
 	}
@@ -216,8 +221,9 @@ struct EnemyAmmo {
 	AmmoMoveType	m_AmmoMoveType{};
 };
 class EnemyScript {
+	bool					m_IsActive{ false };
+	char		padding[3]{};
 	int						m_HP{};
-	char		padding0[4]{};
 
 	std::vector<EnemyMove>	m_EnemyMove;
 	std::vector<EnemyAmmo>	m_EnemyAmmo;
@@ -226,10 +232,6 @@ class EnemyScript {
 
 	float					m_Frame{};
 	float					m_EndFrame{ -1.f };
-
-	bool					m_IsActive{ false };
-	bool					m_IsDown{ false };
-	char		padding[6]{};
 
 	std::shared_ptr<Enemy>	m_Enemy;
 public:
@@ -240,16 +242,14 @@ public:
 		m_Enemy = std::make_shared<Enemy>();
 		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), m_ObjPath);
 		EnemyObj()->SetPlanePosition(m_EnemyMove.at(0).m_Pos, m_EnemyMove.at(0).m_Rot);
+		EnemyObj()->SetupMaxHitPoint(m_HP);
 		m_IsActive = true;
 	}
 	bool IsActive(void) const noexcept {
 		return m_IsActive;
 	}
 	bool IsAlive(void) const noexcept {
-		return IsActive() && !m_IsDown;
-	}
-	void SetDown(void) noexcept {
-		m_IsDown = true;
+		return IsActive() && EnemyObj()->GetHitPoint() > 0;
 	}
 public:
 	void Init(std::string Path) noexcept {
@@ -259,16 +259,17 @@ public:
 			FileStream.Open("data/Enemy/" + Path + "/Data.txt");
 			while (true) {
 				if (FileStream.ComeEof()) { break; }
+				std::string Func;
 				std::vector<std::string> Args;
-				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
+				File::GetArgs(FileStream.SeekLineAndGetStr(), &Func, &Args);
 				//
 				{
-					if (Args.at(0) == "SetModel") {
-						m_ObjPath = Args.at(1);
+					if (Func == "SetModel") {
+						m_ObjPath = Args.at(0);
 						ObjectManager::Instance()->LoadModel(m_ObjPath);
 					}
-					if (Args.at(0) == "HitPoint") {
-						m_HP = std::stoi(Args.at(1));
+					if (Func == "HitPoint") {
+						m_HP = std::stoi(Args.at(0));
 					}
 				}
 			}
@@ -281,54 +282,55 @@ public:
 			FileStream.Open("data/Enemy/" + Path + "/Move.txt");
 			while (true) {
 				if (FileStream.ComeEof()) { break; }
+				std::string Func;
 				std::vector<std::string> Args;
-				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
+				File::GetArgs(FileStream.SeekLineAndGetStr(), &Func, &Args);
 				//
 				{
-					if (Args.at(0) == "SetPoint") {
+					if (Func == "SetPoint") {
 						m_EnemyMove.emplace_back();
-						m_EnemyMove.back().m_Frame = std::stoi(Args.at(1));//Frame
-						m_EnemyMove.back().m_Pos = Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4))) * Scale3DRate;
+						m_EnemyMove.back().m_Frame = std::stoi(Args.at(0));//Frame
+						m_EnemyMove.back().m_Pos = Util::VECTOR3D::vget(std::stof(Args.at(1)), std::stof(Args.at(2)), std::stof(Args.at(3))) * Scale3DRate;
 						m_EnemyMove.back().m_Rot =
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(std::stof(Args.at(7)))) *
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(6)))) *
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(5))));
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(std::stof(Args.at(6)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(5)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(4))));
 					}
-					if (Args.at(0) == "PutFixedAmmo") {
+					if (Func == "PutFixedAmmo") {
 						m_EnemyAmmo.emplace_back();
-						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(0));//Frame
 						m_EnemyAmmo.back().m_Rot =
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(3)))) *
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(2))));
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(2)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(1))));
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Fixed;
 					}
-					if (Args.at(0) == "PutTargetAmmo") {
+					if (Func == "PutTargetAmmo") {
 						m_EnemyAmmo.emplace_back();
-						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(0));//Frame
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
 					}
-					if (Args.at(0) == "PutTargetAmmoLoop") {
+					if (Func == "PutTargetAmmoLoop") {
 						//撃ち始めるまでの時間,撃つ間隔,何回撃つか,クールダウン時間
-						auto startTime = std::stoi(Args.at(1));//Frame
-						auto shotFrame = std::stoi(Args.at(2));//Frame
-						auto shotCount = std::stoi(Args.at(3));
-						auto shotCoolDown = std::stoi(Args.at(4));//Frame
+						auto startTime = std::stoi(Args.at(0));//Frame
+						auto shotFrame = std::stoi(Args.at(1));//Frame
+						auto shotCount = std::stoi(Args.at(2));
+						auto shotCoolDown = std::stoi(Args.at(3));//Frame
 						for (int loop = 0; loop < 1000; ++loop) {
 							m_EnemyAmmo.emplace_back();
 							m_EnemyAmmo.back().m_Frame = startTime + (loop % shotCount) * shotFrame + (loop / shotCount) * shotCoolDown;
 							m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
 						}
 					}
-					if (Args.at(0) == "PutHomingAmmo") {//todo:ホーミング弾は未実装
+					if (Func == "PutHomingAmmo") {//todo:ホーミング弾は未実装
 						m_EnemyAmmo.emplace_back();
-						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(0));//Frame
 						m_EnemyAmmo.back().m_Rot =
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(3)))) *
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(2))));
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(2)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(1))));
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
 					}
-					if (Args.at(0) == "Delete") {
-						m_EndFrame = std::stof(Args.at(1));//Frame
+					if (Func == "Delete") {
+						m_EndFrame = std::stof(Args.at(0));//Frame
 					}
 				}
 			}
@@ -339,7 +341,7 @@ public:
 	}
 	void Update() noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
-		if (!m_IsDown) {
+		if (EnemyObj()->GetHitPoint() > 0) {
 			for (size_t loop = 1; loop < m_EnemyMove.size(); ++loop) {
 				if (static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame) <= m_Frame && m_Frame <= static_cast<float>(m_EnemyMove.at(loop).m_Frame)) {
 					float Per = (m_Frame - static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame)) / static_cast<float>(m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
@@ -376,7 +378,7 @@ public:
 			}
 
 			if (m_Frame >= m_EndFrame) {
-				m_IsDown = true;
+				EnemyObj()->SetDamage(EnemyObj()->GetHitPoint());
 			}
 		}
 		else {
@@ -386,7 +388,7 @@ public:
 				* Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360.f * DrawerMngr->GetDeltaTime())));
 			EnemyObj()->UpdatePlanePosition(Pos, Rot);
 		}
-		m_Frame += 1.f;
+		m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
 	}
 	void Dispose() noexcept {
 		m_Enemy.reset();
@@ -426,38 +428,39 @@ public:
 			FileStream.Open("data/Stage/" + Path + ".txt");
 			while (true) {
 				if (FileStream.ComeEof()) { break; }
+				std::string Func;
 				std::vector<std::string> Args;
-				File::GetArgs(FileStream.SeekLineAndGetStr(), &Args);
+				File::GetArgs(FileStream.SeekLineAndGetStr(), &Func, &Args);
 				//
 				{
-					if (Args.at(0) == "SetStageModel") {
-						GameRule::Instance()->SetStageModel(Args.at(1));
+					if (Func == "SetStageModel") {
+						GameRule::Instance()->SetStageModel(Args.at(0));
 					}
-					else if (Args.at(0) == "SetGameType") {
+					else if (Func == "SetGameType") {
 						for (int loop = 0; loop < static_cast<int>(GameType::Max); ++loop) {
-							if (Args.at(1) == GameTypeName[loop]) {
+							if (Args.at(0) == GameTypeName[loop]) {
 								GameRule::Instance()->SetGameType(static_cast<GameType>(loop));
 								break;
 							}
 						}
 					}
-					else if (Args.at(0) == "GoNextStageNormal") {
-						m_ZPosGoal = std::stof(Args.at(1)) * Scale3DRate;
-						m_NextStage = Args.at(2);
-					}
-					else if (Args.at(0) == "GoNextStageAllRange") {
+					else if (Func == "GoNextStageNormal") {
+						m_ZPosGoal = std::stof(Args.at(0)) * Scale3DRate;
 						m_NextStage = Args.at(1);
 					}
-					else if (Args.at(0) == "StartEvent") {
-						m_SetStartEvent = Args.at(1);
+					else if (Func == "GoNextStageAllRange") {
+						m_NextStage = Args.at(0);
 					}
-					else if (Args.at(0) == "EndEvent") {
-						m_SetEndEvent = Args.at(1);
+					else if (Func == "StartEvent") {
+						m_SetStartEvent = Args.at(0);
 					}
-					else if (Args.at(0) == "SetEnemy") {
+					else if (Func == "EndEvent") {
+						m_SetEndEvent = Args.at(0);
+					}
+					else if (Func == "SetEnemy") {
 						m_EnemyPop.emplace_back();
-						m_EnemyPop.back().m_Frame = std::stoi(Args.at(1));//Frame
-						m_EnemyPop.back().m_EnemyScript.Init(Args.at(2));
+						m_EnemyPop.back().m_Frame = std::stoi(Args.at(0));//Frame
+						m_EnemyPop.back().m_EnemyScript.Init(Args.at(1));
 					}
 				}
 			}
@@ -475,7 +478,8 @@ public:
 				m_EnemyPop.at(loop).m_EnemyScript.Update();
 			}
 		}
-		m_Frame += 1.f;
+		auto* DrawerMngr = Draw::MainDraw::Instance();
+		m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
 	}
 	void Dispose() noexcept {
 		for (size_t loop = 0; loop < m_EnemyPop.size(); ++loop) {
