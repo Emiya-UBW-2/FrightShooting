@@ -1,0 +1,3 @@
+SetModel(data/model/CV/);
+HitPoint(10);
+Type(Normal);

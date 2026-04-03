@@ -1,3 +1,0 @@
-SetModel(data/model/Tank/);
-HitPoint(1);
-Type(Normal);
