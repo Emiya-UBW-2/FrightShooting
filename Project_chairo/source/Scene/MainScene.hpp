@@ -66,9 +66,11 @@ class MainScene : public Util::SceneBase {
 	std::unique_ptr<MainUI>			m_MainUI{};
 	std::unique_ptr<AimPoint>		m_AimPoint{};
 	Sound::SoundUniqueID			m_EnviID{ InvalidID };
+	Util::Matrix3x3					EyeMatR;
 	Util::VECTOR3D					CamPosition;
 	Util::VECTOR3D					CamTarget;
 	Util::VECTOR3D					CamUp;
+	Util::VECTOR3D					CamUpR;
 	float							m_Fade{ 1.f };
 	float							m_FadeStage{ 1.f };
 	bool							m_Exit{ false };

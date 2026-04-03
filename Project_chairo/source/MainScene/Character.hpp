@@ -59,7 +59,13 @@ class MyPlane :public BaseObject {
 	float				m_SpeedTarget{ 0.f };
 	float				m_ShootTimer{};
 	float				m_RollPer{};
-	char		padding[4]{};
+	float				m_Frame{};
+	float				m_BoostPer{};
+	float				m_StallPer{};
+
+	bool				m_OverHeat{ false };
+	bool				m_Stall{ false };
+	char		padding[6]{};
 
 	size_t					m_CockPitIndex{};
 	Sound::SoundUniqueID	m_CockPitID{ InvalidID };
@@ -114,7 +120,13 @@ private:
 public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
+	const auto&		GetMovePoint(void) const noexcept { return m_MovePoint; }
 
+	const auto& GetBoostPer(void) const noexcept { return m_BoostPer; }
+	const auto& IsOverHeat(void) const noexcept { return m_OverHeat; }
+	const auto& GetStallPer(void) const noexcept { return m_StallPer; }
+	const auto& IsStall(void) const noexcept { return m_Stall; }
+	
 	bool			IsDraw() const {
 		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return false; }
 		return true;
@@ -123,8 +135,9 @@ public:
 	bool			IsRollingActive() const { return this->m_RollingTimer1 > 0.f || this->m_RollingTimer2 > 0.f; }
 
 	float			GetSpeed() const { return this->m_Speed; }
+	float			GetFrame() const { return this->m_Frame; }
 	float			GetSpeedMax(void) const noexcept {
-		return 200.f / 60.f / 60.f * 1000.f * Scale3DRate / 60.f;
+		return 1.f * Scale3DRate;
 	}
 	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);

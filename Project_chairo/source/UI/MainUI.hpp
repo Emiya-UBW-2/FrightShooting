@@ -19,6 +19,8 @@ class MainUI {
 	float							m_HPChangeTime{};
 	float							m_HPRe{};
 	float							m_HPRe2{};
+	float							m_Timer{};
+	char		padding2[4]{};
 public:
 	MainUI(void) noexcept {}
 	MainUI(const MainUI&) = delete;
@@ -94,18 +96,60 @@ public:
 		else {
 			m_HPRe2 = m_HPRe;
 		}
+
+		m_Timer += DrawerMngr->GetDeltaTime();
 	}
 	void Draw() noexcept {
 
 		auto& Watch = PlayerManager::Instance()->SetPlane();
+		{
+			int XP = 64, YP = 1080 - 92, XS = 400, YS = 32;
+			int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetHitPointPer())), 0, 255);
+			int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetHitPointPer())), 0, 255);
+			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Black, true);
+			DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * m_HPRe2), YP + YS, ColorPalette::Red, true);
+			DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * Watch->GetHitPointPer()), YP + YS, GetColor(R, G, 0), true);
+			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Gray30, false, 3);
+		}
 
-		int XP = 64, YP = 1080 - 92, XS = 400, YS = 32;
-		int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetHitPointPer())), 0, 255);
-		int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetHitPointPer())), 0, 255);
-		DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Black, true);
-		DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * m_HPRe2), YP + YS, ColorPalette::Red, true);
-		DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * Watch->GetHitPointPer()), YP + YS, GetColor(R,G,0), true);
-		DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Gray30, false, 3);
+		{
+			int XP = 1920 - 64, YP = 1080 / 2, XS = 32, YS = 400;
+			int R = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetStallPer())), 0, 255);
+			int G = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetStallPer())), 0, 255);
+			DrawBox(XP, YP, XP + XS, YP + static_cast<int>(static_cast<float>(YS) * Watch->GetStallPer()), Watch->IsStall() ? ColorPalette::Red : GetColor(R, G, 0), true);
+			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Green, false, 3);
+		}
+		
+		{
+			int XP = 1920 - 64, YP = 1080 / 2 - 400, XS = 32, YS = 400;
+			int R = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetBoostPer())), 0, 255);
+			int G = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetBoostPer())), 0, 255);
+			DrawBox(XP, YP + YS - static_cast<int>(static_cast<float>(YS) * Watch->GetBoostPer()), XP + XS, YP + YS, Watch->IsOverHeat() ? ColorPalette::Red : GetColor(R, G, 0), true);
+			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Green, false, 3);
+		}
+
+		{
+			int YP = 0;
+			if (Watch->IsStall() && (static_cast<int>(m_Timer * 10.f) % 10 < 5)) {
+				auto* Font = Draw::FontPool::Instance();
+				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
+					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,
+					1920 / 2, 1080 / 2 - 400 + YP,
+					ColorPalette::Red, ColorPalette::Red50,
+					"STALL");
+				YP += 32;
+			}
+
+			if (Watch->IsOverHeat() && (static_cast<int>(m_Timer * 10.f) % 10 < 5)) {
+				auto* Font = Draw::FontPool::Instance();
+				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
+					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,
+					1920 / 2, 1080 / 2 - 400 + YP,
+					ColorPalette::Red, ColorPalette::Red50,
+					"OVER HEAT");
+				YP += 32;
+			}
+		}
 
 		this->m_PauseUI.Draw();
 		this->m_OptionWindow.Draw();

@@ -150,7 +150,7 @@ class StoryScript {
 	float					m_Frame{};
 
 	bool m_IsEnd = false;
-	char		padding[7]{};
+	char		padding[3]{};
 public:
 	const auto& GetIsEnd() const noexcept { return m_IsEnd; }
 public:

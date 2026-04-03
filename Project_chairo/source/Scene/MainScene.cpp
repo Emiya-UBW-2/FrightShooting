@@ -326,12 +326,26 @@ void MainScene::Update_Sub(void) noexcept {
 		m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 1.f - Watch->GetHitPointPer());
 	}
 	if (Watch->GetHitPoint() != 0) {
-		Util::Matrix4x4 EyeMat = Watch->GetEyeMatrix();
-		CamTarget = EyeMat.pos();
-		CamPosition = EyeMat.pos() - EyeMat.zvec() * (-15.f * Scale3DRate);// +Util::VECTOR3D::up() * (10.f * Scale3DRate);
-		CamUp = EyeMat.yvec();
+		Util::Matrix3x3 EyeMat = Util::Matrix3x3::Get33DX(Watch->GetEyeMatrix());
+		CamUp = Watch->GetEyeMatrix().yvec();
+
+		//敵を向く
+		for (auto& s : m_StageScript.EnemyPop()) {
+			if (s.m_EnemyScript.IsActive() && s.m_EnemyScript.IsAlive()) {
+				if (s.m_EnemyScript.GetEnemyType()== EnemyType::AI) {
+					//EyeMat = Util::Matrix3x3::RotVec2(Util::VECTOR3D::back(), (s.m_EnemyScript.EnemyObj()->GetMat().pos() - Watch->GetEyeMatrix().pos()).normalized());
+					//CamUp = Util::VECTOR3D::up();
+					break;
+				}
+			}
+		}
+		Util::Easing(&EyeMatR, EyeMat, 0.9f);
+
+		CamTarget = Watch->GetEyeMatrix().pos();
+		CamPosition = Watch->GetEyeMatrix().pos() - EyeMatR.zvec() * (-15.f * Scale3DRate);// +Util::VECTOR3D::up() * (10.f * Scale3DRate);
+		Util::Easing(&CamUpR, CamUp, 0.9f);
 	}
-	CameraParts->SetCamPos(CamPosition, CamTarget, CamUp);
+	CameraParts->SetCamPos(CamPosition, CamTarget, CamUpR);
 	BackGround::Instance()->Update();
 }
 void MainScene::BGDraw_Sub(void) noexcept {

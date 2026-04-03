@@ -170,22 +170,64 @@ void MyPlane::Update_Sub(void) noexcept {
 	}
 	// 進行方向に前進
 	{
-		bool AccelKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Throttle);
-		bool BrakeKey = KeyMngr->GetBattleKeyPress(Util::EnumBattle::Brake);
+		bool AccelKey = !m_OverHeat && KeyMngr->GetBattleKeyPress(Util::EnumBattle::Throttle);
+		bool BrakeKey = !m_Stall && KeyMngr->GetBattleKeyPress(Util::EnumBattle::Brake);
 		if (!AccelKey && !BrakeKey) {
 			this->m_SpeedTarget = GetSpeedMax();
 		}
 		if (AccelKey && !BrakeKey) {
 			this->m_SpeedTarget += 10.f * DrawerMngr->GetDeltaTime();
+			m_BoostPer += DrawerMngr->GetDeltaTime() / 3.f;
 		}
+		else {
+			if (!m_OverHeat) {
+				m_BoostPer -= DrawerMngr->GetDeltaTime() / 6.f;
+			}
+			else {
+				m_BoostPer -= DrawerMngr->GetDeltaTime() / 6.f;
+			}
+		}
+		m_BoostPer = std::clamp(m_BoostPer, 0.f, 1.f);
+		if (!m_OverHeat) {
+			if (m_BoostPer == 1.f) {
+				m_OverHeat = true;
+			}
+		}
+		else {
+			if (m_BoostPer == 0.f) {
+				m_OverHeat = false;
+			}
+		}
+
 		if (!AccelKey && BrakeKey) {
 			this->m_SpeedTarget -= 10.f * DrawerMngr->GetDeltaTime();
+			m_StallPer += DrawerMngr->GetDeltaTime() / 5.f;
+		}
+		else {
+			if (!m_Stall) {
+				m_StallPer -= DrawerMngr->GetDeltaTime() / 5.f;
+			}
+			else {
+				m_StallPer -= DrawerMngr->GetDeltaTime() / 5.f;
+			}
+		}
+		m_StallPer = std::clamp(m_StallPer, 0.f, 1.f);
+		if (!m_Stall) {
+			if (m_StallPer == 1.f) {
+				m_Stall = true;
+			}
+		}
+		else {
+			if (m_StallPer == 0.f) {
+				m_Stall = false;
+			}
 		}
 		this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() * 3.f / 4.f, GetSpeedMax() * 3.f / 2.f);
 		Util::Easing(&this->m_Speed, this->m_SpeedTarget, 0.95f);
 	}
 	// 移動ベクトルを加算した仮座標を作成
 	{
+		m_Frame += (this->m_Speed / Scale3DRate * (60.f * DrawerMngr->GetDeltaTime()));
 		Util::VECTOR3D PosBefore = RailMat.pos();
 		Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
 		switch (GameRule::Instance()->GetGameType()) {

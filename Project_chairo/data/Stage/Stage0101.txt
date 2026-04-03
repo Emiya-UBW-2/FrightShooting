@@ -8,13 +8,13 @@ SetEnemy(30,Enemy0002);
 SetEnemy(300,Tank0001);
 SetEnemy(310,Tank0002);
 
-SetEnemy(730,Enemy0003);
-SetEnemy(740,Enemy0004);
-SetEnemy(750,Enemy0005);
+SetEnemy(660,Enemy0003);
+SetEnemy(670,Enemy0004);
+SetEnemy(680,Enemy0005);
 
-SetEnemy(1050,Enemy0006);
-SetEnemy(1060,Enemy0007);
-SetEnemy(1070,Enemy0008);
+SetEnemy(960,Enemy0006);
+SetEnemy(970,Enemy0007);
+SetEnemy(980,Enemy0008);
 
 SetEnemy(1300,Tank0003);
 SetEnemy(1310,Tank0004);
@@ -24,7 +24,6 @@ SetEnemy(1410,Tank0006);
 SetEnemy(1420,Tank0007);
 
 SetEnemy(1700,Enemy0009);
-SetEnemy(1710,Enemy0010);
-SetEnemy(1720,Enemy0011);
+
 
 GoNextStageNormal(Stage0102);//ÅŒã‚Ì“G‚ª“|‚ê‚½‚çŸƒXƒe[ƒW‚ÉˆÚ‚é

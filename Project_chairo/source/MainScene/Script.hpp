@@ -205,6 +205,16 @@ public:
 	}
 };
 
+enum class EnemyType : size_t {
+	Normal,
+	AI,
+	Max,
+};
+static const char* EnemyTypeName[static_cast<int>(EnemyType::Max)] = {
+	"Normal",
+	"AI",
+};
+
 struct EnemyMove {
 	int				m_Frame{};
 	Util::VECTOR3D	m_Pos{};
@@ -224,6 +234,7 @@ class EnemyScript {
 	bool					m_IsActive{ false };
 	char		padding[3]{};
 	int						m_HP{};
+	EnemyType				m_EnemyType{ EnemyType::Normal };
 
 	std::vector<EnemyMove>	m_EnemyMove;
 	std::vector<EnemyAmmo>	m_EnemyAmmo;
@@ -234,23 +245,41 @@ class EnemyScript {
 	float					m_EndFrame{ -1.f };
 
 	std::shared_ptr<Enemy>	m_Enemy;
+
+	float				m_OverTime{};
+	float				m_RollPer{};
+	Util::Matrix4x4			RailMat;
+	Util::Matrix3x3			m_Roll;
+	Util::VECTOR3D			m_MovePoint;
+	Util::VECTOR3D			m_MovePointAdd;
+	Util::VECTOR3D			m_MoveVec;
+	Util::VECTOR3D			m_RandomMovePoint;
+	char		padding2[4]{};
 public:
-	auto& EnemyObj(void) const noexcept {
-		return m_Enemy;
-	}
+	auto& EnemyObj(void) const noexcept { return m_Enemy; }
+	auto& GetEnemyType(void) const noexcept { return m_EnemyType; }
 	void SetActive(void) noexcept {
 		m_Enemy = std::make_shared<Enemy>();
 		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), m_ObjPath);
-		EnemyObj()->SetPlanePosition(m_EnemyMove.at(0).m_Pos, m_EnemyMove.at(0).m_Rot);
+		switch (m_EnemyType) {
+		case EnemyType::Normal:
+			EnemyObj()->SetPlanePosition(m_EnemyMove.at(0).m_Pos, m_EnemyMove.at(0).m_Rot);
+			break;
+		case EnemyType::AI:
+			EnemyObj()->SetPlanePosition(m_EnemyMove.at(0).m_Pos, m_EnemyMove.at(0).m_Rot);
+			RailMat = m_EnemyMove.at(0).m_Rot.Get44DX() * Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, m_EnemyMove.at(0).m_Pos.z));
+			m_MovePoint = Util::VECTOR3D::vget(m_EnemyMove.at(0).m_Pos.x, m_EnemyMove.at(0).m_Pos.y - 15.f * Scale3DRate, 0.f) * -1.f;
+			m_MovePointAdd = m_MovePoint;
+			break;
+		case EnemyType::Max:
+		default:
+			break;
+		}
 		EnemyObj()->SetupMaxHitPoint(m_HP);
 		m_IsActive = true;
 	}
-	bool IsActive(void) const noexcept {
-		return m_IsActive;
-	}
-	bool IsAlive(void) const noexcept {
-		return IsActive() && EnemyObj()->GetHitPoint() > 0;
-	}
+	bool IsActive(void) const noexcept { return m_IsActive; }
+	bool IsAlive(void) const noexcept { return IsActive() && EnemyObj()->GetHitPoint() > 0; }
 public:
 	void Init(std::string Path) noexcept {
 		//
@@ -270,6 +299,14 @@ public:
 					}
 					if (Func == "HitPoint") {
 						m_HP = std::stoi(Args.at(0));
+					}
+					if (Func == "Type") {
+						for (int loop = 0; loop < static_cast<int>(EnemyType::Max); ++loop) {
+							if (Args.at(0) == EnemyTypeName[loop]) {
+								m_EnemyType = static_cast<EnemyType>(loop);
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -339,45 +376,159 @@ public:
 
 		m_Frame = 0.f;
 	}
+	float			GetSpeedMax(void) const noexcept {
+		return 1.f * Scale3DRate;
+	}
 	void Update() noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		if (EnemyObj()->GetHitPoint() > 0) {
-			for (size_t loop = 1; loop < m_EnemyMove.size(); ++loop) {
-				if (static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame) <= m_Frame && m_Frame <= static_cast<float>(m_EnemyMove.at(loop).m_Frame)) {
-					float Per = (m_Frame - static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame)) / static_cast<float>(m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
-					Util::VECTOR3D Pos = Util::Lerp(m_EnemyMove.at(loop - 1).m_Pos, m_EnemyMove.at(loop).m_Pos, Per);
-					Util::Matrix3x3 Rot = Util::Lerp(m_EnemyMove.at(loop - 1).m_Rot, m_EnemyMove.at(loop).m_Rot, Per);
+			switch (m_EnemyType) {
+			case EnemyType::Normal:
+				for (size_t loop = 1; loop < m_EnemyMove.size(); ++loop) {
+					if (static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame) <= m_Frame && m_Frame <= static_cast<float>(m_EnemyMove.at(loop).m_Frame)) {
+						float Per = (m_Frame - static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame)) / static_cast<float>(m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);
+						Util::VECTOR3D Pos = Util::Lerp(m_EnemyMove.at(loop - 1).m_Pos, m_EnemyMove.at(loop).m_Pos, Per);
+						Util::Matrix3x3 Rot = Util::Lerp(m_EnemyMove.at(loop - 1).m_Rot, m_EnemyMove.at(loop).m_Rot, Per);
 
-					EnemyObj()->UpdatePlanePosition(Pos, Rot);
-					break;
-				}
-			}
-
-			for (size_t loop = 0; loop < m_EnemyAmmo.size(); ++loop) {
-				if (std::fabsf(m_Frame - static_cast<float>(m_EnemyAmmo.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
-					switch (m_EnemyAmmo.at(loop).m_AmmoMoveType) {
-					case AmmoMoveType::Fixed:
-						EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
+						EnemyObj()->UpdatePlanePosition(Pos, Rot);
 						break;
-					case AmmoMoveType::Target:
+					}
+				}
+				for (size_t loop = 0; loop < m_EnemyAmmo.size(); ++loop) {
+					if (std::fabsf(m_Frame - static_cast<float>(m_EnemyAmmo.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
+						switch (m_EnemyAmmo.at(loop).m_AmmoMoveType) {
+						case AmmoMoveType::Fixed:
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
+							break;
+						case AmmoMoveType::Target:
+						{
+							auto& Player = PlayerManager::Instance()->SetPlane();
+							Util::VECTOR3D Pos = Player->GetMat().pos() + Player->GetMat().zvec() * -(10.f * Scale3DRate);//todo:みこし射撃
+							Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetRailMat().pos() - Pos).normalized());
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot);
+						}
+						break;
+						case AmmoMoveType::Homing:
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
+							break;
+						default:
+							break;
+						}
+						break;
+					}
+				}
+				break;
+			case EnemyType::AI:
+			{
+				Util::VECTOR3D MoveVec = Util::VECTOR3D::forward();
+				{
+					auto& Player = PlayerManager::Instance()->SetPlane();
+
+					auto Diff = Player->GetMovePoint() - m_MovePoint;
+					Diff.z = (Player->GetMat().pos() - EnemyObj()->GetMat().pos()).z;
 					{
-						auto& Player = PlayerManager::Instance()->SetPlane();
-						Util::VECTOR3D Pos = Player->GetMat().pos() + Player->GetMat().zvec() * -(10.f * Scale3DRate);
-						Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetRailMat().pos() - Pos).normalized());
-						EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot);
+						if (Diff.z < 0.f) {
+							m_OverTime = 0.f;
+							m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
+						}
+						else {
+							m_OverTime += DrawerMngr->GetDeltaTime();
+							if (m_OverTime > 1.f) {
+								m_OverTime -= 1.f;
+								m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
+							}
+						}
 					}
-					break;
-					case AmmoMoveType::Homing:
-						EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
-						break;
-					default:
-						break;
+					//上下
+					{
+						bool UpKey = Diff.y < 3.f * Scale3DRate;
+						bool DownKey = Diff.y > -3.f * Scale3DRate;
+						if (m_OverTime > 0.f) {
+							//ランダムに逃げる
+							auto Diff2 = m_RandomMovePoint - m_MovePoint;
+							UpKey = Diff2.y < 3.f * Scale3DRate;
+							DownKey = Diff2.y > -3.f * Scale3DRate;
+						}
+						float prev = m_MovePointAdd.y;
+						if (UpKey && !DownKey) {
+							m_MovePointAdd.y -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							MoveVec.y = -0.3f;
+						}
+						if (DownKey && !UpKey) {
+							m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							MoveVec.y = 0.3f;
+						}
+						m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -12.f * Scale3DRate, 12.f * Scale3DRate);
+						if (prev == m_MovePointAdd.y) {
+							MoveVec.y = 0.0f;
+						}
 					}
-					break;
-				}
-			}
+					//ロール
+					{
+						bool LeftKey = Diff.x < 3.f * Scale3DRate;
+						bool RightKey = Diff.x > -3.f * Scale3DRate;
+						if (m_OverTime > 0.f) {
+							//ランダムに逃げる
+							auto Diff2 = m_RandomMovePoint - m_MovePoint;
+							LeftKey = Diff2.x < 3.f * Scale3DRate;
+							RightKey = Diff2.x > -3.f * Scale3DRate;
+						}
 
-			if (m_Frame >= m_EndFrame) {
+						float prev = m_MovePointAdd.x;
+						if (LeftKey && !RightKey) {
+							m_MovePointAdd.x -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							MoveVec.x = -0.6f;
+						}
+						if (RightKey && !LeftKey) {
+							m_MovePointAdd.x += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							MoveVec.x = 0.6f;
+						}
+						m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -18.f * Scale3DRate, 18.f * Scale3DRate);
+						if (prev == m_MovePointAdd.x) {
+							MoveVec.x = 0.0f;
+						}
+
+						float RollPer = 0.f;
+						RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
+						auto YVec = (EnemyObj()->GetMat() * RailMat.inverse()).yvec();
+						if (YVec.y > 0.f) {
+							RollPer *= YVec.x;
+						}
+						else {
+							RollPer *= (YVec.x > 0.f) ? 1.f : -1.f;
+						}
+						if (prev != m_MovePointAdd.x) {
+							if (LeftKey && !RightKey) {
+								RollPer = Util::deg2rad(-30);
+							}
+							if (RightKey && !LeftKey) {
+								RollPer = Util::deg2rad(30);
+							}
+						}
+
+						Util::Easing(&m_RollPer, RollPer, 0.95f);
+
+						this->m_Roll = Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
+					}
+				}
+				Util::Easing(&m_MoveVec, MoveVec, 0.95f);
+				Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
+
+				Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-GetSpeedMax() * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
+				RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+
+				Util::Matrix3x3 Rot = this->m_Roll * (Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation()));
+				Util::VECTOR3D Pos = RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation());
+
+				EnemyObj()->UpdatePlanePosition(Pos, Rot);
+			}
+				//todo
+				break;
+			case EnemyType::Max:
+			default:
+				break;
+			}
+			if (m_EndFrame != -1.f && m_Frame >= m_EndFrame) {
 				EnemyObj()->SetDamage(EnemyObj()->GetHitPoint());
 			}
 		}
@@ -402,7 +553,6 @@ struct EnemyPop {
 };
 class StageScript {
 	std::vector<EnemyPop>	m_EnemyPop;
-	float					m_Frame{};
 	char		padding[4]{};
 	std::string				m_SetStartEvent {};
 	std::string				m_SetEndEvent{};
@@ -463,11 +613,11 @@ public:
 			}
 			FileStream.Close();
 		}
-		m_Frame = 0.f;
 	}
 	void Update() noexcept {
+		auto& Player = PlayerManager::Instance()->SetPlane();
 		for (size_t loop = 0; loop < m_EnemyPop.size(); ++loop) {
-			if (std::fabsf(m_Frame - static_cast<float>(m_EnemyPop.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
+			if (std::fabsf(Player->GetFrame() - static_cast<float>(m_EnemyPop.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
 				m_EnemyPop.at(loop).m_EnemyScript.SetActive();
 				continue;
 			}
@@ -475,8 +625,6 @@ public:
 				m_EnemyPop.at(loop).m_EnemyScript.Update();
 			}
 		}
-		auto* DrawerMngr = Draw::MainDraw::Instance();
-		m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
 	}
 	void Dispose() noexcept {
 		for (size_t loop = 0; loop < m_EnemyPop.size(); ++loop) {
