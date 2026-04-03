@@ -255,6 +255,16 @@ class EnemyScript {
 	Util::VECTOR3D			m_MoveVec;
 	Util::VECTOR3D			m_RandomMovePoint;
 	char		padding2[4]{};
+
+	float				m_BoostPer{};
+	float				m_StallPer{};
+	float				m_Speed{ 0.f };
+	float				m_SpeedTarget{ 0.f };
+
+	bool				m_OverHeat{ false };
+	bool				m_Stall{ false };
+	char		padding3[6]{};
+
 public:
 	auto& EnemyObj(void) const noexcept { return m_Enemy; }
 	auto& GetEnemyType(void) const noexcept { return m_EnemyType; }
@@ -277,6 +287,9 @@ public:
 		}
 		EnemyObj()->SetupMaxHitPoint(m_HP);
 		m_IsActive = true;
+
+		this->m_SpeedTarget = GetSpeedMax();
+		this->m_Speed = this->m_SpeedTarget;
 	}
 	bool IsActive(void) const noexcept { return m_IsActive; }
 	bool IsAlive(void) const noexcept { return IsActive() && EnemyObj()->GetHitPoint() > 0; }
@@ -451,11 +464,11 @@ public:
 						}
 						float prev = m_MovePointAdd.y;
 						if (UpKey && !DownKey) {
-							m_MovePointAdd.y -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							m_MovePointAdd.y -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 							MoveVec.y = -0.3f;
 						}
 						if (DownKey && !UpKey) {
-							m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 							MoveVec.y = 0.3f;
 						}
 						m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -12.f * Scale3DRate, 12.f * Scale3DRate);
@@ -476,11 +489,11 @@ public:
 
 						float prev = m_MovePointAdd.x;
 						if (LeftKey && !RightKey) {
-							m_MovePointAdd.x -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							m_MovePointAdd.x -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 							MoveVec.x = -0.6f;
 						}
 						if (RightKey && !LeftKey) {
-							m_MovePointAdd.x += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+							m_MovePointAdd.x += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 							MoveVec.x = 0.6f;
 						}
 						m_MovePointAdd.x = std::clamp(m_MovePointAdd.x, -18.f * Scale3DRate, 18.f * Scale3DRate);
@@ -510,11 +523,69 @@ public:
 
 						this->m_Roll = Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
 					}
+					// 進行方向に前進
+					{
+						auto* KeyMngr = Util::KeyParam::Instance();
+						bool AccelKey = !m_OverHeat && (Diff.z < -20.f * Scale3DRate);
+						bool BrakeKey = !m_Stall && (Diff.z > 20.f * Scale3DRate);
+						if (!AccelKey && !BrakeKey) {
+							this->m_SpeedTarget = GetSpeedMax();
+						}
+						if (AccelKey && !BrakeKey) {
+							this->m_SpeedTarget += 5.f * DrawerMngr->GetDeltaTime();
+							m_BoostPer += DrawerMngr->GetDeltaTime() / 3.f;
+						}
+						else {
+							if (!m_OverHeat) {
+								m_BoostPer -= DrawerMngr->GetDeltaTime() / 3.f;
+							}
+							else {
+								m_BoostPer -= DrawerMngr->GetDeltaTime() / 3.f;
+							}
+						}
+						m_BoostPer = std::clamp(m_BoostPer, 0.f, 1.f);
+						if (!m_OverHeat) {
+							if (m_BoostPer == 1.f) {
+								m_OverHeat = true;
+							}
+						}
+						else {
+							if (m_BoostPer == 0.f) {
+								m_OverHeat = false;
+							}
+						}
+
+						if (!AccelKey && BrakeKey) {
+							this->m_SpeedTarget -= 5.f * DrawerMngr->GetDeltaTime();
+							m_StallPer += DrawerMngr->GetDeltaTime() / 5.f;
+						}
+						else {
+							if (!m_Stall) {
+								m_StallPer -= DrawerMngr->GetDeltaTime() / 2.f;
+							}
+							else {
+								m_StallPer -= DrawerMngr->GetDeltaTime() / 2.f;
+							}
+						}
+						m_StallPer = std::clamp(m_StallPer, 0.f, 1.f);
+						if (!m_Stall) {
+							if (m_StallPer == 1.f) {
+								m_Stall = true;
+							}
+						}
+						else {
+							if (m_StallPer == 0.f) {
+								m_Stall = false;
+							}
+						}
+						this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() * 3.f / 4.f, GetSpeedMax() * 3.f / 2.f);
+						Util::Easing(&this->m_Speed, this->m_SpeedTarget, 0.95f);
+					}
 				}
 				Util::Easing(&m_MoveVec, MoveVec, 0.95f);
 				Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
 
-				Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-GetSpeedMax() * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
+				Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
 				RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
 
 				Util::Matrix3x3 Rot = this->m_Roll * (Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation()));
