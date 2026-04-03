@@ -398,6 +398,20 @@ void MainScene::DrawFront_Sub(void) noexcept {
 					,
 					0.f, true);
 				SetDrawBright(255, 255, 255);
+
+				auto& Watch = s.m_EnemyScript.EnemyObj();
+				{
+					int XS = 400.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z),
+						YS = 32.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z);
+					int XP = static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().x) - XS / 2,
+						YP = static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().y)
+						+ 200.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z);
+					int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetHitPointPer())), 0, 255);
+					int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetHitPointPer())), 0, 255);
+					DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Black, true);
+					DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * Watch->GetHitPointPer()), YP + YS, GetColor(R, G, 0), true);
+				}
+
 			}
 		}
 	}
