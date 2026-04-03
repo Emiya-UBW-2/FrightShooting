@@ -57,17 +57,17 @@
 		}
 		,
 		{
-			"Name":"String0",
-			"Type":"String",
+			"Name":"Graph0",
+			"Type":"Image",
 			"OfsNoRad":[160,0],
 			"Ofs":[0,0],
-			"Size":[100,100],
+			"Size":[28,28],
 			"Rad":0,
 			"Scale":[1.0,1.0],
 			"Center":[0.5,0.5],
-			"BaseColor":[0,255,0],
-			"IsHitCheck":false,
-			"FontID":0
+			"BaseColor":[255,255,255],
+			"Image":"data/Image/Cross.png",
+			"IsHitCheck":true
 		}
 		,
 		{

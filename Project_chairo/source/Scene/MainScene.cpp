@@ -333,8 +333,8 @@ void MainScene::Update_Sub(void) noexcept {
 		for (auto& s : m_StageScript.EnemyPop()) {
 			if (s.m_EnemyScript.IsActive() && s.m_EnemyScript.IsAlive()) {
 				if (s.m_EnemyScript.GetEnemyType()== EnemyType::AI) {
-					EyeMat = Util::Matrix3x3::RotVec2(Util::VECTOR3D::back(), (s.m_EnemyScript.EnemyObj()->GetMat().pos() - Watch->GetEyeMatrix().pos()).normalized());
-					CamUp = Util::VECTOR3D::up();
+					//EyeMat = Util::Matrix3x3::RotVec2(Util::VECTOR3D::back(), (s.m_EnemyScript.EnemyObj()->GetMat().pos() - Watch->GetEyeMatrix().pos()).normalized());
+					//CamUp = Util::VECTOR3D::up();
 					break;
 				}
 			}
@@ -401,11 +401,11 @@ void MainScene::DrawFront_Sub(void) noexcept {
 
 				auto& Watch = s.m_EnemyScript.EnemyObj();
 				{
-					int XS = 400.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z),
-						YS = 32.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z);
+					int XS = static_cast<int>(400.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z)),
+						YS = static_cast<int>(32.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z));
 					int XP = static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().x) - XS / 2,
 						YP = static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().y)
-						+ 200.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z);
+						+ static_cast<int>(200.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z));
 					int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetHitPointPer())), 0, 255);
 					int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetHitPointPer())), 0, 255);
 					DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * Watch->GetHitPointPer()), YP + YS, GetColor(R, G, 0), true);

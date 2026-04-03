@@ -525,7 +525,6 @@ public:
 					}
 					// 進行方向に前進
 					{
-						auto* KeyMngr = Util::KeyParam::Instance();
 						bool AccelKey = !m_OverHeat && (Diff.z < -20.f * Scale3DRate);
 						bool BrakeKey = !m_Stall && (Diff.z > 20.f * Scale3DRate);
 						if (!AccelKey && !BrakeKey) {
@@ -624,7 +623,7 @@ struct EnemyPop {
 };
 class StageScript {
 	std::vector<EnemyPop>	m_EnemyPop;
-	char		padding[4]{};
+	//char		padding[4]{};
 	std::string				m_SetStartEvent {};
 	std::string				m_SetEndEvent{};
 	std::string				m_NextStage{};

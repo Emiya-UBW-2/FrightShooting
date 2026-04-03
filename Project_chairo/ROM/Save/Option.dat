@@ -1,10 +1,10 @@
-VSync=False
+﻿VSync=False
 FPSLimit=1000
 WindowMode=Window
 GraphicsPreset=Ultra
 DrawScale=100
 ObjectLevel=High
-DoF=False
+DoF=True
 Bloom=True
 Shadow=Low
 SSAO=True
