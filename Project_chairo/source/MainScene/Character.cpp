@@ -293,14 +293,10 @@ void MyPlane::Update_Sub(void) noexcept {
 			Util::Matrix4x4::Mtrans(m_MovePoint * -0.5f) * 
 			EyeMat;
 
+		m_RePos = GetMat().pos();
 		SetMatrix(
 			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
 			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
-		//ヒット判定
-		auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), GetMat().pos() + (PosAfter - PosBefore));
-		if (Ret.HitFlag == TRUE) {
-			SetDamageOn(10);
-		}
 	}
 	//アニメアップデート
 	{

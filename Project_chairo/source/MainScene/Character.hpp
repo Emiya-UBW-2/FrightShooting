@@ -80,6 +80,8 @@ class MyPlane :public BaseObject {
 	Util::VECTOR3D			m_MovePointAdd;
 	Util::VECTOR3D			m_MoveVec;
 
+	Util::VECTOR3D			m_RePos;
+
 	int						m_HitPoint{ m_HitPointMax };
 	static constexpr int	m_HitPointMax{ 100 };
 
@@ -126,6 +128,8 @@ public:
 	const auto& IsOverHeat(void) const noexcept { return m_OverHeat; }
 	const auto& GetStallPer(void) const noexcept { return m_StallPer; }
 	const auto& IsStall(void) const noexcept { return m_Stall; }
+
+	const auto& GetRePos(void) const noexcept { return m_RePos; }
 	
 	bool			IsDraw() const {
 		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return false; }
@@ -148,6 +152,8 @@ public:
 			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
 			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
 
+		m_RePos = GetMat().pos();
+
 		m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
 		m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
 		m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
@@ -164,7 +170,7 @@ public:
 	}
 	void			SetDamageOn(int damage) noexcept {
 		if (m_DamageInterval != 0.f) { return; }
-		m_DamageInterval = 1.0f;
+		m_DamageInterval = 3.0f;
 		DamageID = 0;
 		SetHitPoint(m_HitPoint - damage);
 	}

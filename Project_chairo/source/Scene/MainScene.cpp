@@ -53,7 +53,17 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
 	auto& Player = PlayerManager::Instance()->SetPlane();
-	Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f*Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
+	switch (GameRule::Instance()->GetGameType()) {
+	case GameType::Normal:
+		Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f * Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
+		break;
+	case GameType::AllRange:
+		Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 200.f * Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
+		break;
+	case GameType::Max:
+	default:
+		break;
+	}
 	Player->SetDamageOff();
 	//
 	this->m_Exit = false;
@@ -222,9 +232,48 @@ void MainScene::Update_Sub(void) noexcept {
 	//更新
 	if (this->m_Fade <= 1.f) {
 		m_StageScript.Update();
-		//ホーミング対象を探す
-		for (auto& s : m_StageScript.EnemyPop()) {
-			if (s.m_EnemyScript.IsAlive()) {
+		//
+		{
+			//ヒット判定
+			auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
+			if (Ret.HitFlag == TRUE) {
+				Player->SetDamageOn(10);
+			}
+			for (auto& s : m_StageScript.EnemyPop()) {
+				if (s.m_EnemyScript.IsAlive()) {
+					bool IsHit = false;
+					Util::VECTOR3D Pos;
+					switch (s.m_EnemyScript.GetEnemyType()) {
+					case EnemyType::BOSS:
+					{
+						auto Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
+						if (Res.HitFlag == TRUE) {
+							IsHit = true;
+							Pos = Res.HitPosition;
+						}
+					}
+					break;
+					case EnemyType::Normal:
+					case EnemyType::AI:
+					case EnemyType::Max:
+					default:
+					{
+						SEGMENT_SEGMENT_RESULT Result;
+						Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
+							Player->GetRePos(), Player->GetMat().pos(), &Result);
+						if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+							IsHit = true;
+							Pos = Result.SegB_MinDist_Pos;
+						}
+					}
+					break;
+					}
+
+					if (IsHit) {
+						Player->SetDamageOn(10);
+						break;
+					}
+				}
 			}
 		}
 		//
@@ -234,13 +283,37 @@ void MainScene::Update_Sub(void) noexcept {
 					for (auto& s : m_StageScript.EnemyPop()) {
 						//敵被弾
 						if (s.m_EnemyScript.IsActive()) {
+							bool IsHit = false;
+							Util::VECTOR3D Pos;
+							switch (s.m_EnemyScript.GetEnemyType()) {
+							case EnemyType::BOSS:
+							{
+								auto Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(a->GetMat().pos() - a->GetVector(), a->GetMat().pos());
+								if (Res.HitFlag == TRUE) {
+									IsHit = true;
+									Pos = Res.HitPosition;
+								}
+							}
+							break;
+							case EnemyType::Normal:
+							case EnemyType::AI:
+							case EnemyType::Max:
+							default:
+							{
+								SEGMENT_SEGMENT_RESULT Result;
+								Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
+									a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+								if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+									IsHit = true;
+									Pos = Result.SegB_MinDist_Pos;
+								}
+							}
+							break;
+							}
 
-							SEGMENT_SEGMENT_RESULT Result;
-							Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
-								a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-							if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
-								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
-								a->SetHit(Result.SegB_MinDist_Pos);
+							if (IsHit) {
+								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
+								a->SetHit(Pos);
 								s.m_EnemyScript.EnemyObj()->SetDamage(1);
 								break;
 							}
@@ -306,12 +379,37 @@ void MainScene::Update_Sub(void) noexcept {
 					//ヒット判定
 					for (auto& s : m_StageScript.EnemyPop()) {
 						if (s.m_EnemyScript.IsActive()) {
-							SEGMENT_SEGMENT_RESULT Result;
-							Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
-								a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-							if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
-								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
-								a->SetHit(Result.SegB_MinDist_Pos);
+							bool IsHit = false;
+							Util::VECTOR3D Pos;
+							switch (s.m_EnemyScript.GetEnemyType()) {
+							case EnemyType::BOSS:
+							{
+								auto Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(a->GetMat().pos() - a->GetVector(), a->GetMat().pos());
+								if (Res.HitFlag == TRUE) {
+									IsHit = true;
+									Pos = Res.HitPosition;
+								}
+							}
+							break;
+							case EnemyType::Normal:
+							case EnemyType::AI:
+							case EnemyType::Max:
+							default:
+							{
+								SEGMENT_SEGMENT_RESULT Result;
+								Util::GetSegmenttoSegment(s.m_EnemyScript.EnemyObj()->GetMat().pos(), s.m_EnemyScript.EnemyObj()->GetMat().pos(),
+									a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+								if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+									IsHit = true;
+									Pos = Result.SegB_MinDist_Pos;
+								}
+							}
+							break;
+							}
+
+							if (IsHit) {
+								Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
+								a->SetHit(Pos);
 								s.m_EnemyScript.EnemyObj()->SetDamage(1);
 								break;
 							}

@@ -49,6 +49,8 @@ class Enemy :public BaseObject {
 
 	LineDraw				m_LineDraw3;
 	LineDraw				m_LineDraw4;
+
+	Draw::MV1				m_ColModel{};
 public:
 	Enemy(void) noexcept {}
 	Enemy(const Enemy&) = delete;
@@ -63,6 +65,7 @@ public:
 	const auto&		GetAimPoint2D(void) const noexcept { return m_AimPoint2D; }
 	const auto&		IsDrawAimPoint(void) const noexcept { return m_IsDrawAimPoint; }
 
+	auto&			SetColModel(void) noexcept { return m_ColModel; }
 
 	int				GetHitPoint(void) const noexcept { return m_HP; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HP) / static_cast<float>(m_HPMax); }
@@ -105,11 +108,20 @@ public:
 	auto			GetRailMat(void) const noexcept { return RailMat; }
 public:
 	void Load_Sub(void) noexcept override {
+		std::string Path = GetFilePath() + "col.mv1";
+		if (File::IsFileExist(Path.c_str())) {
+			Draw::MV1::Load(Path, &m_ColModel, DX_LOADMODEL_PHYSICS_DISABLE);
+			m_ColModel.SetupCollInfo();
+		}
 	}
 	void Init_Sub(void) noexcept override {
 	}
 	void Update_Sub(void) noexcept override {
 		SetMatrix(RailMat);
+		if (m_ColModel.IsActive()) {
+			m_ColModel.SetMatrix(MyMat);
+			m_ColModel.RefreshCollInfo();
+		}
 		//アニメアップデート
 		{
 			for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
@@ -201,6 +213,7 @@ public:
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
+		m_ColModel.Dispose();
 		SetModel().Dispose();
 	}
 };
@@ -208,11 +221,13 @@ public:
 enum class EnemyType : size_t {
 	Normal,
 	AI,
+	BOSS,
 	Max,
 };
 static const char* EnemyTypeName[static_cast<int>(EnemyType::Max)] = {
 	"Normal",
 	"AI",
+	"BOSS",
 };
 
 struct EnemyMove {
@@ -273,6 +288,7 @@ public:
 		ObjectManager::Instance()->InitObject(EnemyObj(), EnemyObj(), m_ObjPath);
 		switch (m_EnemyType) {
 		case EnemyType::Normal:
+		case EnemyType::BOSS:
 			EnemyObj()->SetPlanePosition(m_EnemyMove.at(0).m_Pos, m_EnemyMove.at(0).m_Rot);
 			break;
 		case EnemyType::AI:
@@ -397,6 +413,7 @@ public:
 		if (EnemyObj()->GetHitPoint() > 0) {
 			switch (m_EnemyType) {
 			case EnemyType::Normal:
+			case EnemyType::BOSS:
 				for (size_t loop = 1; loop < m_EnemyMove.size(); ++loop) {
 					if (static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame) <= m_Frame && m_Frame <= static_cast<float>(m_EnemyMove.at(loop).m_Frame)) {
 						float Per = (m_Frame - static_cast<float>(m_EnemyMove.at(loop - 1).m_Frame)) / static_cast<float>(m_EnemyMove.at(loop).m_Frame - m_EnemyMove.at(loop - 1).m_Frame);

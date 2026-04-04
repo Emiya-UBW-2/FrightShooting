@@ -53,6 +53,9 @@ protected:
 
 		auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 		KeyGuideParts->SetGuideFlip();
+
+		//タイトルに戻ったらHPもリセット
+		GameRule::Instance()->SetHP(100);
 	}
 	void Update_Sub(void) noexcept override {
 		auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
