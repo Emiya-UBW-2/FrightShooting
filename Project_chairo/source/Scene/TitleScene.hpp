@@ -16,6 +16,8 @@
 
 #include "../Draw/MainDraw.hpp"
 
+#include "../MainScene/GameRule.hpp"
+
 class TitleScene : public Util::SceneBase {
 	OptionWindow	m_OptionWindow;
 	TitleUI			m_TitleUI;

@@ -109,6 +109,7 @@ class MyPlane :public BaseObject {
 
 	LineDraw				m_LineDraw3;
 	LineDraw				m_LineDraw4;
+	char		padding4[4]{};
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
