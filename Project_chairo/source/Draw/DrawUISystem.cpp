@@ -131,50 +131,50 @@ namespace Draw {
 		}
 		break;
 		case PartsType::NineSlice:
-		{
-			DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.GetA());
-			DxLib::SetDrawBright(Color.GetR(), Color.GetG(), Color.GetB());
-			Draw9SliceGraph(
-				Util::VECTOR2D::vget(x1, y1), Util::VECTOR2D::vget(x2, y2),
-				this->m_Min, this->m_Max,
-				Util::VECTOR2D::vget(1.f, 1.f) - this->m_Now.Center,
-				Rad,
-				this->m_ImageHandle->get(),
-				true,
-				false
-			);
-			DxLib::SetDrawBright(255, 255, 255);
-			DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-		}
-		break;
-		case PartsType::Image:
-		{
-			DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.GetA());
-			DxLib::SetDrawBright(Color.GetR(), Color.GetG(), Color.GetB());
-
-			if (Rad == 0.f) {
-				DxLib::DrawExtendGraph(
-					static_cast<int>(x1), static_cast<int>(y1),
-					static_cast<int>(x2), static_cast<int>(y2),
+			if (this->m_ImageHandle) {
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.GetA());
+				DxLib::SetDrawBright(Color.GetR(), Color.GetG(), Color.GetB());
+				Draw9SliceGraph(
+					Util::VECTOR2D::vget(x1, y1), Util::VECTOR2D::vget(x2, y2),
+					this->m_Min, this->m_Max,
+					Util::VECTOR2D::vget(1.f, 1.f) - this->m_Now.Center,
+					Rad,
 					this->m_ImageHandle->get(),
-					true
+					true,
+					false
 				);
+				DxLib::SetDrawBright(255, 255, 255);
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 			}
-			else {
-				/*
-				DxLib::DrawRotaGraph3(
-					static_cast<int>((x2 + x1) / 2.f), static_cast<int>((y2 + y1) / 2.f),
-					static_cast<int>((x2 + x1) / 2.f), static_cast<int>((y2 + y1) / 2.f),
-					scale.x, scale.y, Rad, this->ImageHandle->get(), true);
-				//*/
-				DxLib::DrawRotaGraphFast(
-					static_cast<int>((x2 + x1) / 2.f), static_cast<int>((y2 + y1) / 2.f),
-					scale.y, Rad, this->m_ImageHandle->get(), true);
+			break;
+		case PartsType::Image:
+			if (this->m_ImageHandle) {
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.GetA());
+				DxLib::SetDrawBright(Color.GetR(), Color.GetG(), Color.GetB());
+
+				if (Rad == 0.f) {
+					DxLib::DrawExtendGraph(
+						static_cast<int>(x1), static_cast<int>(y1),
+						static_cast<int>(x2), static_cast<int>(y2),
+						this->m_ImageHandle->get(),
+						true
+					);
+				}
+				else {
+					/*
+					DxLib::DrawRotaGraph3(
+						static_cast<int>((x2 + x1) / 2.f), static_cast<int>((y2 + y1) / 2.f),
+						static_cast<int>((x2 + x1) / 2.f), static_cast<int>((y2 + y1) / 2.f),
+						scale.x, scale.y, Rad, this->ImageHandle->get(), true);
+					//*/
+					DxLib::DrawRotaGraphFast(
+						static_cast<int>((x2 + x1) / 2.f), static_cast<int>((y2 + y1) / 2.f),
+						scale.y, Rad, this->m_ImageHandle->get(), true);
+				}
+				DxLib::SetDrawBright(255, 255, 255);
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 			}
-			DxLib::SetDrawBright(255, 255, 255);
-			DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-		}
-		break;
+			break;
 		case PartsType::String:
 		{
 			DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, Color.GetA());
