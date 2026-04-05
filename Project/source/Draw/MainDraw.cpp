@@ -106,6 +106,10 @@ namespace Draw {
 			int prevX = this->m_WindowDrawWidth;
 			int prevY = this->m_WindowDrawHeight;
 			DxLib::GetWindowSize(&this->m_WindowDrawWidth, &this->m_WindowDrawHeight);
+
+			this->m_WindowDrawWidth = this->m_WindowDrawWidth * BaseDPI / GetDPI();
+			this->m_WindowDrawHeight = this->m_WindowDrawHeight * BaseDPI / GetDPI();
+
 			if ((prevX |= this->m_WindowDrawWidth) || (prevY |= this->m_WindowDrawHeight)) {
 				int WidthT = this->m_WindowDrawWidth;
 				int HeightT = this->m_WindowDrawHeight;
@@ -115,8 +119,8 @@ namespace Draw {
 				else {// 16:9より横長
 					WidthT = (HeightT * GetDispWidth() / GetDispHeight());
 				}
-				this->m_WindowWidth = WidthT * GetDPI() / BaseDPI;
-				this->m_WindowHeight = HeightT * GetDPI() / BaseDPI;
+				this->m_WindowWidth = WidthT;
+				this->m_WindowHeight = HeightT;
 			}
 		}
 		if (this->m_WindowWidth != 0 && this->m_WindowHeight != 0) {
