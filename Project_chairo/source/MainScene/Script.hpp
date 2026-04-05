@@ -661,13 +661,13 @@ public:
 						case GameType::Normal:
 							if (Diff.z < 0.f) {
 								m_OverTime = 0.f;
-								m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
+								m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(12.f * Scale3DRate), 0.f);
 							}
 							else {
 								m_OverTime += DrawerMngr->GetDeltaTime();
 								if (m_OverTime > 1.f) {
 									m_OverTime -= 1.f;
-									m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
+									m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(12.f * Scale3DRate), 0.f);
 								}
 							}
 							UpKey = Diff.y < 3.f * Scale3DRate;

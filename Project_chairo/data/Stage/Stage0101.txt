@@ -23,7 +23,5 @@ SetEnemy(1320,Tank0005);
 SetEnemy(1410,Tank0006);
 SetEnemy(1420,Tank0007);
 
-SetEnemy(1700,Enemy0009);
-
 
 GoNextStageNormal(Stage0102);//最後の敵が倒れたら次ステージに移る

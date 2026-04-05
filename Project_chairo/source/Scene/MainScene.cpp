@@ -102,6 +102,7 @@ void MainScene::Init_Sub(void) noexcept {
 
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->Play(DX_PLAYTYPE_LOOP, TRUE);
 
+	EyeMatR = Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0));
 }
 void MainScene::Update_Sub(void) noexcept {
 	if (m_NextEvent) {
