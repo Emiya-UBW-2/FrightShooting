@@ -43,11 +43,11 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 	"DamagePoint3",
 };
 
-struct AimPointParam {
-	Util::VECTOR3D	first{};
-	bool	second{};
+struct DamagePointParam {
+	Util::VECTOR3D			Pos2D{};
+	bool					IsDraw{};
 	char		padding[3]{};
-	int		third{};
+	int						frame{};
 	int						m_HP{ };
 	int						m_HPMax{ 1 };
 
@@ -69,7 +69,7 @@ class Enemy :public BaseObject {
 	Util::VECTOR3D				m_Gun1Vec;
 	Util::VECTOR3D				m_Gun2Vec;
 
-	std::array<AimPointParam, 3>	m_AimPoint;
+	std::array<DamagePointParam, 3>	m_DamagePoint;
 	//char		padding[3]{};
 
 	Util::Matrix4x4			RailMat;
@@ -93,8 +93,8 @@ private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(EnemyFrame::Max); }
 	const char*		GetFrameStr(int id) noexcept override { return EnemyFrameName[id]; }
 public:
-	const auto&		GetAimPoint(void) const noexcept { return m_AimPoint; }
-	auto&			SetAimPoint(void) noexcept { return m_AimPoint; }
+	const auto&		GetDamagePoint(void) const noexcept { return m_DamagePoint; }
+	auto&			SetDamagePoint(void) noexcept { return m_DamagePoint; }
 
 	auto&			SetColModel(void) noexcept { return m_ColModel; }
 
@@ -117,8 +117,8 @@ public:
 	void			UpdatePlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 	}
-	void			SetAmmo(bool IsHoming, Util::Matrix3x3 Mat) noexcept {
-		EffectPool::Instance()->Shot(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()));
+	void			SetAmmo(bool IsHoming, Util::Matrix3x3 Mat, float Scale) noexcept {
+		EffectPool::Instance()->Shot(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()), Scale);
 		AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()),
 			(2.5f) * Scale3DRate, GetObjectID());
 
@@ -152,7 +152,7 @@ public:
 			SetModel().FlipAnimAll();
 		}
 		//砲塔旋回
-		if (GetAimPoint().at(0).GetHitPoint() > 0) {
+		if (m_DamagePoint.at(0).GetHitPoint() > 0) {//todo:ちょっと強引
 			if (HaveFrame(static_cast<int>(EnemyFrame::Gun1LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun1UD))) {
 				auto& Player = PlayerManager::Instance()->SetPlane();
 				Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
@@ -177,7 +177,7 @@ public:
 				);
 			}
 		}
-		if (GetAimPoint().at(1).GetHitPoint() > 0) {
+		if (m_DamagePoint.at(1).GetHitPoint() > 0) {//todo:ちょっと強引
 			if (HaveFrame(static_cast<int>(EnemyFrame::Gun2LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun2UD))) {
 				auto& Player = PlayerManager::Instance()->SetPlane();
 				Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
@@ -216,8 +216,9 @@ public:
 			m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle2)).pos(), 0.05f);
 		}
 
-		for (auto& a : this->m_AimPoint) {
-			a.second = false;
+		for (auto& a : this->m_DamagePoint) {
+			a.IsDraw = false;
+			a.frame = InvalidID;
 		}
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
@@ -227,41 +228,45 @@ public:
 		{
 			auto Pos2D = ConvWorldPosToScreenPos(GetMat().pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				this->m_AimPoint.at(0).first.x = Pos2D.x;
-				this->m_AimPoint.at(0).first.y = Pos2D.y;
-				this->m_AimPoint.at(0).first.z = (GetMat().pos()-GetCameraPosition()).magnitude();
-				this->m_AimPoint.at(0).second = true;
-				this->m_AimPoint.at(0).third = InvalidID;
+				auto& aim = this->m_DamagePoint.at(0);
+				aim.Pos2D.x = Pos2D.x;
+				aim.Pos2D.y = Pos2D.y;
+				aim.Pos2D.z = (GetMat().pos()-GetCameraPosition()).magnitude();
+				aim.IsDraw = true;
+				aim.frame = InvalidID;
 			}
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint1))) {
 			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				this->m_AimPoint.at(0).first.x = Pos2D.x;
-				this->m_AimPoint.at(0).first.y = Pos2D.y;
-				this->m_AimPoint.at(0).first.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos() - GetCameraPosition()).magnitude();
-				this->m_AimPoint.at(0).second = true;
-				this->m_AimPoint.at(0).third = static_cast<int>(EnemyFrame::DamagePoint1);
+				auto& aim = this->m_DamagePoint.at(0);
+				aim.Pos2D.x = Pos2D.x;
+				aim.Pos2D.y = Pos2D.y;
+				aim.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos() - GetCameraPosition()).magnitude();
+				aim.IsDraw = true;
+				aim.frame = static_cast<int>(EnemyFrame::DamagePoint1);
 			}
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint2))) {
 			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				this->m_AimPoint.at(1).first.x = Pos2D.x;
-				this->m_AimPoint.at(1).first.y = Pos2D.y;
-				this->m_AimPoint.at(1).first.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos() - GetCameraPosition()).magnitude();
-				this->m_AimPoint.at(1).second = true;
-				this->m_AimPoint.at(1).third = static_cast<int>(EnemyFrame::DamagePoint2);
+				auto& aim = this->m_DamagePoint.at(1);
+				aim.Pos2D.x = Pos2D.x;
+				aim.Pos2D.y = Pos2D.y;
+				aim.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos() - GetCameraPosition()).magnitude();
+				aim.IsDraw = true;
+				aim.frame = static_cast<int>(EnemyFrame::DamagePoint2);
 			}
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint3))) {
 			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				this->m_AimPoint.at(2).first.x = Pos2D.x;
-				this->m_AimPoint.at(2).first.y = Pos2D.y;
-				this->m_AimPoint.at(2).first.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos() - GetCameraPosition()).magnitude();
-				this->m_AimPoint.at(2).second = true;
-				this->m_AimPoint.at(2).third = static_cast<int>(EnemyFrame::DamagePoint3);
+				auto& aim = this->m_DamagePoint.at(2);
+				aim.Pos2D.x = Pos2D.x;
+				aim.Pos2D.y = Pos2D.y;
+				aim.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos() - GetCameraPosition()).magnitude();
+				aim.IsDraw = true;
+				aim.frame = static_cast<int>(EnemyFrame::DamagePoint3);
 			}
 		}
 	}
@@ -325,8 +330,11 @@ enum class AmmoMoveType : size_t {
 };
 struct EnemyAmmo {
 	int				m_Frame{};
+	float			m_Scale{ 1.f };
 	Util::Matrix3x3	m_Rot{};
 	AmmoMoveType	m_AmmoMoveType{};
+	bool			m_IsPlayed{ false };
+	char		padding[7]{};
 };
 class EnemyScript {
 	bool					m_IsActive{ false };
@@ -386,23 +394,23 @@ public:
 		default:
 			break;
 		}
-		if (EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint1))) {
-			EnemyObj()->SetAimPoint().at(0).SetupMaxHitPoint(m_HP1);
+		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(0).frame)) {
+			EnemyObj()->SetDamagePoint().at(0).SetupMaxHitPoint(m_HP1);
 		}
 		else {
-			EnemyObj()->SetAimPoint().at(0).SetupMaxHitPoint(m_HP1);
+			EnemyObj()->SetDamagePoint().at(0).SetupMaxHitPoint(m_HP1);
 		}
-		if (EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint2))) {
-			EnemyObj()->SetAimPoint().at(1).SetupMaxHitPoint(m_HP2);
-		}
-		else {
-			EnemyObj()->SetAimPoint().at(2).SetupMaxHitPoint(0);
-		}
-		if (EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint3))) {
-			EnemyObj()->SetAimPoint().at(2).SetupMaxHitPoint(m_HP3);
+		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(1).frame)) {
+			EnemyObj()->SetDamagePoint().at(1).SetupMaxHitPoint(m_HP2);
 		}
 		else {
-			EnemyObj()->SetAimPoint().at(2).SetupMaxHitPoint(0);
+			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(0);
+		}
+		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(2).frame)) {
+			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(m_HP3);
+		}
+		else {
+			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(0);
 		}
 
 		m_IsActive = true;
@@ -413,7 +421,7 @@ public:
 	bool IsActive(void) const noexcept { return m_IsActive; }
 	bool IsAlive(void) const noexcept {
 		if (IsActive()) {
-			for (auto& aim : EnemyObj()->GetAimPoint()) {
+			for (auto& aim : EnemyObj()->GetDamagePoint()) {
 				if (aim.GetHitPoint() > 0) {
 					return true;
 				}
@@ -543,21 +551,27 @@ public:
 					}
 				}
 				for (size_t loop = 0; loop < m_EnemyAmmo.size(); ++loop) {
-					if (std::fabsf(m_Frame - static_cast<float>(m_EnemyAmmo.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
+					if (m_Frame > static_cast<float>(m_EnemyAmmo.at(loop).m_Frame)) {
+						if (!m_EnemyAmmo.at(loop).m_IsPlayed) {
+							m_EnemyAmmo.at(loop).m_IsPlayed = true;
+						}
+						else {
+							continue;
+						}
 						switch (m_EnemyAmmo.at(loop).m_AmmoMoveType) {
 						case AmmoMoveType::Fixed:
-							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot, m_EnemyAmmo.at(loop).m_Scale);
 							break;
 						case AmmoMoveType::Target:
 						{
 							auto& Player = PlayerManager::Instance()->SetPlane();
 							Util::VECTOR3D Pos = Player->GetMat().pos() + Player->GetMat().zvec() * -(10.f * Scale3DRate);//todo:みこし射撃
 							Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetRailMat().pos() - Pos).normalized());
-							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot);
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot, m_EnemyAmmo.at(loop).m_Scale);
 						}
 						break;
 						case AmmoMoveType::Homing:
-							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot);
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot, m_EnemyAmmo.at(loop).m_Scale);
 							break;
 						default:
 							break;
@@ -727,14 +741,13 @@ public:
 
 				EnemyObj()->UpdatePlanePosition(Pos, Rot);
 			}
-				//todo
-				break;
+			break;
 			case EnemyType::Max:
 			default:
 				break;
 			}
 			if (m_EndFrame != -1.f && m_Frame >= m_EndFrame) {
-				for (auto& aim : EnemyObj()->SetAimPoint()) {
+				for (auto& aim : EnemyObj()->SetDamagePoint()) {
 					aim.SetDamage(aim.GetHitPoint());
 				}
 			}
@@ -756,8 +769,9 @@ public:
 };
 
 struct EnemyPop {
+	bool			m_IsPlayed{ false };
+	char		padding[3]{};
 	int				m_Frame{};
-	char		padding[4]{};
 	EnemyScript		m_EnemyScript;
 };
 class StageScript {
@@ -826,7 +840,13 @@ public:
 	void Update() noexcept {
 		auto& Player = PlayerManager::Instance()->SetPlane();
 		for (size_t loop = 0; loop < m_EnemyPop.size(); ++loop) {
-			if (std::fabsf(Player->GetFrame() - static_cast<float>(m_EnemyPop.at(loop).m_Frame)) < 1.f) {//todo:等速以外の場合
+					if (Player->GetFrame() > static_cast<float>(m_EnemyPop.at(loop).m_Frame)) {
+						if (!m_EnemyPop.at(loop).m_IsPlayed) {
+							m_EnemyPop.at(loop).m_IsPlayed = true;
+						}
+						else {
+							continue;
+						}
 				m_EnemyPop.at(loop).m_EnemyScript.SetActive();
 				continue;
 			}

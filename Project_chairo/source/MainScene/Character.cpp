@@ -321,7 +321,7 @@ void MyPlane::Update_Sub(void) noexcept {
 		}
 		else {
 			if (m_ShootTimer == 0.f) {
-				EffectPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)));
+				EffectPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 1.f);
 				AmmoPool::Instance()->ShotAmmo(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f, GetObjectID());
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 200.f * Scale3DRate);
 				m_ShootTimer = 0.1f;

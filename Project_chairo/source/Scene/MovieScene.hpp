@@ -288,7 +288,7 @@ public:
 						b.m_MovieObj->SetModel().FlipAnimAll();
 					}
 				}
-				if (std::fabsf(m_Frame - static_cast<float>(b.m_StartFrame)) < 1.f) {//todo:等速以外の場合
+				if (std::fabsf(m_Frame - static_cast<float>(b.m_StartFrame)) < 1.f) {//等速以外の場合2回実施される可能性があります
 					b.m_MovieObj->SetPlanePosition(Util::Lerp(b.m_Mat, b.m_MatEnd, Per));
 				}
 			}

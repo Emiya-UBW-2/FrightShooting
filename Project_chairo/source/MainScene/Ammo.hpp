@@ -75,7 +75,7 @@ public:
 			GetMat().pos().get(),
 			0.5f,
 			0.5f,
-			0.8f * Scale3DRate,
+			1.8f * Scale3DRate,
 			Util::deg2rad(0.f),
 			this->m_SmokeGraph->get(),
 			true

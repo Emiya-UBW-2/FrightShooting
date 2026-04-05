@@ -37,15 +37,17 @@ private:
 	float						m_FireOpticalPer{};
 	float						m_SmokePer{};
 	float						AnimPer = 0.f;
-	char		padding[4]{};
+	float						m_Scale{};
+	//char		padding[4]{};
 public:
 	void SetMuzzleMat(const Util::Matrix4x4& Muzzle) noexcept {
 		this->m_SmokeMat = Muzzle;
 	}
-	void Set(const Util::Matrix4x4& Muzzle) noexcept {
+	void Set(const Util::Matrix4x4& Muzzle, float Scale) noexcept {
 		this->m_FireMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(GetRand(90)));
 		this->m_SmokeMat = Muzzle;
 		this->m_SmokePer = 0.f;
+		this->m_Scale = Scale;
 		AnimPer = 0.f;
 	}
 public:
@@ -65,7 +67,7 @@ public:
 			this->m_FireOpticalPer = Util::Lerp(1.f, 0.f, Util::GetPer01(0.3f, 1.f, AnimPer));
 		}
 		SetMatrix(
-			Util::Matrix4x4::GetScale(AnimPer * 3.f) *
+			Util::Matrix4x4::GetScale(AnimPer * 3.f * m_Scale) *
 			this->m_FireMat *
 			this->m_SmokeMat
 		);
@@ -122,8 +124,8 @@ private:
 	EffectPool& operator=(EffectPool&&) = delete;
 	virtual ~EffectPool(void) noexcept { Dispose(); }
 public:
-	void			Shot(Util::Matrix4x4 Mat) noexcept {
-		this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat);
+	void			Shot(Util::Matrix4x4 Mat, float Scale) noexcept {
+		this->m_ShotEffect.at(static_cast<size_t>(this->m_ShotEffectID))->Set(Mat, Scale);
 		++m_ShotEffectID %= static_cast<int>(this->m_ShotEffect.size());
 	}
 public:
