@@ -1,0 +1,4 @@
+SetModel(data/model/Plane2/);
+HitPoint1(3);
+Radius1(2.0);
+Type(AI);

@@ -141,6 +141,8 @@ public:
 		this->m_SmokeGraph = Draw::GraphPool::Instance()->Get("data/Image/Smoke.png")->Get();
 	}
 	void Init_Sub(void) noexcept override {
+		m_Scale = 10.f;
+		this->m_SmokePer = 10.f;
 	}
 	void Update_Sub(void) noexcept override {
 		auto* DrawerMngr = Draw::MainDraw::Instance();

@@ -139,11 +139,13 @@ public:
 			EffectPool::Instance()->Cannon(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos));
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 200.f * Scale3DRate);
 		}
-		AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos),
-			(2.5f) * Scale3DRate, GetObjectID(), Scale);
-
 		if (IsHoming) {
-			//TODO:ホーミング
+			AmmoPool::Instance()->ShotBomb(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos),
+				(50.f) * Scale3DRate, GetObjectID());
+		}
+		else {
+			AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos),
+				(2.5f) * Scale3DRate, GetObjectID(), Scale);
 		}
 	}
 	auto			GetRailMat(void) const noexcept { return RailMat; }
@@ -400,6 +402,15 @@ class EnemyScript {
 	bool				m_Stall{ false };
 	char		padding3[6]{};
 
+	float					m_RotRail{ 0.f };
+	float					m_OutsidePer{ };
+	//char		padding3[4]{};
+
+	Util::Matrix4x4			m_OutsideMatBefore;
+	Util::Matrix4x4			m_OutsideMatAfter;
+
+	float				m_ShootTimer{};
+	char		padding5[4]{};
 public:
 	auto& EnemyObj(void) const noexcept { return m_Enemy; }
 	auto& GetEnemyType(void) const noexcept { return m_EnemyType; }
@@ -640,29 +651,60 @@ public:
 
 					auto Diff = Player->GetMovePoint() - m_MovePoint;
 					Diff.z = (Player->GetMat().pos() - EnemyObj()->GetMat().pos()).z;
+
+					bool UpKey = false;
+					bool DownKey = false;
+					bool LeftKey = false;
+					bool RightKey = false;
 					{
-						if (Diff.z < 0.f) {
-							m_OverTime = 0.f;
-							m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
-						}
-						else {
+						switch (GameRule::Instance()->GetGameType()) {
+						case GameType::Normal:
+							if (Diff.z < 0.f) {
+								m_OverTime = 0.f;
+								m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
+							}
+							else {
+								m_OverTime += DrawerMngr->GetDeltaTime();
+								if (m_OverTime > 1.f) {
+									m_OverTime -= 1.f;
+									m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
+								}
+							}
+							UpKey = Diff.y < 3.f * Scale3DRate;
+							DownKey = Diff.y > -3.f * Scale3DRate;
+							LeftKey = Diff.x < 3.f * Scale3DRate;
+							RightKey = Diff.x > -3.f * Scale3DRate;
+							if (m_OverTime > 0.f) {
+								//ランダムに逃げる
+								auto Diff2 = m_RandomMovePoint - m_MovePoint;
+								UpKey = Diff2.y < 3.f * Scale3DRate;
+								DownKey = Diff2.y > -3.f * Scale3DRate;
+								LeftKey = Diff2.x < 3.f * Scale3DRate;
+								RightKey = Diff2.x > -3.f * Scale3DRate;
+							}
+							break;
+						case GameType::AllRange:
 							m_OverTime += DrawerMngr->GetDeltaTime();
 							if (m_OverTime > 1.f) {
 								m_OverTime -= 1.f;
 								m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
 							}
+							if (m_OverTime > 0.f) {
+								//ランダムに逃げる
+								auto Diff2 = m_RandomMovePoint - m_MovePoint;
+								UpKey = Diff2.y < 3.f * Scale3DRate;
+								DownKey = Diff2.y > -3.f * Scale3DRate;
+								LeftKey = Diff2.x < 3.f * Scale3DRate;
+								RightKey = Diff2.x > -3.f * Scale3DRate;
+							}
+							break;
+						case GameType::Max:
+						default:
+							break;
 						}
 					}
 					//上下
 					{
-						bool UpKey = Diff.y < 3.f * Scale3DRate;
-						bool DownKey = Diff.y > -3.f * Scale3DRate;
-						if (m_OverTime > 0.f) {
-							//ランダムに逃げる
-							auto Diff2 = m_RandomMovePoint - m_MovePoint;
-							UpKey = Diff2.y < 3.f * Scale3DRate;
-							DownKey = Diff2.y > -3.f * Scale3DRate;
-						}
 						float prev = m_MovePointAdd.y;
 						if (UpKey && !DownKey) {
 							m_MovePointAdd.y -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
@@ -679,15 +721,6 @@ public:
 					}
 					//ロール
 					{
-						bool LeftKey = Diff.x < 3.f * Scale3DRate;
-						bool RightKey = Diff.x > -3.f * Scale3DRate;
-						if (m_OverTime > 0.f) {
-							//ランダムに逃げる
-							auto Diff2 = m_RandomMovePoint - m_MovePoint;
-							LeftKey = Diff2.x < 3.f * Scale3DRate;
-							RightKey = Diff2.x > -3.f * Scale3DRate;
-						}
-
 						float prev = m_MovePointAdd.x;
 						if (LeftKey && !RightKey) {
 							m_MovePointAdd.x -= 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
@@ -719,6 +752,17 @@ public:
 								RollPer = Util::deg2rad(30);
 							}
 						}
+						if (m_OutsidePer > 0.f) {
+							float X = (m_OutsideMatAfter * m_OutsideMatBefore.inverse()).zvec2().x;
+							LeftKey = X > 0.f;
+							RightKey = X < 0.f;
+							if (LeftKey && !RightKey) {
+								RollPer = Util::deg2rad(-90);
+							}
+							if (RightKey && !LeftKey) {
+								RollPer = Util::deg2rad(90);
+							}
+						}
 
 						Util::Easing(&m_RollPer, RollPer, 0.95f);
 
@@ -726,8 +770,8 @@ public:
 					}
 					// 進行方向に前進
 					{
-						bool AccelKey = !m_OverHeat && (Diff.z < -20.f * Scale3DRate);
-						bool BrakeKey = !m_Stall && (Diff.z > 20.f * Scale3DRate);
+						bool AccelKey = !m_OverHeat && false;
+						bool BrakeKey = !m_Stall && false;
 						if (!AccelKey && !BrakeKey) {
 							this->m_SpeedTarget = GetSpeedMax();
 						}
@@ -781,11 +825,59 @@ public:
 						this->m_SpeedTarget = std::clamp(this->m_SpeedTarget, GetSpeedMax() * 3.f / 4.f, GetSpeedMax() * 3.f / 2.f);
 						Util::Easing(&this->m_Speed, this->m_SpeedTarget, 0.95f);
 					}
+					//射撃
+					{
+						m_ShootTimer += DrawerMngr->GetDeltaTime();
+						if (m_ShootTimer > 10.f) {
+							m_ShootTimer -= 10.f;
+							EnemyObj()->SetAmmo(0, true, Util::Matrix3x3::Get33DX(EnemyObj()->GetMat()), 1.f);
+						}
+					}
 				}
 				Util::Easing(&m_MoveVec, MoveVec, 0.95f);
 				Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
 
 				Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
+
+				switch (GameRule::Instance()->GetGameType()) {
+				case GameType::Normal:
+					Util::Easing(&m_RotRail, 0.f, 0.95f);
+					RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+					break;
+				case GameType::AllRange:
+					if (m_MovePointAdd.x < -5.f * Scale3DRate) {
+						m_RotRail = std::clamp(m_RotRail - 1.f * DrawerMngr->GetDeltaTime(), -1.f, 1.f);
+					}
+					else if (m_MovePointAdd.x > 5.f * Scale3DRate) {
+						m_RotRail = std::clamp(m_RotRail + 1.f * DrawerMngr->GetDeltaTime(), -1.f, 1.f);
+					}
+					else {
+						Util::Easing(&m_RotRail, 0.f, 0.95f);
+					}
+					RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+					//範囲外なら真ん中を向く
+					if (m_OutsidePer <= 0.f && (PosAfter.magnitude() > 200.f * Scale3DRate)) {
+						m_OutsidePer = 1.f;
+						m_OutsideMatBefore = RailMat.rotation();
+
+						auto Pos = PosAfter; Pos.y = 0.f; Pos = Pos.normalized();
+						if (Pos.x == 0.f) {
+							Pos.x = 0.01f;
+						}
+						m_OutsideMatAfter = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), Pos).rotation();
+					}
+					if (m_OutsidePer > 0.f) {
+						m_OutsidePer = std::max(m_OutsidePer - DrawerMngr->GetDeltaTime() / 0.5f, 0.f);
+						auto Mat = RailMat.rotation();
+						Util::Easing(&Mat, m_OutsideMatAfter, 0.95f);
+						RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+					}
+					break;
+				case GameType::Max:
+				default:
+					break;
+				}
+
 				RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
 
 				Util::Matrix3x3 Rot = this->m_Roll * (Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation()));

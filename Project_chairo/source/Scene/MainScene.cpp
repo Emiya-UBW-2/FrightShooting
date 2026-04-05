@@ -524,6 +524,34 @@ void MainScene::Update_Sub(void) noexcept {
 						}
 					}
 				}
+				else {
+					//ホーミング用処理
+					if (a->IsSeeker()) {
+						std::pair<int, int> ID = std::make_pair(InvalidID, InvalidID);
+						{
+							if (Player->GetHitPoint() > 0) {
+								ID = std::make_pair(Player->GetObjectID(), InvalidID);
+							}
+						}
+						a->SetHomingTarget(ID.first != InvalidID, ID.first, ID.second);
+					}
+					//自機被弾
+					SEGMENT_SEGMENT_RESULT Result;
+					Util::GetSegmenttoSegment(Player->GetMat().pos(), Player->GetMat().pos(),
+						a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+					if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+						if (Player->IsRollingActive()) {
+							a->SetHit(Result.SegB_MinDist_Pos);
+						}
+						else {
+							Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
+							a->SetHit(Result.SegB_MinDist_Pos);
+							Player->SetDamageOn(10);
+							m_DamageWatch = 2.f;
+						}
+						break;
+					}
+				}
 			}
 		}
 		//
