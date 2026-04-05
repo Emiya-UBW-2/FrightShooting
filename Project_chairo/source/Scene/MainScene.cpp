@@ -164,7 +164,7 @@ void MainScene::Update_Sub(void) noexcept {
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
 	//ポーズメニュー
-	if(!this->m_Exit && (this->m_Fade <= 1.f)){
+	if (!this->m_Exit && (this->m_Fade <= 1.f) && !this->m_NextStage) {
 		this->m_MainUI->Update();
 		if (this->m_MainUI->IsExit()) {
 			this->m_Exit = true;
