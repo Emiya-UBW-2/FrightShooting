@@ -351,30 +351,96 @@ void MainScene::Update_Sub(void) noexcept {
 					if (a->IsSeeker()) {
 						//一番近い敵を探す
 						float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
-						int ID = InvalidID;
+						std::pair<int, int> ID = std::make_pair(InvalidID, InvalidID);
 						for (auto& s : m_StageScript.EnemyPop()) {
 							if (s.m_EnemyScript.IsAlive()) {
-								auto Vec = a->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
-								auto sID = s.m_EnemyScript.EnemyObj()->GetObjectID();
-								if (Mag > Vec.sqrMagnitude()) {
-									bool IsHitID = false;
-									//他のボムと同じロックオンIDを取らないようにする
-									for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
-										if (a2->IsActive() && (a != a2)) {
-											if (sID == a2->GetHomingID()) {
-												IsHitID = true;
-												break;
+								if (s.m_EnemyScript.EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint1))) {
+									auto Pos = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos();
+									auto Vec = a->GetMat().pos() - Pos;
+									auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), static_cast<int>(EnemyFrame::DamagePoint1));
+									if (Mag > Vec.sqrMagnitude()) {
+										bool IsHitID = false;
+										//他のボムと同じロックオンIDを取らないようにする
+										for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+											if (a2->IsActive() && (a != a2)) {
+												if (sID == a2->GetHomingID()) {
+													IsHitID = true;
+													break;
+												}
 											}
 										}
+										if (!IsHitID) {
+											Mag = Vec.sqrMagnitude();
+											ID = sID;
+										}
 									}
-									if (!IsHitID) {
-										Mag = Vec.sqrMagnitude();
-										ID = sID;
+								}
+								if (s.m_EnemyScript.EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint2))) {
+									auto Pos = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos();
+									auto Vec = a->GetMat().pos() - Pos;
+									auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), static_cast<int>(EnemyFrame::DamagePoint2));
+									if (Mag > Vec.sqrMagnitude()) {
+										bool IsHitID = false;
+										//他のボムと同じロックオンIDを取らないようにする
+										for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+											if (a2->IsActive() && (a != a2)) {
+												if (sID == a2->GetHomingID()) {
+													IsHitID = true;
+													break;
+												}
+											}
+										}
+										if (!IsHitID) {
+											Mag = Vec.sqrMagnitude();
+											ID = sID;
+										}
+									}
+								}
+								if (s.m_EnemyScript.EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint3))) {
+									auto Pos = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos();
+									auto Vec = a->GetMat().pos() - Pos;
+									auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), static_cast<int>(EnemyFrame::DamagePoint3));
+									if (Mag > Vec.sqrMagnitude()) {
+										bool IsHitID = false;
+										//他のボムと同じロックオンIDを取らないようにする
+										for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+											if (a2->IsActive() && (a != a2)) {
+												if (sID == a2->GetHomingID()) {
+													IsHitID = true;
+													break;
+												}
+											}
+										}
+										if (!IsHitID) {
+											Mag = Vec.sqrMagnitude();
+											ID = sID;
+										}
+									}
+								}
+								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint1))) {
+									auto Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+									auto Vec = a->GetMat().pos() - Pos;
+									auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), InvalidID);
+									if (Mag > Vec.sqrMagnitude()) {
+										bool IsHitID = false;
+										//他のボムと同じロックオンIDを取らないようにする
+										for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+											if (a2->IsActive() && (a != a2)) {
+												if (sID == a2->GetHomingID()) {
+													IsHitID = true;
+													break;
+												}
+											}
+										}
+										if (!IsHitID) {
+											Mag = Vec.sqrMagnitude();
+											ID = sID;
+										}
 									}
 								}
 							}
 						}
-						a->SetHomingTarget(ID != InvalidID, ID);
+						a->SetHomingTarget(ID.first != InvalidID, ID.first, ID.second);
 					}
 					//ヒット判定
 					for (auto& s : m_StageScript.EnemyPop()) {
@@ -470,46 +536,46 @@ void MainScene::DrawFront_Sub(void) noexcept {
 	for (auto& s : m_StageScript.EnemyPop()) {
 		//敵が生きている
 		if (s.m_EnemyScript.IsAlive()) {
-			if (s.m_EnemyScript.EnemyObj()->IsDrawAimPoint()) {
-				auto sID = s.m_EnemyScript.EnemyObj()->GetObjectID();
-				bool IsHitID = false;
-				for (auto& a : AmmoPool::Instance()->GetBombPer()) {
-					if (a->IsActive()) {
-						if (sID == a->GetHomingID()) {
-							IsHitID = true;
-							break;
+			for (auto& aim : s.m_EnemyScript.EnemyObj()->GetAimPoint()) {
+				if (aim.second) {
+					auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), aim.third);
+					bool IsHitID = false;
+					for (auto& a : AmmoPool::Instance()->GetBombPer()) {
+						if (a->IsActive()) {
+							if (sID == a->GetHomingID()) {
+								IsHitID = true;
+								break;
+							}
 						}
 					}
-				}
-				if (IsHitID) {
-					SetDrawBright(255, 0, 0);
-				}
-				else {
-					SetDrawBright(0, 255, 0);
-				}
-				m_Cursor->DrawRotaGraph(
-					static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().x),
-					static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().y),
-					50.f*Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth()))
-					/(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z)
-					
-					,
-					0.f, true);
-				SetDrawBright(255, 255, 255);
+					if (IsHitID) {
+						SetDrawBright(255, 0, 0);
+					}
+					else {
+						SetDrawBright(0, 255, 0);
+					}
+					m_Cursor->DrawRotaGraph(
+						static_cast<int>(aim.first.x),
+						static_cast<int>(aim.first.y),
+						50.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth()))
+						/ (aim.first.z)
 
-				auto& Watch = s.m_EnemyScript.EnemyObj();
-				{
-					int XS = static_cast<int>(400.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z)),
-						YS = static_cast<int>(32.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z));
-					int XP = static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().x) - XS / 2,
-						YP = static_cast<int>(s.m_EnemyScript.EnemyObj()->GetAimPoint2D().y)
-						+ static_cast<int>(200.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (s.m_EnemyScript.EnemyObj()->GetAimPoint2D().z));
-					int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetHitPointPer())), 0, 255);
-					int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetHitPointPer())), 0, 255);
-					DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * Watch->GetHitPointPer()), YP + YS, GetColor(R, G, 0), true);
-					DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Green, false);
-				}
+						,
+						0.f, true);
+					SetDrawBright(255, 255, 255);
 
+					{
+						int XS = static_cast<int>(400.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (aim.first.z)),
+							YS = static_cast<int>(32.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (aim.first.z));
+						int XP = static_cast<int>(aim.first.x) - XS / 2,
+							YP = static_cast<int>(aim.first.y)
+							+ static_cast<int>(200.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (aim.first.z));
+						int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, s.m_EnemyScript.EnemyObj()->GetHitPointPer())), 0, 255);
+						int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, s.m_EnemyScript.EnemyObj()->GetHitPointPer())), 0, 255);
+						DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * s.m_EnemyScript.EnemyObj()->GetHitPointPer()), YP + YS, GetColor(R, G, 0), true);
+						DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Green, false);
+					}
+				}
 			}
 		}
 	}

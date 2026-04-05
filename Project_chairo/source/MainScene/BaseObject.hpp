@@ -50,7 +50,10 @@ public:
 	}
 public:
 	bool			GetIsEndLoadData(void) const noexcept { return this->m_IsEndLoadData; }
-	bool			HaveFrame(int frame) const noexcept { return this->m_Frames[static_cast<size_t>(frame)].FrameID != InvalidID; }
+	bool			HaveFrame(int frame) const noexcept {
+		if (frame < 0) { return false; }
+		return this->m_Frames[static_cast<size_t>(frame)].FrameID != InvalidID;
+	}
 	const auto& GetFrame(int frame) const noexcept { return this->m_Frames[static_cast<size_t>(frame)].FrameID; }
 	const auto& GetFrameBaseLocalMat(int frame) const noexcept { return this->m_Frames[static_cast<size_t>(frame)].LocalMat; }
 	const auto& GetFrameBaseLocalWorldMat(int frame) const noexcept { return this->m_Frames[static_cast<size_t>(frame)].WorldMat; }

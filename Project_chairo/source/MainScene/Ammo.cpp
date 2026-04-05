@@ -1,6 +1,7 @@
 ﻿#pragma warning(disable:5259)
 
 #include "Ammo.hpp"
+#include "Script.hpp"
 
 
 const AmmoPool* Util::SingletonBase<AmmoPool>::m_Singleton = nullptr;
@@ -54,7 +55,13 @@ void Bomb::Update_Sub(void) noexcept {
 
 	if (m_IsHoming) {
 		{
-			m_HomingTarget = (*ObjectManager::Instance()->GetObj(m_HomingID))->GetMat().pos();
+			auto& obj = (*ObjectManager::Instance()->GetObj(m_HomingID.first));
+			if (obj->HaveFrame(m_HomingID.second)) {
+				m_HomingTarget = obj->GetFrameLocalWorldMatrix(m_HomingID.second).pos();
+			}
+			else {
+				m_HomingTarget = obj->GetMat().pos();
+			}
 		}
 		float Length = this->Vector.magnitude();
 		Util::Easing(

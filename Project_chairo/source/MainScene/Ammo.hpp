@@ -197,22 +197,22 @@ private:
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
 	LineDraw				m_LineDraw;
-	const Draw::GraphHandle* m_Graph{};
-	Util::VECTOR3D Vector{};
+	const Draw::GraphHandle*	m_Graph{};
+	Util::VECTOR3D			Vector{};
 	char		padding0[4]{};
-	float YVecAdd{};
-	float Timer{};
-	float DrawTimer{};
-	float m_Scale{};
-	int Shooter{ InvalidID };
+	float					YVecAdd{};
+	float					Timer{};
+	float					DrawTimer{};
+	float					m_Scale{};
+	int						Shooter{ InvalidID };
 	char		padding[4]{};
 
-	bool m_SeekerFlag{};
-	bool m_IsHoming{};
+	bool					m_SeekerFlag{};
+	bool					m_IsHoming{};
 	char		padding2[6]{};
-	Util::VECTOR3D m_HomingTarget{};
-	int			m_HomingID{};
-	//char		padding3[4]{};
+	Util::VECTOR3D			m_HomingTarget{};
+	std::pair<int, int>		m_HomingID{};
+	char		padding3[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -242,9 +242,10 @@ public:
 		return this->m_SeekerFlag;
 	}
 
-	void SetHomingTarget(bool IsHoming,int ID) noexcept {
+	void SetHomingTarget(bool IsHoming,int ID, int second) noexcept {
 		m_IsHoming = IsHoming;
-		m_HomingID = ID;
+		m_HomingID.first = ID;
+		m_HomingID.second = second;
 		if (m_IsHoming) {
 			m_SeekerFlag = false;
 		}

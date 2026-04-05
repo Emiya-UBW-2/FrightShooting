@@ -20,6 +20,9 @@ enum class EnemyFrame {
 	RWingtip,
 	Nozzle1,
 	Nozzle2,
+	DamagePoint1,
+	DamagePoint2,
+	DamagePoint3,
 	Max,
 };
 static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
@@ -35,18 +38,25 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 	"右翼端",
 	"ノズル1",
 	"ノズル2",
+	"DamagePoint1",
+	"DamagePoint2",
+	"DamagePoint3",
 };
 
+struct AimPointParam {
+	Util::VECTOR3D	first{};
+	bool	second{};
+	char		padding[3]{};
+	int		third{};
+};
 class Enemy :public BaseObject {
 	Util::VECTOR3D				m_Gun1Vec;
 	Util::VECTOR3D				m_Gun2Vec;
 
-	Util::VECTOR3D				m_AimPoint2D;
-	bool						m_IsDrawAimPoint{ false };
-	char		padding[3]{};
+	std::array<AimPointParam, 3>	m_AimPoint;
+	//char		padding[3]{};
 
 	Util::Matrix4x4			RailMat;
-	//char		padding2[4]{};
 
 	int						m_HP{ };
 	int						m_HPMax{ 1 };
@@ -56,6 +66,7 @@ class Enemy :public BaseObject {
 
 	LineDraw				m_LineDraw3;
 	LineDraw				m_LineDraw4;
+	char		padding2[4]{};
 
 	Draw::MV1				m_ColModel{};
 public:
@@ -69,8 +80,7 @@ private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(EnemyFrame::Max); }
 	const char*		GetFrameStr(int id) noexcept override { return EnemyFrameName[id]; }
 public:
-	const auto&		GetAimPoint2D(void) const noexcept { return m_AimPoint2D; }
-	const auto&		IsDrawAimPoint(void) const noexcept { return m_IsDrawAimPoint; }
+	const auto&		GetAimPoint(void) const noexcept { return m_AimPoint; }
 
 	auto&			SetColModel(void) noexcept { return m_ColModel; }
 
@@ -198,7 +208,9 @@ public:
 			m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle2)).pos(), 0.05f);
 		}
 
-		this->m_IsDrawAimPoint = false;
+		for (auto& a : this->m_AimPoint) {
+			a.second = false;
+		}
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
 		GetModel().DrawModel();
@@ -207,10 +219,41 @@ public:
 		{
 			auto Pos2D = ConvWorldPosToScreenPos(GetMat().pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				this->m_AimPoint2D.x = Pos2D.x;
-				this->m_AimPoint2D.y = Pos2D.y;
-				this->m_AimPoint2D.z = (GetMat().pos()-GetCameraPosition()).magnitude();
-				this->m_IsDrawAimPoint = true;
+				this->m_AimPoint.at(0).first.x = Pos2D.x;
+				this->m_AimPoint.at(0).first.y = Pos2D.y;
+				this->m_AimPoint.at(0).first.z = (GetMat().pos()-GetCameraPosition()).magnitude();
+				this->m_AimPoint.at(0).second = true;
+				this->m_AimPoint.at(0).third = InvalidID;
+			}
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint1))) {
+			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos().get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				this->m_AimPoint.at(0).first.x = Pos2D.x;
+				this->m_AimPoint.at(0).first.y = Pos2D.y;
+				this->m_AimPoint.at(0).first.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos() - GetCameraPosition()).magnitude();
+				this->m_AimPoint.at(0).second = true;
+				this->m_AimPoint.at(0).third = static_cast<int>(EnemyFrame::DamagePoint1);
+			}
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint2))) {
+			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos().get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				this->m_AimPoint.at(1).first.x = Pos2D.x;
+				this->m_AimPoint.at(1).first.y = Pos2D.y;
+				this->m_AimPoint.at(1).first.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos() - GetCameraPosition()).magnitude();
+				this->m_AimPoint.at(1).second = true;
+				this->m_AimPoint.at(1).third = static_cast<int>(EnemyFrame::DamagePoint2);
+			}
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint3))) {
+			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos().get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				this->m_AimPoint.at(2).first.x = Pos2D.x;
+				this->m_AimPoint.at(2).first.y = Pos2D.y;
+				this->m_AimPoint.at(2).first.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos() - GetCameraPosition()).magnitude();
+				this->m_AimPoint.at(2).second = true;
+				this->m_AimPoint.at(2).third = static_cast<int>(EnemyFrame::DamagePoint3);
 			}
 		}
 	}
