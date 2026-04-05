@@ -48,6 +48,22 @@ struct AimPointParam {
 	bool	second{};
 	char		padding[3]{};
 	int		third{};
+	int						m_HP{ };
+	int						m_HPMax{ 1 };
+
+	int				GetHitPoint(void) const noexcept { return m_HP; }
+	float			GetHitPointPer(void) const noexcept {
+		if (m_HPMax == 0) { return 0.f; }
+		return static_cast<float>(m_HP) / static_cast<float>(m_HPMax);
+	}
+	void			SetupMaxHitPoint(int value) noexcept {
+		m_HPMax = value;
+		m_HP = m_HPMax;
+	}
+	void			SetDamage(int value) noexcept {
+		m_HP = std::clamp(m_HP - value, 0, m_HPMax);
+	}
+
 };
 class Enemy :public BaseObject {
 	Util::VECTOR3D				m_Gun1Vec;
@@ -57,9 +73,6 @@ class Enemy :public BaseObject {
 	//char		padding[3]{};
 
 	Util::Matrix4x4			RailMat;
-
-	int						m_HP{ };
-	int						m_HPMax{ 1 };
 
 	LineDraw				m_LineDraw1;
 	LineDraw				m_LineDraw2;
@@ -81,18 +94,9 @@ private:
 	const char*		GetFrameStr(int id) noexcept override { return EnemyFrameName[id]; }
 public:
 	const auto&		GetAimPoint(void) const noexcept { return m_AimPoint; }
+	auto&			SetAimPoint(void) noexcept { return m_AimPoint; }
 
 	auto&			SetColModel(void) noexcept { return m_ColModel; }
-
-	int				GetHitPoint(void) const noexcept { return m_HP; }
-	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HP) / static_cast<float>(m_HPMax); }
-	void			SetupMaxHitPoint(int value) noexcept {
-		m_HPMax = value;
-		m_HP = m_HPMax;
-	}
-	void			SetDamage(int value) noexcept {
-		m_HP = std::clamp(m_HP - value, 0, m_HPMax);
-	}
 
 	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
@@ -148,51 +152,55 @@ public:
 			SetModel().FlipAnimAll();
 		}
 		//砲塔旋回
-		if (HaveFrame(static_cast<int>(EnemyFrame::Gun1LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun1UD))) {
-			auto& Player = PlayerManager::Instance()->SetPlane();
-			Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
-			Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1UD)).pos()).normalized();
+		if (GetAimPoint().at(0).GetHitPoint() > 0) {
+			if (HaveFrame(static_cast<int>(EnemyFrame::Gun1LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun1UD))) {
+				auto& Player = PlayerManager::Instance()->SetPlane();
+				Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
+				Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1UD)).pos()).normalized();
 
-			Util::Easing(&m_Gun1Vec, Vec2, 0.975f);
+				Util::Easing(&m_Gun1Vec, Vec2, 0.975f);
 
-			auto Vec1XZ = Vec1; Vec1XZ.y = 0.f;
-			auto Vec2XZ = m_Gun1Vec.normalized(); Vec2XZ.y = 0.f;
+				auto Vec1XZ = Vec1; Vec1XZ.y = 0.f;
+				auto Vec2XZ = m_Gun1Vec.normalized(); Vec2XZ.y = 0.f;
 
-			auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
-			auto Vec2TY = m_Gun1Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+				auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
+				auto Vec2TY = m_Gun1Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
 
-			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1LR),
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
-				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1LR))
-			);
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1LR),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1LR))
+				);
 
-			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1UD),
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
-				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1UD))
-			);
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1UD),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1UD))
+				);
+			}
 		}
-		if (HaveFrame(static_cast<int>(EnemyFrame::Gun2LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun2UD))) {
-			auto& Player = PlayerManager::Instance()->SetPlane();
-			Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
-			Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun2UD)).pos()).normalized();
+		if (GetAimPoint().at(1).GetHitPoint() > 0) {
+			if (HaveFrame(static_cast<int>(EnemyFrame::Gun2LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun2UD))) {
+				auto& Player = PlayerManager::Instance()->SetPlane();
+				Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
+				Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun2UD)).pos()).normalized();
 
-			Util::Easing(&m_Gun2Vec, Vec2, 0.975f);
+				Util::Easing(&m_Gun2Vec, Vec2, 0.975f);
 
-			auto Vec1XZ = Vec1; Vec1XZ.y = 0.f;
-			auto Vec2XZ = m_Gun2Vec.normalized(); Vec2XZ.y = 0.f;
+				auto Vec1XZ = Vec1; Vec1XZ.y = 0.f;
+				auto Vec2XZ = m_Gun2Vec.normalized(); Vec2XZ.y = 0.f;
 
-			auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
-			auto Vec2TY = m_Gun2Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+				auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
+				auto Vec2TY = m_Gun2Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
 
-			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun2LR),
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
-				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun2LR))
-			);
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun2LR),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun2LR))
+				);
 
-			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun2UD),
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
-				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun2UD))
-			);
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun2UD),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun2UD))
+				);
+			}
 		}
 		//
 		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
@@ -323,7 +331,9 @@ struct EnemyAmmo {
 class EnemyScript {
 	bool					m_IsActive{ false };
 	char		padding[3]{};
-	int						m_HP{};
+	int						m_HP1{};
+	int						m_HP2{};
+	int						m_HP3{};
 	EnemyType				m_EnemyType{ EnemyType::Normal };
 
 	std::vector<EnemyMove>	m_EnemyMove;
@@ -376,14 +386,41 @@ public:
 		default:
 			break;
 		}
-		EnemyObj()->SetupMaxHitPoint(m_HP);
+		if (EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint1))) {
+			EnemyObj()->SetAimPoint().at(0).SetupMaxHitPoint(m_HP1);
+		}
+		else {
+			EnemyObj()->SetAimPoint().at(0).SetupMaxHitPoint(m_HP1);
+		}
+		if (EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint2))) {
+			EnemyObj()->SetAimPoint().at(1).SetupMaxHitPoint(m_HP2);
+		}
+		else {
+			EnemyObj()->SetAimPoint().at(2).SetupMaxHitPoint(0);
+		}
+		if (EnemyObj()->HaveFrame(static_cast<int>(EnemyFrame::DamagePoint3))) {
+			EnemyObj()->SetAimPoint().at(2).SetupMaxHitPoint(m_HP3);
+		}
+		else {
+			EnemyObj()->SetAimPoint().at(2).SetupMaxHitPoint(0);
+		}
+
 		m_IsActive = true;
 
 		this->m_SpeedTarget = GetSpeedMax();
 		this->m_Speed = this->m_SpeedTarget;
 	}
 	bool IsActive(void) const noexcept { return m_IsActive; }
-	bool IsAlive(void) const noexcept { return IsActive() && EnemyObj()->GetHitPoint() > 0; }
+	bool IsAlive(void) const noexcept {
+		if (IsActive()) {
+			for (auto& aim : EnemyObj()->GetAimPoint()) {
+				if (aim.GetHitPoint() > 0) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 public:
 	void Init(std::string Path) noexcept {
 		//
@@ -401,8 +438,14 @@ public:
 						m_ObjPath = Args.at(0);
 						ObjectManager::Instance()->LoadModel(m_ObjPath);
 					}
-					if (Func == "HitPoint") {
-						m_HP = std::stoi(Args.at(0));
+					if (Func == "HitPoint1") {
+						m_HP1 = std::stoi(Args.at(0));
+					}
+					if (Func == "HitPoint2") {
+						m_HP2 = std::stoi(Args.at(0));
+					}
+					if (Func == "HitPoint3") {
+						m_HP3 = std::stoi(Args.at(0));
 					}
 					if (Func == "Type") {
 						for (int loop = 0; loop < static_cast<int>(EnemyType::Max); ++loop) {
@@ -485,7 +528,7 @@ public:
 	}
 	void Update() noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
-		if (EnemyObj()->GetHitPoint() > 0) {
+		if (IsAlive()) {
 			switch (m_EnemyType) {
 			case EnemyType::Normal:
 			case EnemyType::BOSS:
@@ -691,15 +734,19 @@ public:
 				break;
 			}
 			if (m_EndFrame != -1.f && m_Frame >= m_EndFrame) {
-				EnemyObj()->SetDamage(EnemyObj()->GetHitPoint());
+				for (auto& aim : EnemyObj()->SetAimPoint()) {
+					aim.SetDamage(aim.GetHitPoint());
+				}
 			}
 		}
 		else {
-			//死んだムーブ
-			Util::VECTOR3D Pos = EnemyObj()->GetRailMat().pos() + Util::VECTOR3D::up() * (-10.f * Scale3DRate * DrawerMngr->GetDeltaTime());
-			Util::Matrix3x3 Rot = Util::Matrix3x3::Get33DX(EnemyObj()->GetRailMat().rotation()
-				* Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360.f * DrawerMngr->GetDeltaTime())));
-			EnemyObj()->UpdatePlanePosition(Pos, Rot);
+			if (EnemyObj()->GetRailMat().pos().y > 0.f) {
+				//死んだムーブ
+				Util::VECTOR3D Pos = EnemyObj()->GetRailMat().pos() + Util::VECTOR3D::up() * (-10.f * Scale3DRate * DrawerMngr->GetDeltaTime());
+				Util::Matrix3x3 Rot = Util::Matrix3x3::Get33DX(EnemyObj()->GetRailMat().rotation()
+					* Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360.f * DrawerMngr->GetDeltaTime())));
+				EnemyObj()->UpdatePlanePosition(Pos, Rot);
+			}
 		}
 		m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
 	}

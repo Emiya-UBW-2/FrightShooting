@@ -1,3 +1,5 @@
 SetModel(data/model/CV/);
-HitPoint(10);
+HitPoint1(3);
+HitPoint2(3);
+HitPoint3(3);
 Type(BOSS);
