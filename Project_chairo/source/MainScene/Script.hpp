@@ -14,6 +14,8 @@ enum class EnemyFrame {
 	Gun2,
 	Gun1LR,
 	Gun1UD,
+	Gun2LR,
+	Gun2UD,
 	LWingtip,
 	RWingtip,
 	Nozzle1,
@@ -25,8 +27,10 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 	"目",
 	"機銃1",
 	"機銃2",
-	"砲塔旋回",
-	"砲塔仰角",
+	"砲塔旋回1",
+	"砲塔仰角1",
+	"砲塔旋回2",
+	"砲塔仰角2",
 	"左翼端",
 	"右翼端",
 	"ノズル1",
@@ -34,6 +38,9 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 };
 
 class Enemy :public BaseObject {
+	Util::VECTOR3D				m_Gun1Vec;
+	Util::VECTOR3D				m_Gun2Vec;
+
 	Util::VECTOR3D				m_AimPoint2D;
 	bool						m_IsDrawAimPoint{ false };
 	char		padding[3]{};
@@ -136,20 +143,45 @@ public:
 			Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
 			Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1UD)).pos()).normalized();
 
+			Util::Easing(&m_Gun1Vec, Vec2, 0.975f);
+
 			auto Vec1XZ = Vec1; Vec1XZ.y = 0.f;
-			auto Vec2XZ = Vec2; Vec2XZ.y = 0.f;
+			auto Vec2XZ = m_Gun1Vec.normalized(); Vec2XZ.y = 0.f;
 
 			auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
-			auto Vec2TY = Vec2; Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+			auto Vec2TY = m_Gun1Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
 
 			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1LR),
-				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(),Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
 				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1LR))
 			);
 
 			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun1UD),
 				Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
 				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun1UD))
+			);
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::Gun2LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun2UD))) {
+			auto& Player = PlayerManager::Instance()->SetPlane();
+			Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
+			Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun2UD)).pos()).normalized();
+
+			Util::Easing(&m_Gun2Vec, Vec2, 0.975f);
+
+			auto Vec1XZ = Vec1; Vec1XZ.y = 0.f;
+			auto Vec2XZ = m_Gun2Vec.normalized(); Vec2XZ.y = 0.f;
+
+			auto Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
+			auto Vec2TY = m_Gun2Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+
+			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun2LR),
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
+				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun2LR))
+			);
+
+			SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun2UD),
+				Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
+				GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun2UD))
 			);
 		}
 		//
