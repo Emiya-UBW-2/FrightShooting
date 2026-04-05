@@ -355,7 +355,7 @@ void MainScene::Update_Sub(void) noexcept {
 							AmmoPool::Instance()->ShotAmmo(
 								Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), a->GetVector().normalized()) *
 								Util::Matrix4x4::Mtrans(Player->GetMat().pos()), 25.f + 200.f,
-								Player->GetObjectID());
+								Player->GetObjectID(), a->GetScale());
 							a->SetHit(Result.SegB_MinDist_Pos);
 						}
 						else {

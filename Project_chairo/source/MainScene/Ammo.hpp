@@ -67,6 +67,8 @@ public:
 	void CheckDraw_Sub(void) noexcept override {
 	}
 	void Draw_Sub(void) const noexcept override {
+	}
+	void DrawFront_Sub(void) const noexcept override {
 		if (this->Timer == 0.f) { return; }
 		DxLib::SetUseLighting(FALSE);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->Timer), 0, 255));
@@ -83,8 +85,6 @@ public:
 		DxLib::SetUseLighting(TRUE);
 		SetDrawBright(255, 255, 255);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-	}
-	void DrawFront_Sub(void) const noexcept override {
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 	}
@@ -110,9 +110,10 @@ private:
 	float DrawTimer{};
 	std::array<std::shared_ptr<AmmoHitEffect>, 10>	m_AmmoEffectPer{};
 	int Shooter{ InvalidID };
-	char		padding[4]{};
+	float m_Scale{ 1.f };
+	//char		padding[4]{};
 public:
-	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed) noexcept {
+	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed, float Scale) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		SetMatrix(Muzzle);
 		this->Vector = Muzzle.zvec() * -(Speed * DrawerMngr->GetDeltaTime());
@@ -120,16 +121,12 @@ public:
 		this->Timer = 5.f;
 		this->DrawTimer = this->Timer + 0.1f;
 		Shooter = ID;
+		m_Scale = Scale;
 	}
-	bool IsActive() const noexcept {
-		return this->Timer != 0.f;
-	}
-	auto GetVector() const noexcept {
-		return this->Vector;
-	}
-	auto GetShooterID() const noexcept {
-		return this->Shooter;
-	}
+	bool IsActive() const noexcept { return this->Timer != 0.f; }
+	auto GetVector() const noexcept { return this->Vector; }
+	auto GetShooterID() const noexcept { return this->Shooter; }
+	auto GetScale() const noexcept { return this->m_Scale; }
 public:
 	void SetHit(const Util::VECTOR3D& pos) noexcept {
 		this->Vector = pos - GetMat().pos();
@@ -161,11 +158,12 @@ public:
 		if (this->DrawTimer == 0.f) { return; }
 		DxLib::SetUseLighting(FALSE);
 		DxLib::SetUseZBufferFlag(TRUE);
+		DxLib::SetWriteZBuffer3D(true);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->DrawTimer / 0.1f), 0, 255));
 		DxLib::DrawCapsule3D(
 			(GetMat().pos() - this->Vector * std::clamp(this->DrawTimer / 0.1f, 0.f, 1.f)).get(),
 			GetMat().pos().get(),
-			0.45f * Scale3DRate / 2.f,
+			0.45f * Scale3DRate / 2.f * m_Scale,
 			6,
 			DxLib::GetColor(192, 192, 255),
 			DxLib::GetColor(0, 255, 255),
@@ -426,8 +424,8 @@ public:
 	auto& GetBombPer(void) noexcept { return m_BombPer; }
 	auto& GetMultiBombPer(void) noexcept { return m_MultiBombPer; }
 public:
-	void			ShotAmmo(Util::Matrix4x4 Mat, float speed, int ShooterID) noexcept {
-		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat, ShooterID, speed * Scale3DRate);
+	void			ShotAmmo(Util::Matrix4x4 Mat, float speed, int ShooterID, float Scale) noexcept {
+		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat, ShooterID, speed * Scale3DRate, Scale);
 		++m_AmmoID %= static_cast<int>(this->m_AmmoPer.size());
 	}
 	void			ShotBomb(Util::Matrix4x4 Mat, float speed, int ShooterID) noexcept {

@@ -1023,8 +1023,8 @@ namespace Util {
 						LS_X = 1000 * LS_X / 32768;
 						LS_Y = 1000 * LS_Y / 32768;
 						//変換により誤差が発生しうるのでデッドゾーンを指定
-						if (abs(LS_X) < 10) { LS_X = 0; }
-						if (abs(LS_Y) < 10) { LS_Y = 0; }
+						if (abs(LS_X) < 50) { LS_X = 0; }
+						if (abs(LS_Y) < 50) { LS_Y = 0; }
 						if (!(LS_X == 0 && LS_Y == 0)) {
 							LS_Active = true;
 							LS_Degree = rad2deg(std::atan2f(static_cast<float>(LS_X), static_cast<float>(-LS_Y)));
@@ -1037,8 +1037,8 @@ namespace Util {
 						RS_X = 1000 * RS_X / 32768;
 						RS_Y = 1000 * RS_Y / 32768;
 						//変換により誤差が発生しうるのでデッドゾーンを指定
-						if (abs(RS_X) < 10) { RS_X = 0; }
-						if (abs(RS_Y) < 10) { RS_Y = 0; }
+						if (abs(RS_X) < 50) { RS_X = 0; }
+						if (abs(RS_Y) < 50) { RS_Y = 0; }
 						if (!(RS_X == 0 && RS_Y == 0)) {
 							RS_Active = true;
 							RS_Degree = rad2deg(std::atan2f(static_cast<float>(RS_X), static_cast<float>(-RS_Y)));
@@ -1123,8 +1123,8 @@ namespace Util {
 						LS_X = 1000 * LS_X / 32768;
 						LS_Y = 1000 * LS_Y / 32768;
 						//変換により誤差が発生しうるのでデッドゾーンを指定
-						if (abs(LS_X) < 10) { LS_X = 0; }
-						if (abs(LS_Y) < 10) { LS_Y = 0; }
+						if (abs(LS_X) < 50) { LS_X = 0; }
+						if (abs(LS_Y) < 50) { LS_Y = 0; }
 						if (!(LS_X == 0 && LS_Y == 0)) {
 							LS_Active = true;
 							LS_Degree = rad2deg(std::atan2f(static_cast<float>(LS_X), static_cast<float>(-LS_Y)));
@@ -1137,8 +1137,8 @@ namespace Util {
 						RS_X = 1000 * RS_X / 32768;
 						RS_Y = 1000 * RS_Y / 32768;
 						//変換により誤差が発生しうるのでデッドゾーンを指定
-						if (abs(RS_X) < 10) { RS_X = 0; }
-						if (abs(RS_Y) < 10) { RS_Y = 0; }
+						if (abs(RS_X) < 50) { RS_X = 0; }
+						if (abs(RS_Y) < 50) { RS_Y = 0; }
 						if (!(RS_X == 0 && RS_Y == 0)) {
 							RS_Active = true;
 							RS_Degree = rad2deg(std::atan2f(static_cast<float>(RS_X), static_cast<float>(-RS_Y)));

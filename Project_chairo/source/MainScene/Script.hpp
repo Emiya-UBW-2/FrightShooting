@@ -67,6 +67,8 @@ struct DamagePointParam {
 
 };
 class Enemy :public BaseObject {
+	Sound::SoundUniqueID	m_ShotID{ InvalidID };
+
 	Util::VECTOR3D				m_Gun1Vec;
 	Util::VECTOR3D				m_Gun2Vec;
 
@@ -117,10 +119,28 @@ public:
 	void			UpdatePlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 	}
-	void			SetAmmo(bool IsHoming, Util::Matrix3x3 Mat, float Scale) noexcept {
-		EffectPool::Instance()->Shot(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()), Scale);
-		AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos()),
-			(2.5f) * Scale3DRate, GetObjectID());
+	void			SetAmmo(int Shooter, bool IsHoming, Util::Matrix3x3 Mat, float Scale) noexcept {
+		Util::VECTOR3D Pos;
+		switch (Shooter) {
+		case 0:
+			Pos = GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos();
+			break;
+		case 1:
+			Pos = GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun2)).pos();
+			break;
+		default:
+			break;
+		}
+
+		if (Scale < 5.f) {
+			EffectPool::Instance()->Shot(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos), Scale);
+		}
+		else {
+			EffectPool::Instance()->Cannon(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos));
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 200.f * Scale3DRate);
+		}
+		AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos),
+			(2.5f) * Scale3DRate, GetObjectID(), Scale);
 
 		if (IsHoming) {
 			//TODO:ホーミング
@@ -134,6 +154,7 @@ public:
 			Draw::MV1::Load(Path, &m_ColModel, DX_LOADMODEL_PHYSICS_DISABLE);
 			m_ColModel.SetupCollInfo();
 		}
+		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun.wav", true);
 	}
 	void Init_Sub(void) noexcept override {
 	}
@@ -329,10 +350,11 @@ enum class AmmoMoveType : size_t {
 	Homing,
 };
 struct EnemyAmmo {
+	int				m_Shooter{};
 	int				m_Frame{};
 	float			m_Scale{ 1.f };
 	bool			m_IsPlayed{ false };
-	char		padding[7]{};
+	char		padding[3]{};
 	AmmoMoveType	m_AmmoMoveType{};
 	Util::Matrix3x3	m_Rot{};
 	char		padding2[4]{};
@@ -508,36 +530,48 @@ public:
 					}
 					if (Func == "PutFixedAmmo") {
 						m_EnemyAmmo.emplace_back();
-						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(0));//Frame
+						m_EnemyAmmo.back().m_Shooter = std::stoi(Args.at(0));
+						m_EnemyAmmo.back().m_IsPlayed = false;
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
 						m_EnemyAmmo.back().m_Rot =
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(2)))) *
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(1))));
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(3)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(2))));
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Fixed;
+						m_EnemyAmmo.back().m_Scale = std::stof(Args.at(4));
 					}
 					if (Func == "PutTargetAmmo") {
 						m_EnemyAmmo.emplace_back();
-						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(0));//Frame
+						m_EnemyAmmo.back().m_Shooter = std::stoi(Args.at(0));
+						m_EnemyAmmo.back().m_IsPlayed = false;
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
+						m_EnemyAmmo.back().m_Scale = std::stof(Args.at(3));
 					}
 					if (Func == "PutTargetAmmoLoop") {
 						//撃ち始めるまでの時間,撃つ間隔,何回撃つか,クールダウン時間
-						auto startTime = std::stoi(Args.at(0));//Frame
-						auto shotFrame = std::stoi(Args.at(1));//Frame
-						auto shotCount = std::stoi(Args.at(2));
-						auto shotCoolDown = std::stoi(Args.at(3));//Frame
+						auto startTime = std::stoi(Args.at(1));//Frame
+						auto shotFrame = std::stoi(Args.at(2));//Frame
+						auto shotCount = std::stoi(Args.at(3));
+						auto shotCoolDown = std::stoi(Args.at(4));//Frame
 						for (int loop = 0; loop < 1000; ++loop) {
 							m_EnemyAmmo.emplace_back();
+							m_EnemyAmmo.back().m_Shooter = std::stoi(Args.at(0));
+							m_EnemyAmmo.back().m_IsPlayed = false;
 							m_EnemyAmmo.back().m_Frame = startTime + (loop % shotCount) * shotFrame + (loop / shotCount) * shotCoolDown;
 							m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
+							m_EnemyAmmo.back().m_Scale = std::stof(Args.at(5));
 						}
 					}
 					if (Func == "PutHomingAmmo") {//todo:ホーミング弾は未実装
 						m_EnemyAmmo.emplace_back();
-						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(0));//Frame
+						m_EnemyAmmo.back().m_Shooter = std::stoi(Args.at(0));
+						m_EnemyAmmo.back().m_IsPlayed = false;
+						m_EnemyAmmo.back().m_Frame = std::stoi(Args.at(1));//Frame
 						m_EnemyAmmo.back().m_Rot =
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(2)))) *
-							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(1))));
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(3)))) *
+							Util::Matrix3x3::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(2))));
 						m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
+						m_EnemyAmmo.back().m_Scale = std::stof(Args.at(4));
 					}
 					if (Func == "Delete") {
 						m_EndFrame = std::stof(Args.at(0));//Frame
@@ -578,18 +612,18 @@ public:
 						}
 						switch (m_EnemyAmmo.at(loop).m_AmmoMoveType) {
 						case AmmoMoveType::Fixed:
-							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot, m_EnemyAmmo.at(loop).m_Scale);
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_Shooter, m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot, m_EnemyAmmo.at(loop).m_Scale);
 							break;
 						case AmmoMoveType::Target:
 						{
 							auto& Player = PlayerManager::Instance()->SetPlane();
 							Util::VECTOR3D Pos = Player->GetMat().pos() + Player->GetMat().zvec() * -(10.f * Scale3DRate);//todo:みこし射撃
 							Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetRailMat().pos() - Pos).normalized());
-							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot, m_EnemyAmmo.at(loop).m_Scale);
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_Shooter, m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot, m_EnemyAmmo.at(loop).m_Scale);
 						}
 						break;
 						case AmmoMoveType::Homing:
-							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot, m_EnemyAmmo.at(loop).m_Scale);
+							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_Shooter, m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, m_EnemyAmmo.at(loop).m_Rot, m_EnemyAmmo.at(loop).m_Scale);
 							break;
 						default:
 							break;
@@ -858,18 +892,18 @@ public:
 	void Update() noexcept {
 		auto& Player = PlayerManager::Instance()->SetPlane();
 		for (size_t loop = 0; loop < m_EnemyPop.size(); ++loop) {
-					if (Player->GetFrame() > static_cast<float>(m_EnemyPop.at(loop).m_Frame)) {
-						if (!m_EnemyPop.at(loop).m_IsPlayed) {
-							m_EnemyPop.at(loop).m_IsPlayed = true;
-						}
-						else {
-							continue;
-						}
-				m_EnemyPop.at(loop).m_EnemyScript.SetActive();
-				continue;
-			}
 			if (m_EnemyPop.at(loop).m_EnemyScript.IsActive()) {
 				m_EnemyPop.at(loop).m_EnemyScript.Update();
+			}
+			if (Player->GetFrame() > static_cast<float>(m_EnemyPop.at(loop).m_Frame)) {
+				if (!m_EnemyPop.at(loop).m_IsPlayed) {
+					m_EnemyPop.at(loop).m_IsPlayed = true;
+				}
+				else {
+					continue;
+				}
+				m_EnemyPop.at(loop).m_EnemyScript.SetActive();
+				continue;
 			}
 		}
 	}
