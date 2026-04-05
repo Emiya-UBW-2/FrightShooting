@@ -1,3 +1,4 @@
 SetModel(data/model/Plane2/);
 HitPoint1(1);
+Radius1(2.0);
 Type(Normal);

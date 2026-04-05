@@ -302,18 +302,21 @@ void MainScene::Update_Sub(void) noexcept {
 							case EnemyType::Max:
 							default:
 							{
-								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).frame)) {
-									auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
-									SEGMENT_SEGMENT_RESULT Result;
-									Util::GetSegmenttoSegment(Post, Post,
-										a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-									if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
-										IsHit = true;
-										Pos = Result.SegB_MinDist_Pos;
-										Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
-										a->SetHit(Pos);
-										s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).SetDamage(1);
-										break;
+								{
+									auto& aim = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
+									if (!s.m_EnemyScript.EnemyObj()->HaveFrame(aim.frame)) {
+										auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+										SEGMENT_SEGMENT_RESULT Result;
+										Util::GetSegmenttoSegment(Post, Post,
+											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+										if (Result.SegA_SegB_MinDist_Square < aim.m_Radius * aim.m_Radius) {
+											IsHit = true;
+											Pos = Result.SegB_MinDist_Pos;
+											Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
+											a->SetHit(Pos);
+											aim.SetDamage(1);
+											break;
+										}
 									}
 								}
 								for (auto& aim : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
@@ -322,7 +325,7 @@ void MainScene::Update_Sub(void) noexcept {
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-										if (Result.SegA_SegB_MinDist_Square < (5.f * Scale3DRate) * (5.f * Scale3DRate)) {
+										if (Result.SegA_SegB_MinDist_Square < aim.m_Radius * aim.m_Radius) {
 											IsHit = true;
 											Pos = Result.SegB_MinDist_Pos;
 											Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
@@ -375,25 +378,28 @@ void MainScene::Update_Sub(void) noexcept {
 						float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
 						std::pair<int, int> ID = std::make_pair(InvalidID, InvalidID);
 						for (auto& s : m_StageScript.EnemyPop()) {
-							if (s.m_EnemyScript.IsActive() && s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).GetHitPoint() > 0) {
-								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).frame)) {
-									auto Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
-									auto Vec = a->GetMat().pos() - Pos;
-									auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), InvalidID);
-									if (Mag > Vec.sqrMagnitude()) {
-										bool IsHitID = false;
-										//他のボムと同じロックオンIDを取らないようにする
-										for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
-											if (a2->IsActive() && (a != a2)) {
-												if (sID == a2->GetHomingID()) {
-													IsHitID = true;
-													break;
+							{
+								auto& aim = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
+								if (s.m_EnemyScript.IsActive() && aim.GetHitPoint() > 0) {
+									if (!s.m_EnemyScript.EnemyObj()->HaveFrame(aim.frame)) {
+										auto Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+										auto Vec = a->GetMat().pos() - Pos;
+										auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), InvalidID);
+										if (Mag > Vec.sqrMagnitude()) {
+											bool IsHitID = false;
+											//他のボムと同じロックオンIDを取らないようにする
+											for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+												if (a2->IsActive() && (a != a2)) {
+													if (sID == a2->GetHomingID()) {
+														IsHitID = true;
+														break;
+													}
 												}
 											}
-										}
-										if (!IsHitID) {
-											Mag = Vec.sqrMagnitude();
-											ID = sID;
+											if (!IsHitID) {
+												Mag = Vec.sqrMagnitude();
+												ID = sID;
+											}
 										}
 									}
 								}
@@ -434,17 +440,20 @@ void MainScene::Update_Sub(void) noexcept {
 							switch (s.m_EnemyScript.GetEnemyType()) {
 							case EnemyType::BOSS:
 							{
-								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).frame)) {
-									auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
-									SEGMENT_SEGMENT_RESULT Result;
-									Util::GetSegmenttoSegment(Post, Post,
-										a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-									if (Result.SegA_SegB_MinDist_Square < (12.f * Scale3DRate) * (12.f * Scale3DRate)) {
-										IsHit = true;
-										Pos = Result.SegB_MinDist_Pos;
-										Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
-										a->SetHit(Pos);
-										s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).SetDamage(1);
+								{
+									auto& aim = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
+									if (!s.m_EnemyScript.EnemyObj()->HaveFrame(aim.frame)) {
+										auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+										SEGMENT_SEGMENT_RESULT Result;
+										Util::GetSegmenttoSegment(Post, Post,
+											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
+										if (Result.SegA_SegB_MinDist_Square < aim.m_Radius * aim.m_Radius) {
+											IsHit = true;
+											Pos = Result.SegB_MinDist_Pos;
+											Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
+											a->SetHit(Pos);
+											aim.SetDamage(1);
+										}
 									}
 								}
 								for (auto& aim : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
@@ -453,7 +462,7 @@ void MainScene::Update_Sub(void) noexcept {
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-										if (Result.SegA_SegB_MinDist_Square < (12.f * Scale3DRate) * (12.f * Scale3DRate)) {
+										if (Result.SegA_SegB_MinDist_Square < aim.m_Radius * aim.m_Radius) {
 											IsHit = true;
 											Pos = Result.SegB_MinDist_Pos;
 											Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
@@ -475,26 +484,29 @@ void MainScene::Update_Sub(void) noexcept {
 							case EnemyType::AI:
 							case EnemyType::Max:
 							default:
-								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).frame)) {
+							{
+								auto& aim = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
+								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(aim.frame)) {
 									auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
 									SEGMENT_SEGMENT_RESULT Result;
 									Util::GetSegmenttoSegment(Post, Post,
 										a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-									if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+									if (Result.SegA_SegB_MinDist_Square < aim.m_Radius * aim.m_Radius) {
 										IsHit = true;
 										Pos = Result.SegB_MinDist_Pos;
 										Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
 										a->SetHit(Pos);
-										s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0).SetDamage(1);
+										aim.SetDamage(1);
 									}
 								}
+							}
 								for (auto& aim : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
 									if (s.m_EnemyScript.EnemyObj()->HaveFrame(aim.frame)) {
 										auto Post = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(aim.frame).pos();
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
-										if (Result.SegA_SegB_MinDist_Square < (2.f * Scale3DRate) * (2.f * Scale3DRate)) {
+										if (Result.SegA_SegB_MinDist_Square < aim.m_Radius * aim.m_Radius) {
 											IsHit = true;
 											Pos = Result.SegB_MinDist_Pos;
 											Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Pos, 500.f * Scale3DRate);
@@ -579,17 +591,17 @@ void MainScene::DrawFront_Sub(void) noexcept {
 						}
 					}
 					if (IsHitID) {
-						SetDrawBright(255, 0, 0);
+						DxLib::SetDrawBright(255, 0, 0);
 					}
 					else {
-						SetDrawBright(0, 255, 0);
+						DxLib::SetDrawBright(0, 255, 0);
 					}
 					m_Cursor->DrawRotaGraph(
 						static_cast<int>(aim.Pos2D.x),
 						static_cast<int>(aim.Pos2D.y),
 						50.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (aim.Pos2D.z),
 						0.f, true);
-					SetDrawBright(255, 255, 255);
+					DxLib::SetDrawBright(255, 255, 255);
 
 					{
 						int XS = static_cast<int>(400.f * 10.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (aim.Pos2D.z)),

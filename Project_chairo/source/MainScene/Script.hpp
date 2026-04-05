@@ -50,6 +50,7 @@ struct DamagePointParam {
 	int						frame{};
 	int						m_HP{ };
 	int						m_HPMax{ 1 };
+	float					m_Radius{ 2.f * Scale3DRate };
 
 	int				GetHitPoint(void) const noexcept { return m_HP; }
 	float			GetHitPointPer(void) const noexcept {
@@ -70,7 +71,7 @@ class Enemy :public BaseObject {
 	Util::VECTOR3D				m_Gun2Vec;
 
 	std::array<DamagePointParam, 3>	m_DamagePoint;
-	//char		padding[3]{};
+	//char		padding2[4]{};
 
 	Util::Matrix4x4			RailMat;
 
@@ -79,7 +80,6 @@ class Enemy :public BaseObject {
 
 	LineDraw				m_LineDraw3;
 	LineDraw				m_LineDraw4;
-	char		padding2[4]{};
 
 	Draw::MV1				m_ColModel{};
 public:
@@ -331,10 +331,11 @@ enum class AmmoMoveType : size_t {
 struct EnemyAmmo {
 	int				m_Frame{};
 	float			m_Scale{ 1.f };
-	Util::Matrix3x3	m_Rot{};
-	AmmoMoveType	m_AmmoMoveType{};
 	bool			m_IsPlayed{ false };
 	char		padding[7]{};
+	AmmoMoveType	m_AmmoMoveType{};
+	Util::Matrix3x3	m_Rot{};
+	char		padding2[4]{};
 };
 class EnemyScript {
 	bool					m_IsActive{ false };
@@ -342,6 +343,10 @@ class EnemyScript {
 	int						m_HP1{};
 	int						m_HP2{};
 	int						m_HP3{};
+	float					m_Radius1{};
+	float					m_Radius2{};
+	float					m_Radius3{};
+	char		padding4[4]{};
 	EnemyType				m_EnemyType{ EnemyType::Normal };
 
 	std::vector<EnemyMove>	m_EnemyMove;
@@ -396,18 +401,22 @@ public:
 		}
 		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(0).frame)) {
 			EnemyObj()->SetDamagePoint().at(0).SetupMaxHitPoint(m_HP1);
+			EnemyObj()->SetDamagePoint().at(0).m_Radius = m_Radius1;
 		}
 		else {
 			EnemyObj()->SetDamagePoint().at(0).SetupMaxHitPoint(m_HP1);
+			EnemyObj()->SetDamagePoint().at(0).m_Radius = m_Radius1;
 		}
 		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(1).frame)) {
 			EnemyObj()->SetDamagePoint().at(1).SetupMaxHitPoint(m_HP2);
+			EnemyObj()->SetDamagePoint().at(1).m_Radius = m_Radius2;
 		}
 		else {
 			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(0);
 		}
 		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(2).frame)) {
 			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(m_HP3);
+			EnemyObj()->SetDamagePoint().at(2).m_Radius = m_Radius3;
 		}
 		else {
 			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(0);
@@ -454,6 +463,15 @@ public:
 					}
 					if (Func == "HitPoint3") {
 						m_HP3 = std::stoi(Args.at(0));
+					}
+					if (Func == "Radius1") {
+						m_Radius1 = std::stof(Args.at(0)) * Scale3DRate;
+					}
+					if (Func == "Radius2") {
+						m_Radius2 = std::stof(Args.at(0)) * Scale3DRate;
+					}
+					if (Func == "Radius3") {
+						m_Radius3 = std::stof(Args.at(0)) * Scale3DRate;
 					}
 					if (Func == "Type") {
 						for (int loop = 0; loop < static_cast<int>(EnemyType::Max); ++loop) {
