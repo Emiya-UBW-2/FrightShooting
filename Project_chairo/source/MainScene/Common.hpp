@@ -199,6 +199,7 @@ private:
 private:
 	std::array<std::shared_ptr<ShotEffect>, 64>			m_ShotEffect{};
 	int													m_ShotEffectID{};
+	char		padding[4]{};
 	std::array<std::shared_ptr<CannonEffect>, 64>		m_CannonEffect{};
 	int													m_CannonEffectID{};
 	char		padding3[4]{};

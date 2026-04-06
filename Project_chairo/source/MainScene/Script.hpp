@@ -75,6 +75,7 @@ class Enemy :public BaseObject {
 	std::array<DamagePointParam, 3>	m_DamagePoint;
 	//char		padding2[4]{};
 
+	Util::Matrix4x4			m_Mat;
 	Util::Matrix4x4			RailMat;
 
 	LineDraw				m_LineDraw1;
@@ -101,8 +102,8 @@ public:
 	auto&			SetColModel(void) noexcept { return m_ColModel; }
 
 	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
-		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
-		SetMatrix(RailMat);
+		m_Mat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
+		SetMatrix(m_Mat);
 		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
 			m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::LWingtip)).pos());
 		}
@@ -117,7 +118,7 @@ public:
 		}
 	}
 	void			UpdatePlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
-		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
+		m_Mat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 	}
 	void			SetAmmo(int Shooter, bool IsHoming, Util::Matrix3x3 Mat, float Scale) noexcept {
 		Util::VECTOR3D Pos;
@@ -149,6 +150,9 @@ public:
 		}
 	}
 	auto			GetRailMat(void) const noexcept { return RailMat; }
+	void			SetRailMat(Util::Matrix4x4 Mat) noexcept {
+		RailMat = Mat;
+	}
 public:
 	void Load_Sub(void) noexcept override {
 		std::string Path = GetFilePath() + "col.mv1";
@@ -161,7 +165,7 @@ public:
 	void Init_Sub(void) noexcept override {
 	}
 	void Update_Sub(void) noexcept override {
-		SetMatrix(RailMat);
+		SetMatrix(m_Mat);
 		if (m_ColModel.IsActive()) {
 			m_ColModel.SetMatrix(MyMat);
 			m_ColModel.RefreshCollInfo();
@@ -178,7 +182,7 @@ public:
 		if (m_DamagePoint.at(0).GetHitPoint() > 0) {//todo:ちょっと強引
 			if (HaveFrame(static_cast<int>(EnemyFrame::Gun1LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun1UD))) {
 				auto& Player = PlayerManager::Instance()->SetPlane();
-				Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
+				Util::VECTOR3D Vec1 = m_Mat.zvec() * -1.f;
 				Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1UD)).pos()).normalized();
 
 				Util::Easing(&m_Gun1Vec, Vec2, 0.975f);
@@ -203,7 +207,7 @@ public:
 		if (m_DamagePoint.at(1).GetHitPoint() > 0) {//todo:ちょっと強引
 			if (HaveFrame(static_cast<int>(EnemyFrame::Gun2LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun2UD))) {
 				auto& Player = PlayerManager::Instance()->SetPlane();
-				Util::VECTOR3D Vec1 = GetRailMat().zvec() * -1.f;
+				Util::VECTOR3D Vec1 = m_Mat.zvec() * -1.f;
 				Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun2UD)).pos()).normalized();
 
 				Util::Easing(&m_Gun2Vec, Vec2, 0.975f);
@@ -385,7 +389,6 @@ class EnemyScript {
 
 	float				m_OverTime{};
 	float				m_RollPer{};
-	Util::Matrix4x4			RailMat;
 	Util::Matrix3x3			m_Roll;
 	Util::VECTOR3D			m_MovePoint;
 	Util::VECTOR3D			m_MovePointAdd;
@@ -424,7 +427,7 @@ public:
 			break;
 		case EnemyType::AI:
 			EnemyObj()->SetPlanePosition(m_EnemyMove.at(0).m_Pos, m_EnemyMove.at(0).m_Rot);
-			RailMat = m_EnemyMove.at(0).m_Rot.Get44DX() * Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, m_EnemyMove.at(0).m_Pos.z));
+			EnemyObj()->SetRailMat(m_EnemyMove.at(0).m_Rot.Get44DX() * Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, m_EnemyMove.at(0).m_Pos.z)));
 			m_MovePoint = Util::VECTOR3D::vget(m_EnemyMove.at(0).m_Pos.x, m_EnemyMove.at(0).m_Pos.y - 15.f * Scale3DRate, 0.f) * -1.f;
 			m_MovePointAdd = m_MovePoint;
 			break;
@@ -629,7 +632,7 @@ public:
 						{
 							auto& Player = PlayerManager::Instance()->SetPlane();
 							Util::VECTOR3D Pos = Player->GetMat().pos() + Player->GetMat().zvec() * -(10.f * Scale3DRate);//todo:みこし射撃
-							Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetRailMat().pos() - Pos).normalized());
+							Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetMat().pos() - Pos).normalized());
 							EnemyObj()->SetAmmo(m_EnemyAmmo.at(loop).m_Shooter, m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot, m_EnemyAmmo.at(loop).m_Scale);
 						}
 						break;
@@ -737,7 +740,7 @@ public:
 
 						float RollPer = 0.f;
 						RollPer = Util::deg2rad(200.f * DrawerMngr->GetDeltaTime());
-						auto YVec = (EnemyObj()->GetMat() * RailMat.inverse()).yvec();
+						auto YVec = (EnemyObj()->GetMat() * EnemyObj()->GetRailMat().inverse()).yvec();
 						if (YVec.y > 0.f) {
 							RollPer *= YVec.x;
 						}
@@ -837,12 +840,12 @@ public:
 				Util::Easing(&m_MoveVec, MoveVec, 0.95f);
 				Util::Easing(&m_MovePoint, m_MovePointAdd, 0.9f);
 
-				Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
+				Util::VECTOR3D PosAfter = EnemyObj()->GetRailMat().pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), EnemyObj()->GetRailMat().rotation());
 
 				switch (GameRule::Instance()->GetGameType()) {
 				case GameType::Normal:
 					Util::Easing(&m_RotRail, 0.f, 0.95f);
-					RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+					EnemyObj()->SetRailMat(Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * EnemyObj()->GetRailMat());
 					break;
 				case GameType::AllRange:
 					if (m_MovePointAdd.x < -5.f * Scale3DRate) {
@@ -854,23 +857,23 @@ public:
 					else {
 						Util::Easing(&m_RotRail, 0.f, 0.95f);
 					}
-					RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+					EnemyObj()->SetRailMat(Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * EnemyObj()->GetRailMat());
 					//範囲外なら真ん中を向く
 					if (m_OutsidePer <= 0.f && (PosAfter.magnitude() > 200.f * Scale3DRate)) {
 						m_OutsidePer = 1.f;
-						m_OutsideMatBefore = RailMat.rotation();
+						m_OutsideMatBefore = EnemyObj()->GetRailMat().rotation();
 
 						auto Pos = PosAfter; Pos.y = 0.f; Pos = Pos.normalized();
 						if (Pos.x == 0.f) {
 							Pos.x = 0.01f;
 						}
-						m_OutsideMatAfter = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), Pos).rotation();
+						m_OutsideMatAfter = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::atan2f(Pos.x, Pos.z)).rotation();
 					}
 					if (m_OutsidePer > 0.f) {
 						m_OutsidePer = std::max(m_OutsidePer - DrawerMngr->GetDeltaTime() / 0.5f, 0.f);
-						auto Mat = RailMat.rotation();
+						auto Mat = EnemyObj()->GetRailMat().rotation();
 						Util::Easing(&Mat, m_OutsideMatAfter, 0.95f);
-						RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+						EnemyObj()->SetRailMat(Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter));
 					}
 					break;
 				case GameType::Max:
@@ -878,10 +881,10 @@ public:
 					break;
 				}
 
-				RailMat = RailMat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+				EnemyObj()->SetRailMat(EnemyObj()->GetRailMat().rotation() * Util::Matrix4x4::Mtrans(PosAfter));
 
-				Util::Matrix3x3 Rot = this->m_Roll * (Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation()));
-				Util::VECTOR3D Pos = RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation());
+				Util::Matrix3x3 Rot = this->m_Roll * (Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(EnemyObj()->GetRailMat().rotation()));
+				Util::VECTOR3D Pos = EnemyObj()->GetRailMat().pos() - Util::Matrix4x4::Vtrans(m_MovePoint, EnemyObj()->GetRailMat().rotation());
 
 				EnemyObj()->UpdatePlanePosition(Pos, Rot);
 			}
@@ -897,10 +900,10 @@ public:
 			}
 		}
 		else {
-			if (EnemyObj()->GetRailMat().pos().y > 0.f) {
+			if (EnemyObj()->GetMat().pos().y > 0.f) {
 				//死んだムーブ
-				Util::VECTOR3D Pos = EnemyObj()->GetRailMat().pos() + Util::VECTOR3D::up() * (-10.f * Scale3DRate * DrawerMngr->GetDeltaTime());
-				Util::Matrix3x3 Rot = Util::Matrix3x3::Get33DX(EnemyObj()->GetRailMat().rotation()
+				Util::VECTOR3D Pos = EnemyObj()->GetMat().pos() + Util::VECTOR3D::up() * (-10.f * Scale3DRate * DrawerMngr->GetDeltaTime());
+				Util::Matrix3x3 Rot = Util::Matrix3x3::Get33DX(EnemyObj()->GetMat().rotation()
 					* Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(360.f * DrawerMngr->GetDeltaTime())));
 				EnemyObj()->UpdatePlanePosition(Pos, Rot);
 			}

@@ -92,6 +92,11 @@ class MyPlane :public BaseObject {
 	float					m_RollingInputTimer1{ 0.f };
 	float					m_RollingInputTimer2{ 0.f };
 
+	int						m_ManeuverID{};
+	int						m_ManeuverIDRe{};
+	float					m_ManeuverPer{ 0.f };
+	float					m_ManeuverInputTimer{ 0.f };
+
 	float					m_RollingCam{ 0.f };
 
 	float					m_DamageInterval{ 0.f };
@@ -143,6 +148,9 @@ public:
 	float			GetFrame() const { return this->m_Frame; }
 	float			GetSpeedMax(void) const noexcept {
 		return 1.f * Scale3DRate;
+	}
+	void			SetManeuverTargetID(int ManeuverID) noexcept {
+		m_ManeuverID = ManeuverID;
 	}
 	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);

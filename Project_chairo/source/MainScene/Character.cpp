@@ -3,6 +3,8 @@
 #include "Character.hpp"
 #include "GameRule.hpp"
 
+#include "Script.hpp"
+
 void MyPlane::Init_Sub(void) noexcept {
 	this->m_SpeedTarget = GetSpeedMax();
 	this->m_Speed = this->m_SpeedTarget;
@@ -170,6 +172,20 @@ void MyPlane::Update_Sub(void) noexcept {
 	}
 	// 進行方向に前進
 	{
+		m_ManeuverInputTimer = std::max(m_ManeuverInputTimer - DrawerMngr->GetDeltaTime(), 0.f);
+		m_ManeuverPer = std::max(m_ManeuverPer - DrawerMngr->GetDeltaTime(), 0.f);
+		if (m_ManeuverPer == 0.f) {
+			m_ManeuverIDRe = InvalidID;
+		}
+		bool BrakeTrig = !m_Stall && KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Brake);
+		if (BrakeTrig) {
+			if (m_ManeuverInputTimer != 0.f) {
+				m_ManeuverPer = 2.f;
+				m_ManeuverIDRe = m_ManeuverID;
+			}
+			m_ManeuverInputTimer = 0.3f;
+		}
+
 		bool AccelKey = !m_OverHeat && KeyMngr->GetBattleKeyPress(Util::EnumBattle::Throttle);
 		bool BrakeKey = !m_Stall && KeyMngr->GetBattleKeyPress(Util::EnumBattle::Brake);
 		if (!AccelKey && !BrakeKey) {
@@ -230,6 +246,15 @@ void MyPlane::Update_Sub(void) noexcept {
 		m_Frame += (this->m_Speed / Scale3DRate * (60.f * DrawerMngr->GetDeltaTime()));
 		Util::VECTOR3D PosBefore = RailMat.pos();
 		Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
+		if (m_ManeuverIDRe!=InvalidID) {
+			auto& obj = (std::shared_ptr<Enemy>&)(*ObjectManager::Instance()->GetObj(m_ManeuverIDRe));
+
+			Util::Easing(&PosAfter, obj->GetRailMat().pos() + obj->GetRailMat().zvec() * (20.f * Scale3DRate), 0.925f);
+			auto Rot = RailMat.rotation();
+			Util::Easing(&Rot, obj->GetRailMat().rotation(), 0.925f);
+			RailMat = Rot * Util::Matrix4x4::Mtrans(RailMat.pos());
+			Util::Easing(&m_MovePointAdd, Util::VECTOR3D::zero(), 0.925f);
+		}
 		switch (GameRule::Instance()->GetGameType()) {
 		case GameType::Normal:
 			Util::Easing(&m_RotRail, 0.f, 0.95f);
@@ -255,12 +280,12 @@ void MyPlane::Update_Sub(void) noexcept {
 				if (Pos.x == 0.f) {
 					Pos.x = 0.01f;
 				}
-				m_OutsideMatAfter = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), Pos).rotation();
+				m_OutsideMatAfter = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::atan2f(Pos.x, Pos.z)).rotation();
 			}
 			if (m_OutsidePer > 0.f) {
 				m_OutsidePer = std::max(m_OutsidePer - DrawerMngr->GetDeltaTime() / 0.5f, 0.f);
 				auto Mat = RailMat.rotation();
-				Util::Easing(&Mat, m_OutsideMatAfter, 0.875f);
+				Util::Easing(&Mat, m_OutsideMatAfter, 0.95f);
 				RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
 			}
 			break;

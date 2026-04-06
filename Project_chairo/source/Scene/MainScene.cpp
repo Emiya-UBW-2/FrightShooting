@@ -235,6 +235,21 @@ void MainScene::Update_Sub(void) noexcept {
 		m_StageScript.Update();
 		//
 		{
+			auto vec1 = Player->GetMat().zvec2();
+			float Dot = -1.f;
+			Player->SetManeuverTargetID(InvalidID);
+			for (auto& s : m_StageScript.EnemyPop()) {
+				if (!s.m_EnemyScript.IsAlive()) { continue; }
+				auto vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
+				float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
+				if (Dot < dot) {
+					Dot = dot;
+					Player->SetManeuverTargetID(s.m_EnemyScript.EnemyObj()->GetObjectID());
+				}
+			}
+		}
+		//
+		{
 			//ヒット判定
 			auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
 			if (Ret.HitFlag == TRUE) {
