@@ -147,14 +147,20 @@ void MainScene::Update_Sub(void) noexcept {
 	auto& Player = PlayerManager::Instance()->SetPlane();
 	auto& Watch = PlayerManager::Instance()->SetPlane();
 	//
+	Util::Easing(&m_ManeuverFovPer, Watch->GetIsManeuver() ? 0.75f : 1.f, 0.95f);
 	CameraParts->SetCamInfo(
-		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f),
+		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f) * m_ManeuverFovPer,
 		0.1f * Scale3DRate, 300.f * Scale3DRate);
 
 	m_DamagePer = std::max(m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
 	m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 0.f);
 	if (m_DamagePer == 0.f) {
-		CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedMax()) / (Watch->GetSpeedMax() * 2.f) * Scale3DRate);
+		if (m_ManeuverFovPer > 1.01f) {
+			CameraParts->SetCamShake(1.f, 2.f * Scale3DRate);
+		}
+		else {
+			CameraParts->SetCamShake(1.f, std::fabsf(Watch->GetSpeed() - Watch->GetSpeedMax()) / (Watch->GetSpeedMax() * 2.f) * Scale3DRate);
+		}
 		if (Player->IsDamageOn()) {
 			CameraParts->SetCamShake(0.2f, 25.f * Scale3DRate);
 			m_DamagePer = 0.2f;
@@ -246,7 +252,7 @@ void MainScene::Update_Sub(void) noexcept {
 				float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
 				float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
 				if (dot < cos(Util::deg2rad(75))) { continue; }
-				if (dot2 < cos(Util::deg2rad(165))) { continue; }
+				if (dot2 < cos(Util::deg2rad(120))) { continue; }
 				if (Dot < dot) {
 					Dot = dot;
 					Player->SetManeuverTargetID(s.m_EnemyScript.EnemyObj()->GetObjectID());

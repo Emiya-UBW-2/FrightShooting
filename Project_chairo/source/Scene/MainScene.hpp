@@ -73,6 +73,8 @@ class MainScene : public Util::SceneBase {
 	Util::VECTOR3D					CamUpR;
 	float							m_Fade{ 1.f };
 	float							m_FadeStage{ 1.f };
+	float							m_ManeuverFovPer{ 1.f };
+	char		padding2[4]{};
 	bool							m_Exit{ false };
 	bool							m_NextStage{ false };
 	bool							m_NextEvent{ false };

@@ -22,7 +22,10 @@
 #include "Ammo.hpp"
 
 enum class CharaAnim {
-	Stand,
+	Anim0,
+	Anim1,
+	Anim2,
+	Rolling,
 	/*
 	Roll,
 	Pitch,
@@ -126,6 +129,7 @@ private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(CharaFrame::Max); }
 	const char*		GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
 public:
+	bool			GetIsManeuver(void) const noexcept { return m_ManeuverIDRe != InvalidID; }
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
 	const auto&		GetMovePoint(void) const noexcept { return m_MovePoint; }

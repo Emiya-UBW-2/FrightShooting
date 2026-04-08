@@ -180,7 +180,7 @@ void MyPlane::Update_Sub(void) noexcept {
 		bool BrakeTrig = !m_Stall && KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Brake);
 		if (BrakeTrig) {
 			if (m_ManeuverInputTimer != 0.f) {
-				m_ManeuverPer = 2.f;
+				m_ManeuverPer = 1.f;
 				m_ManeuverIDRe = m_ManeuverID;
 			}
 			m_ManeuverInputTimer = 0.3f;
@@ -246,14 +246,14 @@ void MyPlane::Update_Sub(void) noexcept {
 		m_Frame += (this->m_Speed / Scale3DRate * (60.f * DrawerMngr->GetDeltaTime()));
 		Util::VECTOR3D PosBefore = RailMat.pos();
 		Util::VECTOR3D PosAfter = RailMat.pos() + Util::Matrix4x4::Vtrans(Util::VECTOR3D::forward() * (-this->m_Speed * (60.f * DrawerMngr->GetDeltaTime())), RailMat.rotation());
-		if (m_ManeuverIDRe!=InvalidID) {
+		if (GetIsManeuver()) {
 			auto& obj = (std::shared_ptr<Enemy>&)(*ObjectManager::Instance()->GetObj(m_ManeuverIDRe));
 
 			Util::Easing(&PosAfter, obj->GetRailMat().pos() + obj->GetRailMat().zvec() * (40.f * Scale3DRate), 0.925f);
 			auto Rot = RailMat.rotation();
-			Util::Easing(&Rot, obj->GetRailMat().rotation(), 0.925f);
-			RailMat = Rot * Util::Matrix4x4::Mtrans(RailMat.pos());
-			Util::Easing(&m_MovePointAdd, Util::VECTOR3D::zero(), 0.925f);
+			Util::Easing(&Rot, obj->GetRailMat().rotation(), 0.8f);
+			RailMat = Rot.rotation() * Util::Matrix4x4::Mtrans(RailMat.pos());
+			Util::Easing(&m_MovePointAdd, Util::VECTOR3D::vget(0.f, 12.f * Scale3DRate, 0.f), 0.925f);
 		}
 		switch (GameRule::Instance()->GetGameType()) {
 		case GameType::Normal:
@@ -287,6 +287,7 @@ void MyPlane::Update_Sub(void) noexcept {
 				auto Mat = RailMat.rotation();
 				Util::Easing(&Mat, m_OutsideMatAfter, 0.95f);
 				RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
+				Util::Easing(&m_MovePointAdd, Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f), 0.925f);
 			}
 			break;
 		case GameType::Max:
@@ -325,10 +326,14 @@ void MyPlane::Update_Sub(void) noexcept {
 	}
 	//アニメアップデート
 	{
-		for (size_t loop = 0; loop < static_cast<size_t>(CharaAnim::Max); ++loop) {
-			SetAnim(loop).SetPer(0.f);
+		if (GetIsManeuver()) {
+			SetAnim(static_cast<int>(CharaAnim::Rolling)).SetPer(1.f);
+			SetAnim(static_cast<int>(CharaAnim::Rolling)).Update(false, 1.f);
 		}
-		SetAnim(static_cast<int>(CharaAnim::Stand)).Update(true, 1.f);
+		else {
+			SetAnim(static_cast<int>(CharaAnim::Rolling)).SetPer(0.f);
+			SetAnim(static_cast<int>(CharaAnim::Rolling)).SetTime(0.f);
+		}
 		SetModel().FlipAnimAll();
 	}
 	//射撃
