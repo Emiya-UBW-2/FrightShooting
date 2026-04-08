@@ -241,7 +241,12 @@ void MainScene::Update_Sub(void) noexcept {
 			for (auto& s : m_StageScript.EnemyPop()) {
 				if (!s.m_EnemyScript.IsAlive()) { continue; }
 				auto vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
+				if (vec2.magnitude() > 100.f * Scale3DRate) { continue; }
+				auto vec3 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
 				float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
+				float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
+				if (dot < cos(Util::deg2rad(75))) { continue; }
+				if (dot2 < cos(Util::deg2rad(165))) { continue; }
 				if (Dot < dot) {
 					Dot = dot;
 					Player->SetManeuverTargetID(s.m_EnemyScript.EnemyObj()->GetObjectID());

@@ -249,7 +249,7 @@ void MyPlane::Update_Sub(void) noexcept {
 		if (m_ManeuverIDRe!=InvalidID) {
 			auto& obj = (std::shared_ptr<Enemy>&)(*ObjectManager::Instance()->GetObj(m_ManeuverIDRe));
 
-			Util::Easing(&PosAfter, obj->GetRailMat().pos() + obj->GetRailMat().zvec() * (20.f * Scale3DRate), 0.925f);
+			Util::Easing(&PosAfter, obj->GetRailMat().pos() + obj->GetRailMat().zvec() * (40.f * Scale3DRate), 0.925f);
 			auto Rot = RailMat.rotation();
 			Util::Easing(&Rot, obj->GetRailMat().rotation(), 0.925f);
 			RailMat = Rot * Util::Matrix4x4::Mtrans(RailMat.pos());
