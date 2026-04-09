@@ -244,24 +244,34 @@ public:
 	}
 };
 
-struct LineParam {
-	Util::VECTOR3D m_Pos{};
-	float m_Per{};
-};
-class LineDraw {
+class LineEffect {
+	struct LineParam {
+		Util::VECTOR3D m_Pos{};
+		float m_Per{};
+	};
 private:
+	float			m_Time{};
+	float			m_Radius{};
+	unsigned int	m_Color{};
+	int				m_BLENDMODE{};
 	std::array<LineParam, 32>	m_Line;
 public:
+	void Init(float Time, float Radius, unsigned int Color, int BLENDMODE) noexcept {
+		m_Time = Time;
+		m_Radius = Radius;
+		m_Color = Color;
+		m_BLENDMODE = BLENDMODE;
+	}
 	void Set(const Util::VECTOR3D& Point) noexcept {
 		for (auto& l : m_Line) {
 			l.m_Pos = Point;
 			l.m_Per = 0.f;
 		}
 	}
-	void Update(const Util::VECTOR3D& Point, float Time) noexcept {
+	void Update(const Util::VECTOR3D& Point) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		for (auto& l : m_Line) {
-			l.m_Per = std::max(l.m_Per - DrawerMngr->GetDeltaTime() / Time, 0.f);
+			l.m_Per = std::max(l.m_Per - DrawerMngr->GetDeltaTime() / m_Time, 0.f);
 		}
 		for (size_t loop = m_Line.size() - 1; loop >= 1; --loop) {
 			m_Line.at(loop) = m_Line.at(loop - 1);
@@ -270,19 +280,19 @@ public:
 		m_Line.at(0).m_Per = 1.f;
 
 	}
-	void Draw(float Radius, unsigned int Color, int BLENDMODE) const noexcept {
+	void Draw(void) const noexcept {
 		DxLib::SetUseZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
 		for (size_t loop = 0; loop < m_Line.size() - 1; ++loop) {
 			if ((255.f * m_Line.at(loop).m_Per) <= 0.f) { continue; }
-			DxLib::SetDrawBlendMode(BLENDMODE, static_cast<int>(255.f * m_Line.at(loop).m_Per));
+			DxLib::SetDrawBlendMode(m_BLENDMODE, static_cast<int>(255.f * m_Line.at(loop).m_Per));
 			DxLib::DrawCapsule3D(
 				m_Line.at(loop).m_Pos.get(),
 				m_Line.at(loop + 1).m_Pos.get(),
-				Radius,
+				m_Radius,
 				3,
-				Color,
-				Color,
+				m_Color,
+				m_Color,
 				true
 			);
 		}

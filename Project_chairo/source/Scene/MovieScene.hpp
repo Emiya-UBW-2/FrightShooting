@@ -38,11 +38,11 @@ class MovieObj : public BaseObject {
 	bool m_IsDraw = true;
 	char		padding[7]{};
 
-	LineDraw				m_LineDraw1;
-	LineDraw				m_LineDraw2;
+	LineEffect				m_LineEffect1;
+	LineEffect				m_LineEffect2;
 
-	LineDraw				m_LineDraw3;
-	LineDraw				m_LineDraw4;
+	LineEffect				m_LineEffect3;
+	LineEffect				m_LineEffect4;
 public:
 	MovieObj(void) noexcept {}
 	MovieObj(const MovieObj&) = delete;
@@ -60,33 +60,46 @@ public:
 	void			SetPlanePosition(Util::Matrix4x4 Mat) noexcept {
 		SetMatrix(Mat);
 		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
-			m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos());
+			m_LineEffect1.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
-			m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos());
+			m_LineEffect2.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
-			m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos());
+			m_LineEffect3.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
-			m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos());
+			m_LineEffect4.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos());
 		}
 	}
 public:
 	void Load_Sub(void) noexcept override {}
-	void Init_Sub(void) noexcept override {}
-	void Update_Sub(void) noexcept override{
+	void Init_Sub(void) noexcept override {
 		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
-			m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos(), 0.25f);
+			m_LineEffect1.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
-			m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos(), 0.25f);
+			m_LineEffect2.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
-			m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos(), 0.05f);
+			m_LineEffect3.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
-			m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos(), 0.05f);
+			m_LineEffect4.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+		}
+	}
+	void Update_Sub(void) noexcept override{
+		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
+			m_LineEffect1.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos());
+		}
+		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
+			m_LineEffect2.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos());
+		}
+		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
+			m_LineEffect3.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos());
+		}
+		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
+			m_LineEffect4.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos());
 		}
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
@@ -102,16 +115,16 @@ public:
 	void DrawFront_Sub(void) const noexcept override {
 		if (!m_IsDraw) { return; }
 		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
-			m_LineDraw1.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+			m_LineEffect1.Draw();
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
-			m_LineDraw2.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+			m_LineEffect2.Draw();
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
-			m_LineDraw3.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+			m_LineEffect3.Draw();
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
-			m_LineDraw4.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+			m_LineEffect4.Draw();
 		}
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
@@ -314,7 +327,6 @@ class MovieScene : public Util::SceneBase {
 
 	bool							m_Exit{ false };
 	char		padding[7]{};
-
 public:
 	MovieScene(void) noexcept { SetID(static_cast<int>(EnumScene::Movie)); }
 	MovieScene(const MovieScene&) = delete;

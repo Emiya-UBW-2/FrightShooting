@@ -112,11 +112,11 @@ class MyPlane :public BaseObject {
 	Util::Matrix4x4			m_OutsideMatBefore;
 	Util::Matrix4x4			m_OutsideMatAfter;
 
-	LineDraw				m_LineDraw1;
-	LineDraw				m_LineDraw2;
+	LineEffect				m_LineEffect1;
+	LineEffect				m_LineEffect2;
 
-	LineDraw				m_LineDraw3;
-	LineDraw				m_LineDraw4;
+	LineEffect				m_LineEffect3;
+	LineEffect				m_LineEffect4;
 	char		padding4[4]{};
 public:
 	MyPlane(void) noexcept {}
@@ -167,10 +167,10 @@ public:
 
 		m_RePos = GetMat().pos();
 
-		m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
-		m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
-		m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
-		m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
+		m_LineEffect1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
+		m_LineEffect2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
+		m_LineEffect3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
+		m_LineEffect4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
 	}
 	auto			GetEyeMatrix(void) const noexcept {
 		return EyeMat;
@@ -218,11 +218,11 @@ public:
 			}
 		}
 
-		m_LineDraw1.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
-		m_LineDraw2.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+		m_LineEffect1.Draw();
+		m_LineEffect2.Draw();
 
-		m_LineDraw3.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
-		m_LineDraw4.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+		m_LineEffect3.Draw();
+		m_LineEffect4.Draw();
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 		if (!IsDraw()) { return; }

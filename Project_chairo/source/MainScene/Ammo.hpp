@@ -194,7 +194,7 @@ private:
 	int				GetFrameNum(void) noexcept override { return 0; }
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
-	LineDraw				m_LineDraw;
+	LineEffect				m_LineEffect;
 	const Draw::GraphHandle*	m_Graph{};
 	Util::VECTOR3D			Vector{};
 	char		padding0[4]{};
@@ -221,7 +221,7 @@ public:
 		this->DrawTimer = this->Timer + 0.25f;
 		Shooter = ID;
 
-		m_LineDraw.Set(GetMat().pos());
+		m_LineEffect.Set(GetMat().pos());
 		m_SeekerFlag = true;
 	}
 	bool IsActive() const noexcept {
@@ -258,7 +258,9 @@ public:
 	void Load_Sub(void) noexcept override {
 		this->m_Graph = Draw::GraphPool::Instance()->Get("data/Image/Light.png")->Get();
 	}
-	void Init_Sub(void) noexcept override {}
+	void Init_Sub(void) noexcept override {
+		m_LineEffect.Init(0.5f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+	}
 	void Update_Sub(void) noexcept override;
 	void SetShadowDraw_Sub(void) const noexcept override {
 		if (this->Timer == 0.f) { return; }
@@ -273,7 +275,7 @@ public:
 		//DxLib::SetWriteZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
 
-		m_LineDraw.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+		m_LineEffect.Draw();
 
 		float Per = std::sin(Util::deg2rad(90.f));
 		if (Per > 0.f) {

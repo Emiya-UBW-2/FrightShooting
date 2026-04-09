@@ -78,11 +78,11 @@ class Enemy :public BaseObject {
 	Util::Matrix4x4			m_Mat;
 	Util::Matrix4x4			RailMat;
 
-	LineDraw				m_LineDraw1;
-	LineDraw				m_LineDraw2;
+	LineEffect				m_LineEffect1;
+	LineEffect				m_LineEffect2;
 
-	LineDraw				m_LineDraw3;
-	LineDraw				m_LineDraw4;
+	LineEffect				m_LineEffect3;
+	LineEffect				m_LineEffect4;
 
 	Draw::MV1				m_ColModel{};
 public:
@@ -105,16 +105,16 @@ public:
 		m_Mat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 		SetMatrix(m_Mat);
 		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
-			m_LineDraw1.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::LWingtip)).pos());
+			m_LineEffect1.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::LWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::RWingtip))) {
-			m_LineDraw2.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::RWingtip)).pos());
+			m_LineEffect2.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::RWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle1))) {
-			m_LineDraw3.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle1)).pos());
+			m_LineEffect3.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle1)).pos());
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle2))) {
-			m_LineDraw4.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle2)).pos());
+			m_LineEffect4.Set(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle2)).pos());
 		}
 	}
 	void			UpdatePlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
@@ -163,6 +163,18 @@ public:
 		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun.wav", true);
 	}
 	void Init_Sub(void) noexcept override {
+		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
+			m_LineEffect1.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::RWingtip))) {
+			m_LineEffect2.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle1))) {
+			m_LineEffect3.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle2))) {
+			m_LineEffect4.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+		}
 	}
 	void Update_Sub(void) noexcept override {
 		SetMatrix(m_Mat);
@@ -231,16 +243,16 @@ public:
 		}
 		//
 		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
-			m_LineDraw1.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::LWingtip)).pos(), 0.25f);
+			m_LineEffect1.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::LWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::RWingtip))) {
-			m_LineDraw2.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::RWingtip)).pos(), 0.25f);
+			m_LineEffect2.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::RWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle1))) {
-			m_LineDraw3.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle1)).pos(), 0.05f);
+			m_LineEffect3.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle1)).pos());
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle2))) {
-			m_LineDraw4.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle2)).pos(), 0.05f);
+			m_LineEffect4.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Nozzle2)).pos());
 		}
 
 		for (auto& a : this->m_DamagePoint) {
@@ -255,45 +267,45 @@ public:
 		{
 			auto Pos2D = ConvWorldPosToScreenPos(GetMat().pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				auto& aim = this->m_DamagePoint.at(0);
-				aim.Pos2D.x = Pos2D.x;
-				aim.Pos2D.y = Pos2D.y;
-				aim.Pos2D.z = (GetMat().pos()-GetCameraPosition()).magnitude();
-				aim.IsDraw = true;
-				aim.frame = InvalidID;
+				auto& dp = this->m_DamagePoint.at(0);
+				dp.Pos2D.x = Pos2D.x;
+				dp.Pos2D.y = Pos2D.y;
+				dp.Pos2D.z = (GetMat().pos()-GetCameraPosition()).magnitude();
+				dp.IsDraw = true;
+				dp.frame = InvalidID;
 			}
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint1))) {
 			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				auto& aim = this->m_DamagePoint.at(0);
-				aim.Pos2D.x = Pos2D.x;
-				aim.Pos2D.y = Pos2D.y;
-				aim.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos() - GetCameraPosition()).magnitude();
-				aim.IsDraw = true;
-				aim.frame = static_cast<int>(EnemyFrame::DamagePoint1);
+				auto& dp = this->m_DamagePoint.at(0);
+				dp.Pos2D.x = Pos2D.x;
+				dp.Pos2D.y = Pos2D.y;
+				dp.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint1)).pos() - GetCameraPosition()).magnitude();
+				dp.IsDraw = true;
+				dp.frame = static_cast<int>(EnemyFrame::DamagePoint1);
 			}
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint2))) {
 			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				auto& aim = this->m_DamagePoint.at(1);
-				aim.Pos2D.x = Pos2D.x;
-				aim.Pos2D.y = Pos2D.y;
-				aim.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos() - GetCameraPosition()).magnitude();
-				aim.IsDraw = true;
-				aim.frame = static_cast<int>(EnemyFrame::DamagePoint2);
+				auto& dp = this->m_DamagePoint.at(1);
+				dp.Pos2D.x = Pos2D.x;
+				dp.Pos2D.y = Pos2D.y;
+				dp.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint2)).pos() - GetCameraPosition()).magnitude();
+				dp.IsDraw = true;
+				dp.frame = static_cast<int>(EnemyFrame::DamagePoint2);
 			}
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint3))) {
 			auto Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos().get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
-				auto& aim = this->m_DamagePoint.at(2);
-				aim.Pos2D.x = Pos2D.x;
-				aim.Pos2D.y = Pos2D.y;
-				aim.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos() - GetCameraPosition()).magnitude();
-				aim.IsDraw = true;
-				aim.frame = static_cast<int>(EnemyFrame::DamagePoint3);
+				auto& dp = this->m_DamagePoint.at(2);
+				dp.Pos2D.x = Pos2D.x;
+				dp.Pos2D.y = Pos2D.y;
+				dp.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos() - GetCameraPosition()).magnitude();
+				dp.IsDraw = true;
+				dp.frame = static_cast<int>(EnemyFrame::DamagePoint3);
 			}
 		}
 	}
@@ -312,16 +324,16 @@ public:
 		}
 
 		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
-			m_LineDraw1.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+			m_LineEffect1.Draw();
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::RWingtip))) {
-			m_LineDraw2.Draw(0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+			m_LineEffect2.Draw();
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle1))) {
-			m_LineDraw3.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+			m_LineEffect3.Draw();
 		}
 		if (HaveFrame(static_cast<int>(EnemyFrame::Nozzle2))) {
-			m_LineDraw4.Draw(0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+			m_LineEffect4.Draw();
 		}
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
@@ -368,12 +380,8 @@ struct EnemyAmmo {
 class EnemyScript {
 	bool					m_IsActive{ false };
 	char		padding[3]{};
-	int						m_HP1{};
-	int						m_HP2{};
-	int						m_HP3{};
-	float					m_Radius1{};
-	float					m_Radius2{};
-	float					m_Radius3{};
+	int						m_HP[3]{};
+	float					m_Radius[3]{};
 	char		padding4[4]{};
 	EnemyType				m_EnemyType{ EnemyType::Normal };
 
@@ -435,27 +443,19 @@ public:
 		default:
 			break;
 		}
-		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(0).frame)) {
-			EnemyObj()->SetDamagePoint().at(0).SetupMaxHitPoint(m_HP1);
-			EnemyObj()->SetDamagePoint().at(0).m_Radius = m_Radius1;
+		for (auto& dp : EnemyObj()->SetDamagePoint()) {
+			size_t index = static_cast<size_t>(&dp - &EnemyObj()->SetDamagePoint().front());
+			if (EnemyObj()->HaveFrame(dp.frame)) {
+				dp.SetupMaxHitPoint(m_HP[index]);
+				dp.m_Radius = m_Radius[index];
+			}
+			else {
+				dp.SetupMaxHitPoint(0);
+			}
 		}
-		else {
-			EnemyObj()->SetDamagePoint().at(0).SetupMaxHitPoint(m_HP1);
-			EnemyObj()->SetDamagePoint().at(0).m_Radius = m_Radius1;
-		}
-		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(1).frame)) {
-			EnemyObj()->SetDamagePoint().at(1).SetupMaxHitPoint(m_HP2);
-			EnemyObj()->SetDamagePoint().at(1).m_Radius = m_Radius2;
-		}
-		else {
-			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(0);
-		}
-		if (EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(2).frame)) {
-			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(m_HP3);
-			EnemyObj()->SetDamagePoint().at(2).m_Radius = m_Radius3;
-		}
-		else {
-			EnemyObj()->SetDamagePoint().at(2).SetupMaxHitPoint(0);
+		if (!EnemyObj()->HaveFrame(EnemyObj()->GetDamagePoint().at(0).frame)) {
+			EnemyObj()->SetDamagePoint().at(0).SetupMaxHitPoint(m_HP[0]);
+			EnemyObj()->SetDamagePoint().at(0).m_Radius = m_Radius[0];
 		}
 
 		m_IsActive = true;
@@ -466,8 +466,8 @@ public:
 	bool IsActive(void) const noexcept { return m_IsActive; }
 	bool IsAlive(void) const noexcept {
 		if (IsActive()) {
-			for (auto& aim : EnemyObj()->GetDamagePoint()) {
-				if (aim.GetHitPoint() > 0) {
+			for (auto& dp : EnemyObj()->GetDamagePoint()) {
+				if (dp.GetHitPoint() > 0) {
 					return true;
 				}
 			}
@@ -492,22 +492,22 @@ public:
 						ObjectManager::Instance()->LoadModel(m_ObjPath);
 					}
 					if (Func == "HitPoint1") {
-						m_HP1 = std::stoi(Args.at(0));
+						m_HP[0] = std::stoi(Args.at(0));
 					}
 					if (Func == "HitPoint2") {
-						m_HP2 = std::stoi(Args.at(0));
+						m_HP[1] = std::stoi(Args.at(0));
 					}
 					if (Func == "HitPoint3") {
-						m_HP3 = std::stoi(Args.at(0));
+						m_HP[2] = std::stoi(Args.at(0));
 					}
 					if (Func == "Radius1") {
-						m_Radius1 = std::stof(Args.at(0)) * Scale3DRate;
+						m_Radius[0] = std::stof(Args.at(0)) * Scale3DRate;
 					}
 					if (Func == "Radius2") {
-						m_Radius2 = std::stof(Args.at(0)) * Scale3DRate;
+						m_Radius[1] = std::stof(Args.at(0)) * Scale3DRate;
 					}
 					if (Func == "Radius3") {
-						m_Radius3 = std::stof(Args.at(0)) * Scale3DRate;
+						m_Radius[2] = std::stof(Args.at(0)) * Scale3DRate;
 					}
 					if (Func == "Type") {
 						for (int loop = 0; loop < static_cast<int>(EnemyType::Max); ++loop) {
@@ -894,8 +894,8 @@ public:
 				break;
 			}
 			if (m_EndFrame != -1.f && m_Frame >= m_EndFrame) {
-				for (auto& aim : EnemyObj()->SetDamagePoint()) {
-					aim.SetDamage(aim.GetHitPoint());
+				for (auto& dp : EnemyObj()->SetDamagePoint()) {
+					dp.SetDamage(dp.GetHitPoint());
 				}
 			}
 		}

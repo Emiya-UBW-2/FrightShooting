@@ -30,7 +30,7 @@ void Bomb::Update_Sub(void) noexcept {
 	if (this->DrawTimer == 0.f) { return; }
 	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
 
-	m_LineDraw.Update(GetMat().pos(), 0.5f);
+	m_LineEffect.Update(GetMat().pos());
 
 	if (!IsActive()) {
 		float Alpha = 0.f;
