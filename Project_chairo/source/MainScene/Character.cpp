@@ -183,11 +183,12 @@ void MyPlane::Update_Sub(void) noexcept {
 		if (m_ManeuverPer == 0.f) {
 			m_ManeuverIDRe = InvalidID;
 		}
-		bool BrakeTrig = !m_Stall && KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Brake);
+		bool BrakeTrig = m_ManeuverID != InvalidID && !m_Stall && m_StallPer < 0.5f && KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Brake);
 		if (BrakeTrig) {
 			if (m_ManeuverInputTimer != 0.f) {
 				m_ManeuverPer = 1.f;
 				m_ManeuverIDRe = m_ManeuverID;
+				m_StallPer += 0.5f;
 			}
 			m_ManeuverInputTimer = 0.3f;
 		}

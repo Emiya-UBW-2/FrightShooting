@@ -236,6 +236,7 @@ void MainScene::Update_Sub(void) noexcept {
 		{
 			auto vec1 = Player->GetMat().zvec2();
 			float Dot = -1.f;
+			auto Prev = Player->GetManeuverID();
 			Player->SetManeuverTargetID(InvalidID);
 			for (auto& s : m_StageScript.EnemyPop()) {
 				if (!s.m_EnemyScript.IsAlive()) { continue; }
@@ -245,12 +246,42 @@ void MainScene::Update_Sub(void) noexcept {
 				float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
 				float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
 				if (dot < cos(Util::deg2rad(75))) { continue; }//敵の位置が自分の前方左右75度以内
-				if (dot2 < cos(Util::deg2rad(120))) { continue; }//彼我の向きが左右120度以内
+				if (dot2 < cos(Util::deg2rad(75))) { continue; }//彼我の向きが左右75度以内
 				if (Dot < dot) {
 					Dot = dot;
 					Player->SetManeuverTargetID(s.m_EnemyScript.EnemyObj()->GetObjectID());
+					m_ManeuverPos2D = s.m_EnemyScript.EnemyObj()->GetDamagePoint().at(0).Pos2D;
 				}
 			}
+			if (Prev != Player->GetManeuverID()) {
+				m_ManeuverActive = 0.5f;
+			}
+			if (Player->GetManeuverID() != InvalidID) {
+				m_ManeuverActive = std::clamp(m_ManeuverActive + DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
+			}
+			else {
+				m_ManeuverActive = std::clamp(m_ManeuverActive - DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
+			}
+		}
+		//警報
+		{
+			bool IsAlert = false;
+			for (auto& s : m_StageScript.EnemyPop()) {
+				if (!s.m_EnemyScript.IsAlive()) { continue; }
+				bool IsInsight = true;
+				auto vec1 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
+				auto vec2 = Player->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
+				auto vec3 = Player->GetMat().zvec2();
+				float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
+				float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
+				if (dot < cos(Util::deg2rad(75))) { IsInsight = false; }//敵の位置が自分の前方左右75度以内
+				if (dot2 < cos(Util::deg2rad(75))) { IsInsight = false; }//彼我の向きが左右75度以内
+				if (IsInsight) {
+					IsAlert = true;
+					break;
+				}
+			}
+			this->m_MainUI->SetIsAlert(IsAlert);
 		}
 		//地面や敵機との激突判定
 		{
@@ -626,11 +657,26 @@ void MainScene::Draw_Sub(void) noexcept {
 void MainScene::DrawFront_Sub(void) noexcept {
 	ObjectManager::Instance()->DrawFront();
 
+	auto& Player = PlayerManager::Instance()->SetPlane();
 	auto* DrawerMngr = Draw::MainDraw::Instance();
+
+	if (0.f < m_ManeuverActive && m_ManeuverActive < 1.f) {
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * m_ManeuverActive), 0, 255));
+		DxLib::SetDrawBright(255, 255, 0);
+		m_Cursor->DrawRotaGraph(
+			static_cast<int>(m_ManeuverPos2D.x),
+			static_cast<int>(m_ManeuverPos2D.y),
+			50.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (m_ManeuverPos2D.z) *
+			Util::Lerp(10.f, 1.f, m_ManeuverActive),
+			0.f, true);
+		DxLib::SetDrawBright(255, 255, 255);
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+	}
+
 	for (auto& s : m_StageScript.EnemyPop()) {
 		//敵が生きている
 		if (s.m_EnemyScript.IsAlive()) {
-			for (auto& dp : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
+			for (auto& dp : s.m_EnemyScript.EnemyObj()->GetDamagePoint()) {
 				if (dp.IsDraw && dp.GetHitPoint() > 0) {
 					auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), dp.frame);
 					bool IsHitID = false;
@@ -646,7 +692,12 @@ void MainScene::DrawFront_Sub(void) noexcept {
 						DxLib::SetDrawBright(255, 0, 0);
 					}
 					else {
-						DxLib::SetDrawBright(0, 255, 0);
+						if (sID.first == Player->GetManeuverID()) {
+							DxLib::SetDrawBright(255, 255, 0);
+						}
+						else {
+							DxLib::SetDrawBright(0, 255, 0);
+						}
 					}
 					m_Cursor->DrawRotaGraph(
 						static_cast<int>(dp.Pos2D.x),

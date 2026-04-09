@@ -13,7 +13,8 @@ class MainUI {
 	bool							m_IsSceneEnd{ false };
 	bool							m_IsPauseActive{ false };
 	bool							m_IsExit{ false };
-	char		padding[5]{};
+	bool							m_IsAlert{ false };
+	char		padding[4]{};
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
 	float							m_HPPrev{};
 	float							m_HPChangeTime{};
@@ -31,6 +32,7 @@ public:
 public:
 	bool IsPauseActive(void) const noexcept { return m_IsPauseActive; }
 	bool IsExit(void) const noexcept { return m_IsExit; }
+	void SetIsAlert(bool IsAlert) noexcept { m_IsAlert = IsAlert; }
 public:
 	void Init() noexcept {
 		this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
@@ -147,6 +149,16 @@ public:
 					1920 / 2, 1080 / 2 - 400 + YP,
 					ColorPalette::Red, ColorPalette::Red50,
 					"OVER HEAT");
+				YP += 32;
+			}
+
+			if (m_IsAlert) {
+				auto* Font = Draw::FontPool::Instance();
+				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
+					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,
+					1920 / 2, 1080 / 2 - 400 + YP,
+					ColorPalette::Red, ColorPalette::Red50,
+					"MISSILE");
 				YP += 32;
 			}
 		}

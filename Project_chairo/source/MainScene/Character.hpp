@@ -141,6 +141,8 @@ public:
 
 	const auto& GetRePos(void) const noexcept { return m_RePos; }
 	
+	const auto& GetManeuverID(void) const noexcept { return m_ManeuverID; }
+
 	bool			IsDraw() const {
 		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return false; }
 		return true;

@@ -830,10 +830,20 @@ public:
 					}
 					//射撃
 					{
-						m_ShootTimer += DrawerMngr->GetDeltaTime();
-						if (m_ShootTimer > 10.f) {
-							m_ShootTimer -= 10.f;
-							EnemyObj()->SetAmmo(0, true, Util::Matrix3x3::Get33DX(EnemyObj()->GetMat()), 1.f);
+						m_ShootTimer = std::clamp(m_ShootTimer + DrawerMngr->GetDeltaTime(),0.f,10.f);
+						if (m_ShootTimer >= 10.f) {
+							bool IsInsight = true;
+							auto vec1 = EnemyObj()->GetMat().zvec2();
+							auto vec2 = Player->GetMat().pos() - EnemyObj()->GetMat().pos();
+							auto vec3 = Player->GetMat().zvec2();
+							float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
+							float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
+							if (dot < cos(Util::deg2rad(75))) { IsInsight = false; }//敵の位置が自分の前方左右75度以内
+							if (dot2 < cos(Util::deg2rad(75))) { IsInsight = false; }//彼我の向きが左右75度以内
+							if (IsInsight) {
+								EnemyObj()->SetAmmo(0, true, Util::Matrix3x3::Get33DX(EnemyObj()->GetMat()), 1.f);
+								m_ShootTimer = 0.f;
+							}
 						}
 					}
 				}
