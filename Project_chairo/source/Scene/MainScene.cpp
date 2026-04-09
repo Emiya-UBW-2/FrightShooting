@@ -238,49 +238,72 @@ void MainScene::Update_Sub(void) noexcept {
 			float Dot = -1.f;
 			auto Prev = Player->GetManeuverID();
 			Player->SetManeuverTargetID(InvalidID);
-			for (auto& s : m_StageScript.EnemyPop()) {
-				if (!s.m_EnemyScript.IsAlive()) { continue; }
-				auto vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
-				if (vec2.magnitude() > 100.f * Scale3DRate) { continue; }//彼我の距離が100m以内
-				auto vec3 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
-				float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
-				float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
-				if (dot < cos(Util::deg2rad(75))) { continue; }//敵の位置が自分の前方左右75度以内
-				if (dot2 < cos(Util::deg2rad(75))) { continue; }//彼我の向きが左右75度以内
-				if (Dot < dot) {
-					Dot = dot;
-					Player->SetManeuverTargetID(s.m_EnemyScript.EnemyObj()->GetObjectID());
-					m_ManeuverPos2D = s.m_EnemyScript.EnemyObj()->GetDamagePoint().at(0).Pos2D;
+
+			switch (GameRule::Instance()->GetGameType()) {
+			case GameType::Normal:
+				m_ManeuverActive = 0.f;
+				break;
+			case GameType::AllRange:
+			{
+				for (auto& s : m_StageScript.EnemyPop()) {
+					if (!s.m_EnemyScript.IsAlive()) { continue; }
+					auto vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
+					if (vec2.magnitude() > 100.f * Scale3DRate) { continue; }//彼我の距離が100m以内
+					auto vec3 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
+					float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
+					float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
+					if (dot < cos(Util::deg2rad(75))) { continue; }//敵の位置が自分の前方左右75度以内
+					if (dot2 < cos(Util::deg2rad(75))) { continue; }//彼我の向きが左右75度以内
+					if (Dot < dot) {
+						Dot = dot;
+						Player->SetManeuverTargetID(s.m_EnemyScript.EnemyObj()->GetObjectID());
+						m_ManeuverPos2D = s.m_EnemyScript.EnemyObj()->GetDamagePoint().at(0).Pos2D;
+					}
+				}
+				if (Prev != Player->GetManeuverID()) {
+					m_ManeuverActive = 0.5f;
+				}
+				if (Player->GetManeuverID() != InvalidID) {
+					m_ManeuverActive = std::clamp(m_ManeuverActive + DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
+				}
+				else {
+					m_ManeuverActive = std::clamp(m_ManeuverActive - DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
 				}
 			}
-			if (Prev != Player->GetManeuverID()) {
-				m_ManeuverActive = 0.5f;
-			}
-			if (Player->GetManeuverID() != InvalidID) {
-				m_ManeuverActive = std::clamp(m_ManeuverActive + DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
-			}
-			else {
-				m_ManeuverActive = std::clamp(m_ManeuverActive - DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
+				break;
+			case GameType::Max:
+			default:
+				break;
 			}
 		}
 		//警報
 		{
 			bool IsAlert = false;
-			for (auto& s : m_StageScript.EnemyPop()) {
-				if (!s.m_EnemyScript.IsAlive()) { continue; }
-				bool IsInsight = true;
-				auto vec1 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
-				auto vec2 = Player->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
-				auto vec3 = Player->GetMat().zvec2();
-				float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
-				float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
-				if (dot < cos(Util::deg2rad(75))) { IsInsight = false; }//敵の位置が自分の前方左右75度以内
-				if (dot2 < cos(Util::deg2rad(75))) { IsInsight = false; }//彼我の向きが左右75度以内
-				if (IsInsight) {
-					IsAlert = true;
-					break;
+			switch (GameRule::Instance()->GetGameType()) {
+			case GameType::Normal:
+				break;
+			case GameType::AllRange:
+				for (auto& s : m_StageScript.EnemyPop()) {
+					if (!s.m_EnemyScript.IsAlive()) { continue; }
+					bool IsInsight = true;
+					auto vec1 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
+					auto vec2 = Player->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
+					auto vec3 = Player->GetMat().zvec2();
+					float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
+					float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
+					if (dot < cos(Util::deg2rad(75))) { IsInsight = false; }//敵の位置が自分の前方左右75度以内
+					if (dot2 < cos(Util::deg2rad(75))) { IsInsight = false; }//彼我の向きが左右75度以内
+					if (IsInsight) {
+						IsAlert = true;
+						break;
+					}
 				}
+				break;
+			case GameType::Max:
+			default:
+				break;
 			}
+
 			this->m_MainUI->SetIsAlert(IsAlert);
 		}
 		//地面や敵機との激突判定

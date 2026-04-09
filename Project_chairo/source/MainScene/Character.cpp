@@ -265,7 +265,7 @@ void MyPlane::Update_Sub(void) noexcept {
 		switch (GameRule::Instance()->GetGameType()) {
 		case GameType::Normal:
 			Util::Easing(&m_RotRail, 0.f, 0.95f);
-			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(45.f) * DrawerMngr->GetDeltaTime()) * RailMat;
 			break;
 		case GameType::AllRange:
 			if (m_MovePointAdd.x < -5.f * Scale3DRate) {
@@ -277,7 +277,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			else {
 				Util::Easing(&m_RotRail, 0.f, 0.95f);
 			}
-			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(30.f) * DrawerMngr->GetDeltaTime()) * RailMat;
+			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), m_RotRail * Util::deg2rad(45.f) * DrawerMngr->GetDeltaTime()) * RailMat;
 			//範囲外なら真ん中を向く
 			if (m_OutsidePer <= 0.f && (PosAfter.magnitude() > 200.f * Scale3DRate)) {
 				m_OutsidePer = 1.f;
