@@ -453,6 +453,7 @@ void MainScene::Update_Sub(void) noexcept {
 						float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
 						std::pair<int, int> ID = std::make_pair(InvalidID, InvalidID);
 						for (auto& s : m_StageScript.EnemyPop()) {
+							if (!s.m_EnemyScript.IsAlive()) { continue; }
 							{
 								auto& dp = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
 								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
