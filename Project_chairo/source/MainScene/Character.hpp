@@ -107,7 +107,9 @@ class MyPlane :public BaseObject {
 	float					m_RotRail{ 0.f };
 
 	float					m_OutsidePer{ };
-	char		padding3[4]{};
+
+	float					m_RollingBarrier{ 0.f };
+	//char		padding3[4]{};
 
 	Util::Matrix4x4			m_OutsideMatBefore;
 	Util::Matrix4x4			m_OutsideMatAfter;
@@ -118,6 +120,8 @@ class MyPlane :public BaseObject {
 	LineEffect				m_LineEffect3;
 	LineEffect				m_LineEffect4;
 	char		padding4[4]{};
+
+	Draw::MV1				m_barrier{};
 public:
 	MyPlane(void) noexcept {}
 	MyPlane(const MyPlane&) = delete;
@@ -196,6 +200,8 @@ public:
 		this->m_EngineID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/engine.wav", true);
 		this->m_ShotID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, "data/Sound/SE/gun.wav", true);
 		ShotSoundID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/rolling_rocket.wav", true);
+
+		Draw::MV1::Load("data/model/barrier/model.mv1", &m_barrier, DX_LOADMODEL_PHYSICS_DISABLE);
 	}
 	void Init_Sub(void) noexcept override;
 	void Update_Sub(void) noexcept override;
@@ -225,12 +231,17 @@ public:
 
 		m_LineEffect3.Draw();
 		m_LineEffect4.Draw();
+
+		if (m_RollingBarrier > 0.f) {
+			m_barrier.DrawModel();
+		}
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
 		if (!IsDraw()) { return; }
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
+		m_barrier.Dispose();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
 		SetModel().Dispose();

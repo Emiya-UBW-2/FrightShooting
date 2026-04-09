@@ -162,12 +162,15 @@ void MyPlane::Update_Sub(void) noexcept {
 
 			if (this->m_RollingTimer1 > 0.f) {
 				m_RollPer = Util::AngleRange180(m_RollPer - Util::deg2rad(360 / 0.5f) * DrawerMngr->GetDeltaTime());
+				Util::Easing(&m_RollingBarrier, 1.f, 0.9f);
 			}
 			else if (this->m_RollingTimer2 > 0.f) {
 				m_RollPer = Util::AngleRange180(m_RollPer + Util::deg2rad(360 / 0.5f) * DrawerMngr->GetDeltaTime());
+				Util::Easing(&m_RollingBarrier, 1.f, 0.9f);
 			}
 			else {
 				Util::Easing(&m_RollPer, RollPer, 0.95f);
+				m_RollingBarrier = std::clamp(m_RollingBarrier - DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
 			}
 
 			this->m_Roll = Util::Matrix3x3::RotAxis(this->m_Roll.zvec(), m_RollPer);
@@ -330,6 +333,10 @@ void MyPlane::Update_Sub(void) noexcept {
 		SetMatrix(
 			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
 			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
+		if (m_RollingBarrier > 0.f) {
+			m_barrier.SetMatrix(GetMat());
+			m_barrier.SetOpacityRate(m_RollingBarrier);
+		}
 	}
 	//アニメアップデート
 	{
