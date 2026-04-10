@@ -664,13 +664,13 @@ public:
 						case GameType::Normal:
 							if (Diff.z < 0.f) {
 								m_OverTime = 0.f;
-								m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(12.f * Scale3DRate), 0.f);
+								m_RandomMovePoint.Set(GetRandf(36.f * Scale3DRate), GetRandf(24.f * Scale3DRate), 0.f);
 							}
 							else {
 								m_OverTime += DrawerMngr->GetDeltaTime();
 								if (m_OverTime > 1.f) {
 									m_OverTime -= 1.f;
-									m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(12.f * Scale3DRate), 0.f);
+									m_RandomMovePoint.Set(GetRandf(36.f * Scale3DRate), GetRandf(24.f * Scale3DRate), 0.f);
 								}
 							}
 							UpKey = Diff.y < 3.f * Scale3DRate;
@@ -690,7 +690,7 @@ public:
 							m_OverTime += DrawerMngr->GetDeltaTime();
 							if (m_OverTime > 1.f) {
 								m_OverTime -= 1.f;
-								m_RandomMovePoint.Set(GetRandf(18.f * Scale3DRate), GetRandf(6.f * Scale3DRate), 0.f);
+								m_RandomMovePoint.Set(GetRandf(36.f * Scale3DRate), GetRandf(24.f * Scale3DRate), 0.f);
 							}
 							if (m_OverTime > 0.f) {
 								//ランダムに逃げる
@@ -717,7 +717,7 @@ public:
 							m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 							MoveVec.y = 0.3f;
 						}
-						m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -12.f * Scale3DRate, 12.f * Scale3DRate);
+						m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -48.f * Scale3DRate, 12.f * Scale3DRate);
 						if (prev == m_MovePointAdd.y) {
 							MoveVec.y = 0.0f;
 						}
@@ -937,9 +937,11 @@ class StageScript {
 	std::string				m_SetStartEvent {};
 	std::string				m_SetEndEvent{};
 	std::string				m_NextStage{};
+	Util::VECTOR3D			m_StartPos{};
 public:
 	auto& EnemyPop(void) noexcept { return m_EnemyPop; }
 
+	const auto& GetStartPos(void) const noexcept { return m_StartPos; }
 	const auto& GetStartEvent(void) const noexcept { return m_SetStartEvent; }
 	const auto& GetEndEvent(void) const noexcept { return m_SetEndEvent; }
 	const auto& GetNextStage(void) const noexcept { return m_NextStage; }
@@ -980,6 +982,9 @@ public:
 					}
 					else if (Func == "StartEvent") {
 						m_SetStartEvent = Args.at(0);
+					}
+					else if (Func == "StartPosition") {
+						m_StartPos = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
 					}
 					else if (Func == "EndEvent") {
 						m_SetEndEvent = Args.at(0);

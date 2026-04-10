@@ -56,17 +56,9 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
 	auto& Player = PlayerManager::Instance()->SetPlane();
-	switch (GameRule::Instance()->GetGameType()) {
-	case GameType::Normal:
-		Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 0.f * Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
-		break;
-	case GameType::AllRange:
-		Player->SetPlanePosition(Util::VECTOR3D::vget(0.f, 15.f * Scale3DRate, 200.f * Scale3DRate), Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)));
-		break;
-	case GameType::Max:
-	default:
-		break;
-	}
+	auto Pos = this->m_StageScript.GetStartPos(); Pos.y = 15.f * Scale3DRate;
+	auto MovePoint = this->m_StageScript.GetStartPos(); MovePoint.y = this->m_StageScript.GetStartPos().y - 15.f * Scale3DRate; MovePoint.z = 0.f;
+	Player->SetPlanePosition(Pos, Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)), MovePoint);
 	Player->SetDamageOff();
 	//
 	this->m_Exit = false;

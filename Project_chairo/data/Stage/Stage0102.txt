@@ -1,9 +1,12 @@
 StartEvent(002);//ステージはじめに通るイベント
 SetStageModel(data\model\Map2\model.mv1);
 SetGameType(AllRange);
+StartPosition(0,15,200);
 
 SetEnemy(0,Enemy0101);
 SetEnemy(0,Enemy0102);
 SetEnemy(0,Enemy0103);
+SetEnemy(0,Enemy0104);
+SetEnemy(0,Enemy0105);
 
 GoNextStageAllRange(Stage0103);//全エネミーを排除したら次ステージへ

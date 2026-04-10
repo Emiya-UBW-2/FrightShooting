@@ -1,6 +1,7 @@
 StartEvent(001);//ステージはじめに通るイベント
 SetStageModel(data\model\Map\model.mv1);
 SetGameType(Normal);
+StartPosition(0,15,0);
 
 SetEnemy(20,Enemy0001);
 SetEnemy(30,Enemy0002);

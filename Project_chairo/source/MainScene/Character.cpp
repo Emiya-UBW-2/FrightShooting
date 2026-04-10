@@ -49,7 +49,13 @@ void MyPlane::Update_Sub(void) noexcept {
 				m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 				MoveVec.y = 0.3f;
 			}
-			m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -12.f * Scale3DRate, 12.f * Scale3DRate);
+			if (!UpKey && !DownKey) {
+				if (m_MovePointAdd.y < -12.f * Scale3DRate) {
+					m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					MoveVec.y = 0.3f;
+				}
+			}
+			m_MovePointAdd.y = std::clamp(m_MovePointAdd.y, -48.f * Scale3DRate, 12.f * Scale3DRate);
 			if (prev == m_MovePointAdd.y) {
 				MoveVec.y = 0.0f;
 			}
@@ -186,12 +192,12 @@ void MyPlane::Update_Sub(void) noexcept {
 		if (m_ManeuverPer == 0.f) {
 			m_ManeuverIDRe = InvalidID;
 		}
-		bool BrakeTrig = m_ManeuverID != InvalidID && !m_Stall && m_StallPer < 0.5f && KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Brake);
+		bool BrakeTrig = m_ManeuverID != InvalidID && !m_Stall && m_StallPer < 0.75f && KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Brake);
 		if (BrakeTrig) {
 			if (m_ManeuverInputTimer != 0.f) {
 				m_ManeuverPer = 1.f;
 				m_ManeuverIDRe = m_ManeuverID;
-				m_StallPer += 0.5f;
+				m_StallPer += 0.75f;
 			}
 			m_ManeuverInputTimer = 0.3f;
 		}
@@ -325,8 +331,13 @@ void MyPlane::Update_Sub(void) noexcept {
 			break;
 		}
 
+		auto EyePos = m_MovePoint * -0.5f;
+		if (EyePos.y > 6.f * Scale3DRate) {
+			EyePos.y = 6.f * Scale3DRate + (EyePos.y - 6.f * Scale3DRate)*1.8f;
+		}
+
 		EyeMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), m_RollingCam) * 
-			Util::Matrix4x4::Mtrans(m_MovePoint * -0.5f) * 
+			Util::Matrix4x4::Mtrans(EyePos) * 
 			EyeMat;
 
 		m_RePos = GetMat().pos();

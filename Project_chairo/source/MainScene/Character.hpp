@@ -162,10 +162,13 @@ public:
 	void			SetManeuverTargetID(int ManeuverID) noexcept {
 		m_ManeuverID = ManeuverID;
 	}
-	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat) noexcept {
+	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat, Util::VECTOR3D MovePoint) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 		EyeMat = RailMat;
 		m_Roll = Util::Matrix3x3::identity();
+
+		m_MovePoint = MovePoint * -1.f;
+		m_MovePointAdd = m_MovePoint;
 
 		SetMatrix(
 			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
