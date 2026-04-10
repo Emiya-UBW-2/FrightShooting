@@ -51,7 +51,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			}
 			if (!UpKey && !DownKey) {
 				if (m_MovePointAdd.y < -12.f * Scale3DRate) {
-					m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 					MoveVec.y = 0.3f;
 				}
 			}
