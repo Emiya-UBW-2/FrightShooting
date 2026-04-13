@@ -239,6 +239,7 @@ void MainScene::Update_Sub(void) noexcept {
 			{
 				for (auto& s : m_StageScript.EnemyPop()) {
 					if (!s.m_EnemyScript.IsAlive()) { continue; }
+					if (s.m_EnemyScript.GetEnemyType() != EnemyType::AI) { continue; }
 					auto vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
 					if (vec2.magnitude() > 100.f * Scale3DRate) { continue; }//彼我の距離が100m以内
 					auto vec3 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
@@ -277,6 +278,7 @@ void MainScene::Update_Sub(void) noexcept {
 			case GameType::AllRange:
 				for (auto& s : m_StageScript.EnemyPop()) {
 					if (!s.m_EnemyScript.IsAlive()) { continue; }
+					if (s.m_EnemyScript.GetEnemyType() != EnemyType::AI) { continue; }
 					bool IsInsight = true;
 					auto vec1 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
 					auto vec2 = Player->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();

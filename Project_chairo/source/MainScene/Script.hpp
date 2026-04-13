@@ -933,11 +933,11 @@ struct EnemyPop {
 };
 class StageScript {
 	std::vector<EnemyPop>	m_EnemyPop;
-	//char		padding[4]{};
 	std::string				m_SetStartEvent {};
 	std::string				m_SetEndEvent{};
 	std::string				m_NextStage{};
 	Util::VECTOR3D			m_StartPos{};
+	char		padding[4]{};
 public:
 	auto& EnemyPop(void) noexcept { return m_EnemyPop; }
 

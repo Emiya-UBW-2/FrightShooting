@@ -137,6 +137,7 @@ public:
 	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
 	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
 	const auto&		GetMovePoint(void) const noexcept { return m_MovePoint; }
+	const auto&		GetRollPer(void) const noexcept { return m_RollPer; }
 
 	const auto& GetBoostPer(void) const noexcept { return m_BoostPer; }
 	const auto& IsOverHeat(void) const noexcept { return m_OverHeat; }

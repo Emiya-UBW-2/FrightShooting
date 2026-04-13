@@ -76,7 +76,7 @@ class MainScene : public Util::SceneBase {
 	float							m_ManeuverFovPer{ 1.f };
 	float							m_ManeuverActive{ 0.f };
 	Util::VECTOR3D					m_ManeuverPos2D{};
-	//char		padding2[4]{};
+	char		padding2[4]{};
 	bool							m_Exit{ false };
 	bool							m_NextStage{ false };
 	bool							m_NextEvent{ false };

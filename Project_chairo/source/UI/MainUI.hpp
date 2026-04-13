@@ -21,6 +21,8 @@ class MainUI {
 	float							m_HPRe{};
 	float							m_HPRe2{};
 	float							m_Timer{};
+	float							m_AltRand{};
+	float							m_AltRand2{};
 	char		padding2[4]{};
 public:
 	MainUI(void) noexcept {}
@@ -100,6 +102,9 @@ public:
 		}
 
 		m_Timer += DrawerMngr->GetDeltaTime();
+
+		Util::Easing(&m_AltRand, GetRandf(2.f), 0.9f);
+		Util::Easing(&m_AltRand2, GetRandf(2.f), 0.9f);
 	}
 	void Draw() noexcept {
 
@@ -121,13 +126,101 @@ public:
 			DrawBox(XP, YP, XP + XS, YP + static_cast<int>(static_cast<float>(YS) * Watch->GetStallPer()), Watch->IsStall() ? ColorPalette::Red : GetColor(R, G, 0), true);
 			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Green, false, 3);
 		}
-		
 		{
 			int XP = 1920 - 64, YP = 1080 / 2 - 400, XS = 32, YS = 400;
 			int R = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetBoostPer())), 0, 255);
 			int G = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetBoostPer())), 0, 255);
 			DrawBox(XP, YP + YS - static_cast<int>(static_cast<float>(YS) * Watch->GetBoostPer()), XP + XS, YP + YS, Watch->IsOverHeat() ? ColorPalette::Red : GetColor(R, G, 0), true);
 			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Green, false, 3);
+		}
+
+		{
+			auto* CameraParts = Camera::Camera3D::Instance();
+			int XP = 1920 / 2 + static_cast<int>(CameraParts->GetShake().x * -10.f);
+			int YP = 1080 / 2 + static_cast<int>(CameraParts->GetShake().y * -10.f);
+			float Rad = Watch->GetRollPer() * -1.f;
+			{
+				float Alt = Watch->GetMat().pos().y / Scale3DRate + m_AltRand;
+				int Range = 300;
+				for (int loop = -Range / 10; loop < Range / 10; ++loop) {
+					int XP1 = -300 - 16;
+					int YP1 = loop * (Range / 30) + static_cast<int>(Alt * 10) % (Range / 30);
+					int XP2 = -300;
+					int YP2 = loop * (Range / 30) + static_cast<int>(Alt * 10) % (Range / 30);
+					DrawLine(
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP2) + sin(Rad) * static_cast<float>(YP2)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP2) - sin(Rad) * static_cast<float>(XP2)),
+						ColorPalette::Green, 2);
+				}
+				for (int loop = -Range / 50; loop < Range / 50; ++loop) {
+					int XP1 = -300 - 32;
+					int YP1 = loop * (Range / 6) + static_cast<int>(Alt * 10) % (Range / 6);
+					int XP2 = -300;
+					int YP2 = loop * (Range / 6) + static_cast<int>(Alt * 10) % (Range / 6);
+					DrawLine(
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP2) + sin(Rad) * static_cast<float>(YP2)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP2) - sin(Rad) * static_cast<float>(XP2)),
+						ColorPalette::Green, 2);
+				}
+				{
+					int XP1 = -300 - 48;
+					int YP1 = 0;
+					int XP2 = -300 - 36;
+					int YP2 = 0;
+					DrawLine(
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP2) + sin(Rad) * static_cast<float>(YP2)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP2) - sin(Rad) * static_cast<float>(XP2)),
+						ColorPalette::Green, 2);
+
+					auto* Font = Draw::FontPool::Instance();
+					Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
+						Draw::FontXCenter::RIGHT, Draw::FontYCenter::MIDDLE,
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						ColorPalette::Green, ColorPalette::DarkGreen,
+						"ALT %03d ", static_cast<int>(Alt));
+				}
+			}
+			{
+				float Alt = Watch->GetSpeed() / Watch->GetSpeedMax() * 100.f + m_AltRand2;
+				int Range = 300;
+				for (int loop = -Range / 10; loop < Range / 10; ++loop) {
+					int XP1 = 300;
+					int YP1 = loop * (Range / 30) + static_cast<int>(Alt * 10) % (Range / 30);
+					int XP2 = 300 + 16;
+					int YP2 = loop * (Range / 30) + static_cast<int>(Alt * 10) % (Range / 30);
+					DrawLine(
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP2) + sin(Rad) * static_cast<float>(YP2)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP2) - sin(Rad) * static_cast<float>(XP2)),
+						ColorPalette::Green, 2);
+				}
+				for (int loop = -Range / 50; loop < Range / 50; ++loop) {
+					int XP1 = 300;
+					int YP1 = loop * (Range / 6) + static_cast<int>(Alt * 10) % (Range / 6);
+					int XP2 = 300 + 32;
+					int YP2 = loop * (Range / 6) + static_cast<int>(Alt * 10) % (Range / 6);
+					DrawLine(
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP2) + sin(Rad) * static_cast<float>(YP2)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP2) - sin(Rad) * static_cast<float>(XP2)),
+						ColorPalette::Green, 2);
+				}
+				{
+					int XP1 = 300 + 48;
+					int YP1 = 0;
+					int XP2 = 300 + 36;
+					int YP2 = 0;
+					DrawLine(
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP2) + sin(Rad) * static_cast<float>(YP2)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP2) - sin(Rad) * static_cast<float>(XP2)),
+						ColorPalette::Green, 2);
+
+					auto* Font = Draw::FontPool::Instance();
+					Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
+						Draw::FontXCenter::LEFT, Draw::FontYCenter::MIDDLE,
+						XP + static_cast<int>(cos(Rad) * static_cast<float>(XP1) + sin(Rad) * static_cast<float>(YP1)), YP + static_cast<int>(cos(Rad) * static_cast<float>(YP1) - sin(Rad) * static_cast<float>(XP1)),
+						ColorPalette::Green, ColorPalette::DarkGreen,
+						" %03d SPD", static_cast<int>(Alt));
+				}
+			}
 		}
 
 		{

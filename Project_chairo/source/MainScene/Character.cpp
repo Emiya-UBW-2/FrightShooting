@@ -77,6 +77,9 @@ void MyPlane::Update_Sub(void) noexcept {
 				float X = (m_OutsideMatAfter * m_OutsideMatBefore.inverse()).zvec2().x;
 				Left2Key = X > 0.f;
 				Right2Key = X < 0.f;
+
+				Left2Trig = false;
+				Right2Trig = false;
 			}
 			float prev = m_MovePointAdd.x;
 			if (LeftKey && !RightKey) {
@@ -303,7 +306,7 @@ void MyPlane::Update_Sub(void) noexcept {
 				auto Mat = RailMat.rotation();
 				Util::Easing(&Mat, m_OutsideMatAfter, 0.95f);
 				RailMat = Mat.rotation() * Util::Matrix4x4::Mtrans(PosAfter);
-				Util::Easing(&m_MovePointAdd, Util::VECTOR3D::vget(0.f, 0.f * Scale3DRate, 0.f), 0.925f);
+				Util::Easing(&m_MovePointAdd, Util::VECTOR3D::vget(0.f, std::min(m_MovePointAdd.y, 0.f), 0.f), 0.925f);
 			}
 			break;
 		case GameType::Max:
