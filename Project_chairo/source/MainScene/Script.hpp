@@ -980,6 +980,9 @@ public:
 					else if (Func == "GoNextStageAllRange") {
 						m_NextStage = Args.at(0);
 					}
+					else if (Func == "GameClear") {
+						m_NextStage = "GameClear";
+					}
 					else if (Func == "StartEvent") {
 						m_SetStartEvent = Args.at(0);
 					}

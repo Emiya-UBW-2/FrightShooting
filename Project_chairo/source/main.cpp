@@ -12,6 +12,7 @@
 #include "Scene/TitleScene.hpp"
 #include "Scene/MainScene.hpp"
 #include "Scene/MovieScene.hpp"
+#include "Scene/ThankYouScene.hpp"
 
 #include "Draw/MainDraw.hpp"
 #include "Draw/Light.hpp"
@@ -51,10 +52,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	TitleScene Title{};
 	MainScene Main{};
 	MovieScene Movie{};
+	ThankYouScene ThankYou{};
 	//シーン設定
 	SceneMngr->AddScenePtrList(&Title);
 	SceneMngr->AddScenePtrList(&Main);
 	SceneMngr->AddScenePtrList(&Movie);
+	SceneMngr->AddScenePtrList(&ThankYou);
 	SceneMngr->SetFirstScene(SceneMngr->GetScene(static_cast<int>(EnumScene::Title)));
 	//メインループ開始
 	DrawerMngr->LoopStart();

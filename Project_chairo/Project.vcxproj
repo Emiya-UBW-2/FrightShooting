@@ -39,6 +39,7 @@
     <ClCompile Include="source\MainScene\Script.cpp" />
     <ClCompile Include="source\Scene\MainScene.cpp" />
     <ClCompile Include="source\Scene\MovieScene.cpp" />
+    <ClCompile Include="source\Scene\ThankYouScene.cpp" />
     <ClCompile Include="source\Scene\TitleScene.cpp" />
     <ClCompile Include="source\UI\MainUI.cpp" />
     <ClCompile Include="source\UI\OptionWindow.cpp" />
@@ -73,6 +74,7 @@
     <ClInclude Include="source\MainScene\Script.hpp" />
     <ClInclude Include="source\Scene\MainScene.hpp" />
     <ClInclude Include="source\Scene\MovieScene.hpp" />
+    <ClInclude Include="source\Scene\ThankYouScene.hpp" />
     <ClInclude Include="source\Scene\TitleScene.hpp" />
     <ClInclude Include="source\UI\MainUI.hpp" />
     <ClInclude Include="source\UI\OptionWindow.hpp" />

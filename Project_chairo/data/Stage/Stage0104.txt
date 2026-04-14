@@ -5,5 +5,5 @@ StartPosition(0,48,200);
 
 SetEnemy(0,Boss0101);
 
-GoNextStageAllRange(Stage0101);//全エネミーを排除したら次ステージへ
+GameClear();
 EndEvent(004);//ステージ終わりに通るイベント

@@ -208,16 +208,22 @@ void MainScene::Update_Sub(void) noexcept {
 	this->m_FadeStage = std::clamp(this->m_FadeStage + (this->m_NextStage ? 3.f : -3.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
 	if (this->m_NextStage) {
 		if (this->m_FadeStage >= 2.f) {
-			GameRule::Instance()->SetNextStage(m_StageScript.GetNextStage());
-			GameRule::Instance()->SetIsStartEvent(false);
-			if (m_StageScript.GetEndEvent() != "") {
-				GameRule::Instance()->SetNextEvent(m_StageScript.GetEndEvent());
-				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
+			if (m_StageScript.GetNextStage() == "GameClear") {
+				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::ThankYou)));
 				SceneBase::SetEndScene();
 			}
 			else {
-				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
-				SceneBase::SetEndScene();
+				GameRule::Instance()->SetNextStage(m_StageScript.GetNextStage());
+				GameRule::Instance()->SetIsStartEvent(false);
+				if (m_StageScript.GetEndEvent() != "") {
+					GameRule::Instance()->SetNextEvent(m_StageScript.GetEndEvent());
+					SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
+					SceneBase::SetEndScene();
+				}
+				else {
+					SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
+					SceneBase::SetEndScene();
+				}
 			}
 		}
 	}

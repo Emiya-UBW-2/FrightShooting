@@ -125,6 +125,9 @@
     <ClCompile Include="source\MainScene\Ammo.cpp">
       <Filter>ソース ファイル\MainScene</Filter>
     </ClCompile>
+    <ClCompile Include="source\Scene\ThankYouScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\File\json.hpp">
@@ -225,6 +228,9 @@
     </ClInclude>
     <ClInclude Include="source\MainScene\Ammo.hpp">
       <Filter>ソース ファイル\MainScene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Scene\ThankYouScene.hpp">
+      <Filter>ソース ファイル\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

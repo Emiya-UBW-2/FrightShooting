@@ -10,6 +10,7 @@ enum class EnumScene :size_t {
 	Title,
 	Main,
 	Movie,
+	ThankYou,
 };
 
 enum class LanguageType :int {
