@@ -35,6 +35,8 @@ void MainScene::Load_Sub(void) noexcept {
 
 	this->HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/fall.wav", true);
 	this->m_EnviID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/Envi.wav", false);
+	this->alert = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/alert2.wav", false);
+	
 
 	this->m_BGMID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, this->m_StageScript.GetBGM(), false);
 }
@@ -311,6 +313,16 @@ void MainScene::Update_Sub(void) noexcept {
 			}
 
 			this->m_MainUI->SetIsAlert(IsAlert);
+			if (IsAlert) {
+				if (!Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert)->CheckPlay()) {
+					Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert)->Play(DX_PLAYTYPE_LOOP, FALSE);
+				}
+			}
+			else {
+				if (Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert)->CheckPlay()) {
+					Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert)->StopAll();
+				}
+			}
 		}
 		//地面や敵機との激突判定
 		{
@@ -318,6 +330,7 @@ void MainScene::Update_Sub(void) noexcept {
 			auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
 			if (Ret.HitFlag == TRUE) {
 				Player->SetDamageOn(10);
+				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Player->GetMat().pos(), 500.f * Scale3DRate);
 			}
 			for (auto& s : m_StageScript.EnemyPop()) {
 				if (s.m_EnemyScript.IsAlive()) {
@@ -351,6 +364,7 @@ void MainScene::Update_Sub(void) noexcept {
 
 					if (IsHit) {
 						Player->SetDamageOn(10);
+						Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Player->GetMat().pos(), 500.f * Scale3DRate);
 						break;
 					}
 				}

@@ -90,6 +90,7 @@ class MainScene : public Util::SceneBase {
 	std::string						m_NowStage{};
 
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
+	Sound::SoundUniqueID alert{ InvalidID };
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

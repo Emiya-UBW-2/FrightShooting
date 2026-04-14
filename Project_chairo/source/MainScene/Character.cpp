@@ -26,10 +26,10 @@ void MyPlane::Update_Sub(void) noexcept {
 	auto* KeyMngr = Util::KeyParam::Instance();
 	//
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->SetPosition(m_CockPitIndex, GetMat().pos());
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->SetLocalVolume(64);
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->SetLocalVolume(255);
 	//
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetPosition(m_EngineIndex, GetMat().pos());
-	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(64);
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->SetLocalVolume(255);
 	//
 	m_DamageInterval = std::max(m_DamageInterval - DrawerMngr->GetDeltaTime(), 0.f);
 	//移動

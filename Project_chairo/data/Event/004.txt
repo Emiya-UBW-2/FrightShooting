@@ -1,3 +1,4 @@
+	SetBGM(data/Sound/BGM/movie.wav, 0);
 SetCut(0);
 	SetCameraPos(0.5,10.0,1.0);
 	SetCameraTarget(0.0,3.0,0.0);
@@ -13,6 +14,8 @@ SetCut(0);
 	SetModel(data\model\Plane\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0, 0,180);
 	SetModelAnimation(data\model\Plane\,0, 0,0.0);
 
+	SetSE(data/Sound/SE/Envi.wav, 0);
+	SetSE(data/Sound/SE/engine.wav, 0);
 SetCut(60);
 	SetCameraPos(0.0,0.5,-6.0);
 	SetCameraTarget(0.0,1.0,0.0);

@@ -8,10 +8,11 @@
 #pragma warning(disable:5039)
 
 #include "../Util/SceneManager.hpp"
+#include "../Util/Sound.hpp"
 
 #include "../MainScene/BaseObject.hpp"
-
 #include "../MainScene/Common.hpp"
+
 enum class MovieObjFrame {
 	Center,
 	Eye,
@@ -157,9 +158,18 @@ struct StoryPop {
 	float	m_CameraFovEnd{};
 	float	m_CameraShakePow{0.f};
 };
+struct SoundPlay {
+	int								m_PlayFrame{};
+	char		padding[4]{};
+	Sound::SoundUniqueID			m_ID{ InvalidID };
+	bool							m_IsPlay{};
+	char		padding2[7]{};
+};
 class StoryScript {
 	std::vector<StoryModel>	m_Models{};
-	std::vector<StoryPop>	m_StoryPop;
+	std::vector<StoryPop>	m_StoryPop{};
+	std::vector<SoundPlay>	m_SEPlay{};
+	std::vector<SoundPlay>	m_BGMPlay{};
 	float					m_Frame{};
 
 	bool m_IsEnd = false;
@@ -172,6 +182,8 @@ public:
 		{
 			m_StoryPop.clear();
 			m_Models.clear();
+			m_SEPlay.clear();
+			m_BGMPlay.clear();
 			File::InputFileStream FileStream;
 			FileStream.Open("data/Event/" + Path + ".txt");
 			while (true) {
@@ -249,6 +261,20 @@ public:
 							}
 						}
 					}
+					if (Func == "SetSE") {
+						m_SEPlay.emplace_back();
+						auto& b = m_SEPlay.back();
+						b.m_ID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, Args.at(0), false);
+						b.m_PlayFrame = std::stoi(Args.at(1));
+						b.m_IsPlay = false;
+					}
+					if (Func == "SetBGM") {
+						m_BGMPlay.emplace_back();
+						auto& b = m_BGMPlay.back();
+						b.m_ID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, Args.at(0), false);
+						b.m_PlayFrame = std::stoi(Args.at(1));
+						b.m_IsPlay = false;
+					}
 				}
 			}
 			FileStream.Close();
@@ -265,6 +291,18 @@ public:
 		}
 	}
 	void Update() noexcept {
+		for (auto& b : m_SEPlay) {
+			if (b.m_PlayFrame <= static_cast<int>(m_Frame) && !b.m_IsPlay) {
+				b.m_IsPlay = true;
+				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, b.m_ID)->Play(DX_PLAYTYPE_BACK, TRUE);
+			}
+		}
+		for (auto& b : m_BGMPlay) {
+			if (b.m_PlayFrame <= static_cast<int>(m_Frame) && !b.m_IsPlay) {
+				b.m_IsPlay = true;
+				Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, b.m_ID)->Play(DX_PLAYTYPE_BACK, TRUE);
+			}
+		}
 		for (auto& Now : m_StoryPop) {
 			if (Now.m_StartFrame <= static_cast<int>(m_Frame) && static_cast<int>(m_Frame) < Now.m_EndFrame) {
 				float Per = static_cast<float>(static_cast<int>(m_Frame) - Now.m_StartFrame) / static_cast<float>(Now.m_EndFrame - Now.m_StartFrame);
@@ -314,6 +352,16 @@ public:
 		}
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
+	}
+	void Dispose() noexcept {
+		for (auto& b : m_SEPlay) {
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, b.m_ID)->StopAll();
+			Sound::SoundPool::Instance()->Delete(Sound::SoundType::SE, b.m_ID);
+		}
+		for (auto& b : m_BGMPlay) {
+			Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, b.m_ID)->StopAll();
+			Sound::SoundPool::Instance()->Delete(Sound::SoundType::BGM, b.m_ID);
+		}
 	}
 };
 

@@ -1,3 +1,4 @@
+	SetBGM(data/Sound/BGM/midboss.wav, 0);
 SetCut(0);
 	SetCameraPos(30.0,0.0,-100.0);
 	SetCameraTarget(0.0,0.0,-100.0);
@@ -16,6 +17,9 @@ SetCut(0);
 	SetModelEnd(data\model\Plane\,3, -10.0,0.0,-1490.0 ,0.0,0.0,0.0);
 	SetModel(data\model\Plane\,4,    -20.0,0.0,20.0 ,0.0,0.0,0.0, 0,720);
 	SetModelEnd(data\model\Plane\,4, -20.0,0.0,-1480.0 ,0.0,0.0,0.0);
+
+	SetSE(data/Sound/SE/Envi.wav, 0);
+	SetSE(data/Sound/SE/engine.wav, 0);
 
 SetCut(60);
 	SetCameraPos(30.0,0.0,-100.0);

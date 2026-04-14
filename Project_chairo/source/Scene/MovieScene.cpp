@@ -106,5 +106,6 @@ void MovieScene::UIDraw_Sub(void) noexcept {
 	//
 }
 void MovieScene::Dispose_Sub(void) noexcept {
+	m_StoryScript.Dispose();
 	ObjectManager::Instance()->DeleteAll();
 }
