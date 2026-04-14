@@ -66,6 +66,9 @@ class MainScene : public Util::SceneBase {
 	std::unique_ptr<MainUI>			m_MainUI{};
 	std::unique_ptr<AimPoint>		m_AimPoint{};
 	Sound::SoundUniqueID			m_EnviID{ InvalidID };
+
+	Sound::SoundUniqueID			m_BGMID{ InvalidID };
+
 	Util::Matrix3x3					EyeMatR;
 	Util::VECTOR3D					CamPosition;
 	Util::VECTOR3D					CamTarget;

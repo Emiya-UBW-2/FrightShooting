@@ -35,6 +35,8 @@ void MainScene::Load_Sub(void) noexcept {
 
 	this->HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/fall.wav", true);
 	this->m_EnviID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/Envi.wav", false);
+
+	this->m_BGMID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, this->m_StageScript.GetBGM(), false);
 }
 void MainScene::Init_Sub(void) noexcept {
 	if (m_NextEvent) {
@@ -88,6 +90,8 @@ void MainScene::Init_Sub(void) noexcept {
 	KeyGuideParts->SetGuideFlip();
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->Play(DX_PLAYTYPE_LOOP, TRUE);
 	EyeMatR = Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0));
+
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->Play(DX_PLAYTYPE_LOOP, TRUE);
 }
 void MainScene::Update_Sub(void) noexcept {
 	if (m_NextEvent) {
@@ -170,6 +174,7 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
 	if (m_Exit) {
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->SetLocalVolume(static_cast<int>(Util::Lerp(255.f, 0.f, std::clamp(this->m_Fade, 0.f, 1.f))));
 		if (this->m_Fade >= 2.f) {
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
 			SceneBase::SetEndScene();
@@ -207,6 +212,7 @@ void MainScene::Update_Sub(void) noexcept {
 	}
 	this->m_FadeStage = std::clamp(this->m_FadeStage + (this->m_NextStage ? 3.f : -3.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
 	if (this->m_NextStage) {
+		Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->SetLocalVolume(static_cast<int>(Util::Lerp(255.f, 0.f, std::clamp(this->m_FadeStage, 0.f, 1.f))));
 		if (this->m_FadeStage >= 2.f) {
 			if (m_StageScript.GetNextStage() == "GameClear") {
 				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::ThankYou)));
@@ -781,6 +787,8 @@ void MainScene::UIDraw_Sub(void) noexcept {
 	//
 }
 void MainScene::Dispose_Sub(void) noexcept {
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->StopAll();
+
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
 
 	auto& Player = PlayerManager::Instance()->SetPlane();

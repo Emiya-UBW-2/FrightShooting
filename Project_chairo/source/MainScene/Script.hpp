@@ -933,7 +933,8 @@ struct EnemyPop {
 };
 class StageScript {
 	std::vector<EnemyPop>	m_EnemyPop;
-	std::string				m_SetStartEvent {};
+	std::string				m_SetStartEvent{};
+	std::string				m_BGM{};
 	std::string				m_SetEndEvent{};
 	std::string				m_NextStage{};
 	Util::VECTOR3D			m_StartPos{};
@@ -943,6 +944,7 @@ public:
 
 	const auto& GetStartPos(void) const noexcept { return m_StartPos; }
 	const auto& GetStartEvent(void) const noexcept { return m_SetStartEvent; }
+	const auto& GetBGM(void) const noexcept { return m_BGM; }
 	const auto& GetEndEvent(void) const noexcept { return m_SetEndEvent; }
 	const auto& GetNextStage(void) const noexcept { return m_NextStage; }
 public:
@@ -950,6 +952,7 @@ public:
 		//
 		{
 			m_SetStartEvent = "";
+			m_BGM = "";
 			m_SetEndEvent = "";
 			m_NextStage = "";
 			m_EnemyPop.clear();
@@ -985,6 +988,9 @@ public:
 					}
 					else if (Func == "StartEvent") {
 						m_SetStartEvent = Args.at(0);
+					}
+					else if (Func == "SetBGM") {
+						m_BGM = Args.at(0);
 					}
 					else if (Func == "StartPosition") {
 						m_StartPos = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;

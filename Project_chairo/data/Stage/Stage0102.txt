@@ -1,3 +1,4 @@
+SetBGM(data/Sound/BGM/bgm1.wav);
 StartEvent(002);//ステージはじめに通るイベント
 SetStageModel(data\model\Map2\model.mv1);
 SetGameType(AllRange);

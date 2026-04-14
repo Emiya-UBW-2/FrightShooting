@@ -1,3 +1,4 @@
+SetBGM(data/Sound/BGM/bgm0.wav);
 SetStageModel(data\model\Map\model.mv1);
 SetGameType(Normal);
 StartPosition(0,15,0);
