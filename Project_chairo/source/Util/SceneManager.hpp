@@ -26,7 +26,7 @@ namespace Util {
 		SceneBase(void) noexcept {}
 		virtual ~SceneBase(void) noexcept {}
 	public:
-		auto GetID(void) const noexcept { return this->m_SceneID; }
+		const auto& GetID(void) const noexcept { return this->m_SceneID; }
 		const SceneBase* GetNextScene(void) const noexcept { return this->m_pNextScene; }
 		bool IsEndGame(void) const noexcept { return this->m_IsEndGame; }
 		bool IsEndScene(void) const noexcept { return this->m_IsEndScene; }
@@ -179,7 +179,7 @@ namespace Util {
 			KeyGuideParts->Draw();
 		}
 	public:
-		auto IsEndScene(void) const noexcept { return (this->m_Phase == EnumScenePhase::GoEnd); }
+		bool IsEndScene(void) const noexcept { return (this->m_Phase == EnumScenePhase::GoEnd); }
 		const SceneBase* GetScene(int SceneID) const noexcept {
 			for (auto& pS : this->m_pScene) {
 				if (pS->GetID() == SceneID) {

@@ -14,7 +14,7 @@
 #pragma warning( pop )
 
 // リサイズ
-constexpr auto LineHeight = (18);
+constexpr int LineHeight = (18);
 
 namespace DXLibRef {
 	// --------------------------------------------------------------------------------------------------

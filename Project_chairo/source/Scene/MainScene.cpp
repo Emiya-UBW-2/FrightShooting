@@ -41,14 +41,14 @@ void MainScene::Load_Sub(void) noexcept {
 	this->m_BGMID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, this->m_StageScript.GetBGM(), false);
 }
 void MainScene::Init_Sub(void) noexcept {
-	if (m_NextEvent) {
-		GameRule::Instance()->SetNextEvent(m_StageScript.GetStartEvent());
+	if (this->m_NextEvent) {
+		GameRule::Instance()->SetNextEvent(this->m_StageScript.GetStartEvent());
 		SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
 		SceneBase::SetEndScene();
 	}
 
 	if (!m_NextEvent) {
-		Util::SaveData::Instance()->SetParam("Stage", m_NowStage);
+		Util::SaveData::Instance()->SetParam("Stage", this->m_NowStage);
 	}
 	AmmoPool::Instance()->Init();
 	EffectPool::Instance()->Init();
@@ -60,8 +60,8 @@ void MainScene::Init_Sub(void) noexcept {
 	auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 
 	auto& Player = PlayerManager::Instance()->SetPlane();
-	auto Pos = this->m_StageScript.GetStartPos(); Pos.y = 15.f * Scale3DRate;
-	auto MovePoint = this->m_StageScript.GetStartPos(); MovePoint.y = this->m_StageScript.GetStartPos().y - 15.f * Scale3DRate; MovePoint.z = 0.f;
+	Util::VECTOR3D Pos = this->m_StageScript.GetStartPos(); Pos.y = 15.f * Scale3DRate;
+	Util::VECTOR3D MovePoint = this->m_StageScript.GetStartPos(); MovePoint.y = this->m_StageScript.GetStartPos().y - 15.f * Scale3DRate; MovePoint.z = 0.f;
 	Player->SetPlanePosition(Pos, Util::Matrix3x3::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(0)), MovePoint);
 	Player->SetDamageOff();
 	//
@@ -86,8 +86,8 @@ void MainScene::Init_Sub(void) noexcept {
 	if (!m_NextEvent) {
 		Player->SetHitPoint(GameRule::Instance()->GetHP() + 30);
 	}
-	m_MainUI = std::make_unique<MainUI>();
-	m_MainUI->Init();
+	this->m_MainUI = std::make_unique<MainUI>();
+	this->m_MainUI->Init();
 
 	KeyGuideParts->SetGuideFlip();
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->Play(DX_PLAYTYPE_LOOP, TRUE);
@@ -96,7 +96,7 @@ void MainScene::Init_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->Play(DX_PLAYTYPE_LOOP, TRUE);
 }
 void MainScene::Update_Sub(void) noexcept {
-	if (m_NextEvent) {
+	if (this->m_NextEvent) {
 		return;
 	}
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -140,13 +140,13 @@ void MainScene::Update_Sub(void) noexcept {
 	//
 	Util::Easing(&m_ManeuverFovPer, Watch->GetIsManeuver() ? 0.75f : 1.f, 0.95f);
 	CameraParts->SetCamInfo(
-		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f) * m_ManeuverFovPer,
+		CameraParts->GetCamera().GetCamFov() * ((Watch->GetSpeed() - Watch->GetSpeedMax()) / Watch->GetSpeedMax() * 0.35f + 1.f) * this->m_ManeuverFovPer,
 		0.1f * Scale3DRate, 300.f * Scale3DRate);
 
-	m_DamagePer = std::max(m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
-	m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 0.f);
-	if (m_DamagePer == 0.f) {
-		if (m_ManeuverFovPer > 1.01f) {
+	this->m_DamagePer = std::max(this->m_DamagePer - DrawerMngr->GetDeltaTime(), 0.f);
+	this->m_DamageWatch = std::max(this->m_DamageWatch - DrawerMngr->GetDeltaTime(), 0.f);
+	if (this->m_DamagePer == 0.f) {
+		if (this->m_ManeuverFovPer > 1.01f) {
 			CameraParts->SetCamShake(1.f, 2.f * Scale3DRate);
 		}
 		else {
@@ -154,8 +154,8 @@ void MainScene::Update_Sub(void) noexcept {
 		}
 		if (Player->IsDamageOn()) {
 			CameraParts->SetCamShake(0.2f, 25.f * Scale3DRate);
-			m_DamagePer = 0.2f;
-			m_DamageWatch = 2.f;
+			this->m_DamagePer = 0.2f;
+			this->m_DamageWatch = 2.f;
 		}
 	}
 	Player->SetDamageOff();
@@ -175,7 +175,7 @@ void MainScene::Update_Sub(void) noexcept {
 		this->m_Exit = true;
 	}
 	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime(), 0.f, 2.f);
-	if (m_Exit) {
+	if (this->m_Exit) {
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->SetLocalVolume(static_cast<int>(Util::Lerp(255.f, 0.f, std::clamp(this->m_Fade, 0.f, 1.f))));
 		if (this->m_Fade >= 2.f) {
 			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Title)));
@@ -187,7 +187,7 @@ void MainScene::Update_Sub(void) noexcept {
 	switch (GameRule::Instance()->GetGameType()) {
 	case GameType::Normal:
 		if (this->m_Fade <= 0.f) {
-			auto& s = m_StageScript.EnemyPop().back();
+			auto& s = this->m_StageScript.EnemyPop().back();
 			//最後の敵が死んだら
 			if (s.m_EnemyScript.IsActive() && !s.m_EnemyScript.IsAlive()) {
 				this->m_NextStage = true;
@@ -197,7 +197,7 @@ void MainScene::Update_Sub(void) noexcept {
 	case GameType::AllRange:
 		if (this->m_Fade <= 0.f) {
 			bool IsClear = true;
-			for (auto& s : m_StageScript.EnemyPop()) {
+			for (auto& s : this->m_StageScript.EnemyPop()) {
 				//敵が生きている
 				if (s.m_EnemyScript.IsAlive()) {
 					IsClear = false;
@@ -216,47 +216,41 @@ void MainScene::Update_Sub(void) noexcept {
 	if (this->m_NextStage) {
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->SetLocalVolume(static_cast<int>(Util::Lerp(255.f, 0.f, std::clamp(this->m_FadeStage, 0.f, 1.f))));
 		if (this->m_FadeStage >= 2.f) {
-			if (m_StageScript.GetNextStage() == "GameClear") {
-				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::ThankYou)));
+			GameRule::Instance()->SetNextStage(this->m_StageScript.GetNextStage());
+			GameRule::Instance()->SetIsStartEvent(false);
+			if (this->m_StageScript.GetEndEvent() != "") {
+				GameRule::Instance()->SetNextEvent(this->m_StageScript.GetEndEvent());
+				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
 				SceneBase::SetEndScene();
 			}
 			else {
-				GameRule::Instance()->SetNextStage(m_StageScript.GetNextStage());
-				GameRule::Instance()->SetIsStartEvent(false);
-				if (m_StageScript.GetEndEvent() != "") {
-					GameRule::Instance()->SetNextEvent(m_StageScript.GetEndEvent());
-					SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Movie)));
-					SceneBase::SetEndScene();
-				}
-				else {
-					SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
-					SceneBase::SetEndScene();
-				}
+				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
+				SceneBase::SetEndScene();
 			}
 		}
 	}
 	//更新
 	if (this->m_Fade <= 1.f) {
-		m_StageScript.Update();
+		this->m_StageScript.Update();
 		//マニューバターゲット選定
 		{
-			auto vec1 = Player->GetMat().zvec2();
+			Util::VECTOR3D vec1 = Player->GetMat().zvec2();
 			float Dot = -1.f;
-			auto Prev = Player->GetManeuverID();
+			int Prev = Player->GetManeuverID();
 			Player->SetManeuverTargetID(InvalidID);
 
 			switch (GameRule::Instance()->GetGameType()) {
 			case GameType::Normal:
-				m_ManeuverActive = 0.f;
+				this->m_ManeuverActive = 0.f;
 				break;
 			case GameType::AllRange:
 			{
-				for (auto& s : m_StageScript.EnemyPop()) {
+				for (auto& s : this->m_StageScript.EnemyPop()) {
 					if (!s.m_EnemyScript.IsAlive()) { continue; }
 					if (s.m_EnemyScript.GetEnemyType() != EnemyType::AI) { continue; }
-					auto vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
+					Util::VECTOR3D vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
 					if (vec2.magnitude() > 100.f * Scale3DRate) { continue; }//彼我の距離が100m以内
-					auto vec3 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
+					Util::VECTOR3D vec3 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
 					float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
 					float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
 					if (dot < cos(Util::deg2rad(75))) { continue; }//敵の位置が自分の前方左右75度以内
@@ -264,17 +258,17 @@ void MainScene::Update_Sub(void) noexcept {
 					if (Dot < dot) {
 						Dot = dot;
 						Player->SetManeuverTargetID(s.m_EnemyScript.EnemyObj()->GetObjectID());
-						m_ManeuverPos2D = s.m_EnemyScript.EnemyObj()->GetDamagePoint().at(0).Pos2D;
+						this->m_ManeuverPos2D = s.m_EnemyScript.EnemyObj()->GetDamagePoint().at(0).Pos2D;
 					}
 				}
 				if (Prev != Player->GetManeuverID()) {
-					m_ManeuverActive = 0.5f;
+					this->m_ManeuverActive = 0.5f;
 				}
 				if (Player->GetManeuverID() != InvalidID) {
-					m_ManeuverActive = std::clamp(m_ManeuverActive + DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
+					this->m_ManeuverActive = std::clamp(this->m_ManeuverActive + DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
 				}
 				else {
-					m_ManeuverActive = std::clamp(m_ManeuverActive - DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
+					this->m_ManeuverActive = std::clamp(this->m_ManeuverActive - DrawerMngr->GetDeltaTime() / 0.25f, 0.f, 1.f);
 				}
 			}
 				break;
@@ -290,13 +284,13 @@ void MainScene::Update_Sub(void) noexcept {
 			case GameType::Normal:
 				break;
 			case GameType::AllRange:
-				for (auto& s : m_StageScript.EnemyPop()) {
+				for (auto& s : this->m_StageScript.EnemyPop()) {
 					if (!s.m_EnemyScript.IsAlive()) { continue; }
 					if (s.m_EnemyScript.GetEnemyType() != EnemyType::AI) { continue; }
 					bool IsInsight = true;
-					auto vec1 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
-					auto vec2 = Player->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
-					auto vec3 = Player->GetMat().zvec2();
+					Util::VECTOR3D vec1 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
+					Util::VECTOR3D vec2 = Player->GetMat().pos() - s.m_EnemyScript.EnemyObj()->GetMat().pos();
+					Util::VECTOR3D vec3 = Player->GetMat().zvec2();
 					float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
 					float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
 					if (dot < cos(Util::deg2rad(75))) { IsInsight = false; }//敵の位置が自分の前方左右75度以内
@@ -327,19 +321,19 @@ void MainScene::Update_Sub(void) noexcept {
 		//地面や敵機との激突判定
 		{
 			//ヒット判定
-			auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
+			MV1_COLL_RESULT_POLY Ret = BackGround::Instance()->GetCol().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
 			if (Ret.HitFlag == TRUE) {
 				Player->SetDamageOn(10);
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Player->GetMat().pos(), 500.f * Scale3DRate);
 			}
-			for (auto& s : m_StageScript.EnemyPop()) {
+			for (auto& s : this->m_StageScript.EnemyPop()) {
 				if (s.m_EnemyScript.IsAlive()) {
 					bool IsHit = false;
 					Util::VECTOR3D Pos;
 					switch (s.m_EnemyScript.GetEnemyType()) {
 					case EnemyType::BOSS:
 					{
-						auto Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
+						MV1_COLL_RESULT_POLY Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(Player->GetRePos(), Player->GetMat().pos());
 						if (Res.HitFlag == TRUE) {
 							IsHit = true;
 							Pos = Res.HitPosition;
@@ -374,7 +368,7 @@ void MainScene::Update_Sub(void) noexcept {
 		for (auto& a : AmmoPool::Instance()->GetAmmoPer()) {
 			if (a->IsActive()) {
 				if (a->GetShooterID() == Player->GetObjectID()) {
-					for (auto& s : m_StageScript.EnemyPop()) {
+					for (auto& s : this->m_StageScript.EnemyPop()) {
 						//敵被弾
 						if (s.m_EnemyScript.IsActive()) {
 							bool IsHit = false;
@@ -382,7 +376,7 @@ void MainScene::Update_Sub(void) noexcept {
 							switch (s.m_EnemyScript.GetEnemyType()) {
 							case EnemyType::BOSS:
 							{
-								auto Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(a->GetMat().pos() - a->GetVector(), a->GetMat().pos());
+								MV1_COLL_RESULT_POLY Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(a->GetMat().pos() - a->GetVector(), a->GetMat().pos());
 								if (Res.HitFlag == TRUE) {
 									IsHit = true;
 									Pos = Res.HitPosition;
@@ -399,7 +393,7 @@ void MainScene::Update_Sub(void) noexcept {
 								{
 									auto& dp = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
 									if (!s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-										auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+										Util::VECTOR3D Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
@@ -415,7 +409,7 @@ void MainScene::Update_Sub(void) noexcept {
 								}
 								for (auto& dp : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
 									if (s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-										auto Post = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
+										Util::VECTOR3D Post = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
@@ -456,7 +450,7 @@ void MainScene::Update_Sub(void) noexcept {
 							Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 							a->SetHit(Result.SegB_MinDist_Pos);
 							Player->SetDamageOn(10);
-							m_DamageWatch = 2.f;
+							this->m_DamageWatch = 2.f;
 						}
 						break;
 					}
@@ -472,14 +466,14 @@ void MainScene::Update_Sub(void) noexcept {
 						//一番近い敵を探す
 						float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
 						std::pair<int, int> ID = std::make_pair(InvalidID, InvalidID);
-						for (auto& s : m_StageScript.EnemyPop()) {
+						for (auto& s : this->m_StageScript.EnemyPop()) {
 							if (!s.m_EnemyScript.IsAlive()) { continue; }
 							{
 								auto& dp = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
 								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
 									if (s.m_EnemyScript.IsActive() && dp.GetHitPoint() > 0) {
-										auto Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
-										auto Vec = a->GetMat().pos() - Pos;
+										Util::VECTOR3D Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+										Util::VECTOR3D Vec = a->GetMat().pos() - Pos;
 										auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), InvalidID);
 										if (Mag > Vec.sqrMagnitude()) {
 											bool IsHitID = false;
@@ -503,8 +497,8 @@ void MainScene::Update_Sub(void) noexcept {
 							for (auto& dp : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
 								if (s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
 									if (s.m_EnemyScript.IsActive() && dp.GetHitPoint() > 0) {
-										auto Pos = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
-										auto Vec = a->GetMat().pos() - Pos;
+										Util::VECTOR3D Pos = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
+										Util::VECTOR3D Vec = a->GetMat().pos() - Pos;
 										auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), dp.frame);
 										if (Mag > Vec.sqrMagnitude()) {
 											bool IsHitID = false;
@@ -529,7 +523,7 @@ void MainScene::Update_Sub(void) noexcept {
 						a->SetHomingTarget(ID.first != InvalidID, ID.first, ID.second);
 					}
 					//ヒット判定
-					for (auto& s : m_StageScript.EnemyPop()) {
+					for (auto& s : this->m_StageScript.EnemyPop()) {
 						if (s.m_EnemyScript.IsActive()) {
 							bool IsHit = false;
 							Util::VECTOR3D Pos;
@@ -539,7 +533,7 @@ void MainScene::Update_Sub(void) noexcept {
 								{
 									auto& dp = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
 									if (!s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-										auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+										Util::VECTOR3D Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
@@ -554,7 +548,7 @@ void MainScene::Update_Sub(void) noexcept {
 								}
 								for (auto& dp : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
 									if (s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-										auto Post = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
+										Util::VECTOR3D Post = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
@@ -567,7 +561,7 @@ void MainScene::Update_Sub(void) noexcept {
 										}
 									}
 								}
-								auto Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(a->GetMat().pos() - a->GetVector(), a->GetMat().pos());
+								MV1_COLL_RESULT_POLY Res = s.m_EnemyScript.EnemyObj()->SetColModel().CollCheck_Line(a->GetMat().pos() - a->GetVector(), a->GetMat().pos());
 								if (Res.HitFlag == TRUE) {
 									IsHit = true;
 									Pos = Res.HitPosition;
@@ -583,7 +577,7 @@ void MainScene::Update_Sub(void) noexcept {
 							{
 								auto& dp = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
 								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-									auto Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+									Util::VECTOR3D Post = s.m_EnemyScript.EnemyObj()->GetMat().pos();
 									SEGMENT_SEGMENT_RESULT Result;
 									Util::GetSegmenttoSegment(Post, Post,
 										a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
@@ -598,7 +592,7 @@ void MainScene::Update_Sub(void) noexcept {
 							}
 								for (auto& dp : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
 									if (s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-										auto Post = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
+										Util::VECTOR3D Post = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
 										SEGMENT_SEGMENT_RESULT Result;
 										Util::GetSegmenttoSegment(Post, Post,
 											a->GetMat().pos(), a->GetMat().pos() - a->GetVector(), &Result);
@@ -640,13 +634,13 @@ void MainScene::Update_Sub(void) noexcept {
 							Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 							a->SetHit(Result.SegB_MinDist_Pos);
 							Player->SetDamageOn(1);
-							m_DamageWatch = 2.f;
+							this->m_DamageWatch = 2.f;
 						}
 						else {
 							Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, HitHumanID)->Play3D(Result.SegB_MinDist_Pos, 500.f * Scale3DRate);
 							a->SetHit(Result.SegB_MinDist_Pos);
 							Player->SetDamageOn(10);
-							m_DamageWatch = 2.f;
+							this->m_DamageWatch = 2.f;
 						}
 						break;
 					}
@@ -656,14 +650,14 @@ void MainScene::Update_Sub(void) noexcept {
 		//
 		ObjectManager::Instance()->UpdateObject();
 		//
-		m_DamageWatch = std::max(m_DamageWatch - DrawerMngr->GetDeltaTime(), 1.f - Watch->GetHitPointPer());
+		this->m_DamageWatch = std::max(this->m_DamageWatch - DrawerMngr->GetDeltaTime(), 1.f - Watch->GetHitPointPer());
 	}
 	if (Watch->GetHitPoint() != 0) {
 		Util::Matrix3x3 EyeMat = Util::Matrix3x3::Get33DX(Watch->GetEyeMatrix());
 		CamUp = Watch->GetEyeMatrix().yvec();
 
 		//敵を向く
-		for (auto& s : m_StageScript.EnemyPop()) {
+		for (auto& s : this->m_StageScript.EnemyPop()) {
 			if (s.m_EnemyScript.IsAlive()) {
 				if (s.m_EnemyScript.GetEnemyType()== EnemyType::AI) {
 					//EyeMat = Util::Matrix3x3::RotVec2(Util::VECTOR3D::back(), (s.m_EnemyScript.EnemyObj()->GetMat().pos() - Watch->GetEyeMatrix().pos()).normalized());
@@ -695,8 +689,8 @@ void MainScene::Draw_Sub(void) noexcept {
 	BackGround::Instance()->Draw();
 	ObjectManager::Instance()->Draw();
 	//カーソル
-	m_AimPoint->CalcPoint();
-	m_AimPoint->Draw();
+	this->m_AimPoint->CalcPoint();
+	this->m_AimPoint->Draw();
 }
 void MainScene::DrawFront_Sub(void) noexcept {
 	ObjectManager::Instance()->DrawFront();
@@ -704,20 +698,20 @@ void MainScene::DrawFront_Sub(void) noexcept {
 	auto& Player = PlayerManager::Instance()->SetPlane();
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 
-	if (0.f < m_ManeuverActive && m_ManeuverActive < 1.f) {
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * m_ManeuverActive), 0, 255));
+	if (0.f < this->m_ManeuverActive && this->m_ManeuverActive < 1.f) {
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->m_ManeuverActive), 0, 255));
 		DxLib::SetDrawBright(255, 255, 0);
-		m_Cursor->DrawRotaGraph(
-			static_cast<int>(m_ManeuverPos2D.x),
-			static_cast<int>(m_ManeuverPos2D.y),
-			50.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (m_ManeuverPos2D.z) *
-			Util::Lerp(10.f, 1.f, m_ManeuverActive),
+		this->m_Cursor->DrawRotaGraph(
+			static_cast<int>(this->m_ManeuverPos2D.x),
+			static_cast<int>(this->m_ManeuverPos2D.y),
+			50.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (this->m_ManeuverPos2D.z) *
+			Util::Lerp(10.f, 1.f, this->m_ManeuverActive),
 			0.f, true);
 		DxLib::SetDrawBright(255, 255, 255);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 	}
 
-	for (auto& s : m_StageScript.EnemyPop()) {
+	for (auto& s : this->m_StageScript.EnemyPop()) {
 		//敵が生きている
 		if (s.m_EnemyScript.IsAlive()) {
 			for (auto& dp : s.m_EnemyScript.EnemyObj()->GetDamagePoint()) {
@@ -743,7 +737,7 @@ void MainScene::DrawFront_Sub(void) noexcept {
 							DxLib::SetDrawBright(0, 255, 0);
 						}
 					}
-					m_Cursor->DrawRotaGraph(
+					this->m_Cursor->DrawRotaGraph(
 						static_cast<int>(dp.Pos2D.x),
 						static_cast<int>(dp.Pos2D.y),
 						50.f * Scale3DRate / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())) / (dp.Pos2D.z),
@@ -779,9 +773,9 @@ void MainScene::ShadowDraw_Sub(void) noexcept {
 void MainScene::UIDraw_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
 	//
-	if (std::clamp(static_cast<int>(255.f * m_DamageWatch * 0.5f), 0, 255) > 10) {
-		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * m_DamageWatch * 0.5f), 0, 255));
-		m_Damage->DrawExtendGraph(0, 0, DrawerMngr->GetDispWidth(), DrawerMngr->GetDispHeight(), true);
+	if (std::clamp(static_cast<int>(255.f * this->m_DamageWatch * 0.5f), 0, 255) > 10) {
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, std::clamp(static_cast<int>(255.f * this->m_DamageWatch * 0.5f), 0, 255));
+		this->m_Damage->DrawExtendGraph(0, 0, DrawerMngr->GetDispWidth(), DrawerMngr->GetDispHeight(), true);
 		DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 	}
 	//
@@ -802,7 +796,7 @@ void MainScene::UIDraw_Sub(void) noexcept {
 }
 void MainScene::Dispose_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, this->m_BGMID)->StopAll();
-
+	Sound::SoundPool::Instance()->Delete(Sound::SoundType::BGM, this->m_BGMID);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
 
 	auto& Player = PlayerManager::Instance()->SetPlane();
@@ -813,7 +807,7 @@ void MainScene::Dispose_Sub(void) noexcept {
 	this->m_MainUI->Dispose();
 	this->m_MainUI.reset();
 
-	m_StageScript.Dispose();
+	this->m_StageScript.Dispose();
 
 	ObjectManager::Instance()->DeleteAll();
 

@@ -26,23 +26,23 @@ namespace Util {
 	template <class T>
 	class SingletonBase {
 	private:
-		static const T*	m_Singleton;
+		static const T*	s_Singleton;
 	public:
 		static void Create(void) noexcept {
-			m_Singleton = new T();
+			s_Singleton = new T();
 		}
 		static T* Instance(void) noexcept {
 #if _DEBUG
-			if (m_Singleton == nullptr) {
+			if (s_Singleton == nullptr) {
 				MessageBox(NULL, "Failed Instance Create", "", MB_OK);
 				exit(-1);
 			}
 #endif
-			// if (m_Singleton == nullptr) { m_Singleton = new T(); }
-			return (T*)m_Singleton;
+			// if (s_Singleton == nullptr) { this->s_Singleton = new T(); }
+			return (T*)s_Singleton;
 		}
 		static void Release(void) noexcept {
-			delete m_Singleton;
+			delete s_Singleton;
 		}
 	protected:
 		SingletonBase(void) noexcept {}
@@ -332,8 +332,8 @@ namespace Util {
 			};
 		auto SetBox = [&](float xmin, float ymin, float xmax, float ymax, int xc, int yc) {
 			Index.emplace_back(SetPoint(xmin, ymin, xc, yc));// 左上の頂点の情報をセット
-			auto RU = SetPoint(xmax, ymin, xc + 1, yc);
-			auto LD = SetPoint(xmin, ymax, xc, yc + 1);
+			unsigned short RU = SetPoint(xmax, ymin, xc + 1, yc);
+			unsigned short LD = SetPoint(xmin, ymax, xc, yc + 1);
 			Index.emplace_back(RU);// 右上の頂点の情報をセット
 			Index.emplace_back(LD);// 左下の頂点の情報をセット
 			Index.emplace_back(SetPoint(xmax, ymax, xc + 1, yc + 1));// 右下の頂点の情報をセット

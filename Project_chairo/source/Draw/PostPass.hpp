@@ -397,7 +397,7 @@ namespace Draw {
 		friend class Util::SingletonBase<PostPassScreenBufferPool>;
 	private:
 		class PostPassScreenBuffer {
-			static const int			m_Size = 3;
+			static const int						m_Size = 3;
 		private:
 			std::array<Draw::ScreenHandle, m_Size>	m_Screen{};
 			int										m_xSize{};
@@ -553,7 +553,7 @@ namespace Draw {
 			const auto& GetDepthBuffer(void) const noexcept { return this->m_DepthScreen; }
 		public:
 			void		Load(int xsize, int ysize) noexcept {
-				auto Prev = DxLib::GetCreateDrawValidGraphZBufferBitDepth();
+				int Prev = DxLib::GetCreateDrawValidGraphZBufferBitDepth();
 				DxLib::SetCreateDrawValidGraphZBufferBitDepth(24);
 				this->m_ColorScreen.Make(xsize, ysize, false);
 				this->m_NormalScreen.Make(xsize, ysize, false);
@@ -577,7 +577,7 @@ namespace Draw {
 		// ベース
 		class PostPassBase {
 		protected:
-			bool	m_PrevActive{ false };
+			bool			m_PrevActive{ false };
 			char		padding[7]{};
 		public:
 			PostPassBase(void) noexcept {}
@@ -645,7 +645,7 @@ namespace Draw {
 				DxLib::SetupCamera_Ortho(30.f * scale);						// カメラのタイプを正射影タイプにセット、描画範囲も指定
 				DxLib::SetCameraNearFar(0.05f * scale, 100.f * scale);		// 描画する奥行き範囲をセット
 				// カメラの位置と注視点はステージ全体が見渡せる位置
-				auto Vec = this->m_ShadowVec;
+				Util::VECTOR3D Vec = this->m_ShadowVec;
 				if (Vec.x == 0.f && Vec.z == 0.f) {
 					Vec.z = (0.1f);
 				}
@@ -679,7 +679,7 @@ namespace Draw {
 				int xsizeEx = DrawerMngr->GetRenderDispWidth() / EXTEND;
 				int ysizeEx = DrawerMngr->GetRenderDispHeight() / EXTEND;
 
-				auto Prev = DxLib::GetCreateDrawValidGraphZBufferBitDepth();
+				int Prev = DxLib::GetCreateDrawValidGraphZBufferBitDepth();
 				DxLib::SetCreateDrawValidGraphZBufferBitDepth(24);
 
 				this->m_BaseShadowHandle.Make(xsizeEx, ysizeEx, TRUE);
@@ -1069,7 +1069,7 @@ namespace Draw {
 			this->m_BufferScreen.Dispose();
 
 			{
-				auto Prev = DxLib::GetCreateDrawValidGraphZBufferBitDepth();
+				int Prev = DxLib::GetCreateDrawValidGraphZBufferBitDepth();
 				DxLib::SetCreateDrawValidGraphZBufferBitDepth(24);
 				this->m_BufferScreen.Make(DrawerMngr->GetRenderDispWidth(), DrawerMngr->GetRenderDispHeight(), true);
 				DxLib::SetCreateDrawValidGraphZBufferBitDepth(Prev);

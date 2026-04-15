@@ -69,35 +69,35 @@ private:
 	virtual ~GameRule(void) noexcept { Dispose(); }
 public:
 	void SetHP(int value) noexcept {
-		m_HP = value;
+		this->m_HP = value;
 	}
-	const auto& GetHP(void) const noexcept { return m_HP; }
+	const auto& GetHP(void) const noexcept { return this->m_HP; }
 
 	void SetIsStartEvent(bool value) noexcept {
-		m_IsStartEvent = value;
+		this->m_IsStartEvent = value;
 	}
-	const auto& GetIsStartEvent(void) const noexcept { return m_IsStartEvent; }
+	const auto& GetIsStartEvent(void) const noexcept { return this->m_IsStartEvent; }
 
 
 	void SetStageModel(std::string_view str) noexcept {
-		m_ModelName = str;
+		this->m_ModelName = str;
 	}
-	const auto& GetStageModel(void) const noexcept { return m_ModelName; }
+	const auto& GetStageModel(void) const noexcept { return this->m_ModelName; }
 
 	void SetNextStage(std::string_view str) noexcept {
-		m_StageName = str;
+		this->m_StageName = str;
 	}
-	const auto& GetNextStage(void) const noexcept { return m_StageName; }
+	const auto& GetNextStage(void) const noexcept { return this->m_StageName; }
 
 	void SetNextEvent(std::string_view str) noexcept {
-		m_EventName = str;
+		this->m_EventName = str;
 	}
-	const auto& GetNextEvent(void) const noexcept { return m_EventName; }
+	const auto& GetNextEvent(void) const noexcept { return this->m_EventName; }
 
 	void SetGameType(GameType type) noexcept {
-		m_GameType = type;
+		this->m_GameType = type;
 	}
-	const auto& GetGameType(void) const noexcept { return m_GameType; }
+	const auto& GetGameType(void) const noexcept { return this->m_GameType; }
 public:
 	void Dispose(void) noexcept {
 	}

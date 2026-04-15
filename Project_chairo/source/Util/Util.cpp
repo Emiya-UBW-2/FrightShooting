@@ -5,7 +5,7 @@
 
 #include "../File/FileStream.hpp"
 
-const Util::SaveData* Util::SingletonBase<Util::SaveData>::m_Singleton = nullptr;
+const Util::SaveData* Util::SingletonBase<Util::SaveData>::s_Singleton = nullptr;
 namespace Util {
 	bool SaveData::Load(void) noexcept {
 		this->m_data.clear();
@@ -15,12 +15,12 @@ namespace Util {
 		File::InputFileStream FileStream("Save/new.svf");
 		while (true) {
 			if (FileStream.ComeEof()) { break; }
-			auto ALL = FileStream.SeekLineAndGetStr();
+			std::string ALL = FileStream.SeekLineAndGetStr();
 			if (ALL == "") {
 				continue;
 			}
-			auto LEFT = File::InputFileStream::getleft(ALL, "=");
-			auto RIGHT = File::InputFileStream::getright(ALL, "=");
+			std::string LEFT = File::InputFileStream::getleft(ALL, "=");
+			std::string RIGHT = File::InputFileStream::getright(ALL, "=");
 			this->m_data.emplace_back(std::make_pair(LEFT, RIGHT));
 		}
 		return true;

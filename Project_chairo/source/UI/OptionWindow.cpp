@@ -35,7 +35,7 @@ void OptionWindow::UpdateColumnStr(void) noexcept {
 	{
 		for (int loop = 0; loop < this->m_NowTabMax; ++loop) {
 			auto& param = this->m_Param[loop];
-			auto Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::MasterVolume)));
+			int Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::MasterVolume)));
 			param.m_Str = pOption->GetParam(Type)->GetValueNow();
 			if (param.m_MinID != InvalidID) {
 				this->m_DrawUI->Get(param.m_MinID).SetActive(pOption->GetParam(Type)->GetSelect() != pOption->GetParam(Type)->GetSelectMin());
@@ -50,7 +50,7 @@ void OptionWindow::UpdateColumnStr(void) noexcept {
 	{
 		for (int loop = 0; loop < this->m_NowTabMax; ++loop) {
 			auto& param = this->m_Param[loop];
-			auto Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::WindowMode)));
+			int Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::WindowMode)));
 			param.m_Str = pOption->GetParam(Type)->GetValueNow();
 			if (param.m_MinID != InvalidID) {
 				this->m_DrawUI->Get(param.m_MinID).SetActive(pOption->GetParam(Type)->GetSelect() != pOption->GetParam(Type)->GetSelectMin());
@@ -65,7 +65,7 @@ void OptionWindow::UpdateColumnStr(void) noexcept {
 	{
 		for (int loop = 0; loop < 2; ++loop) {
 			auto& param = this->m_Param[loop];
-			auto Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::XSensing)));
+			int Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::XSensing)));
 			param.m_Str = pOption->GetParam(Type)->GetValueNow();
 			if (param.m_MinID != InvalidID) {
 				this->m_DrawUI->Get(param.m_MinID).SetActive(pOption->GetParam(Type)->GetSelect() != pOption->GetParam(Type)->GetSelectMin());
@@ -93,7 +93,7 @@ void OptionWindow::UpdateColumnStr(void) noexcept {
 	{
 		for (int loop = 0; loop < this->m_NowTabMax; ++loop) {
 			auto& param = this->m_Param[loop];
-			auto Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::HeadBobbing)));
+			int Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::HeadBobbing)));
 			param.m_Str = pOption->GetParam(Type)->GetValueNow();
 			if (param.m_MinID != InvalidID) {
 				this->m_DrawUI->Get(param.m_MinID).SetActive(pOption->GetParam(Type)->GetSelect() != pOption->GetParam(Type)->GetSelectMin());
@@ -241,7 +241,7 @@ void OptionWindow::Update(void) noexcept {
 			{
 				for (int loop = 0; loop < this->m_NowTabMax; ++loop) {
 					auto& param = this->m_Param[loop];
-					auto Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::MasterVolume)));
+					int Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::MasterVolume)));
 					if (this->m_DrawUI->Get(param.m_MinID).IsActive() && this->m_DrawUI->Get(param.m_MinID).IsSelectButton()) {
 						pOption->SetParam(Type, pOption->GetParam(Type)->GetSelect() - 1);
 						Sound::SoundPool::Instance()->FlipVolume();
@@ -260,7 +260,7 @@ void OptionWindow::Update(void) noexcept {
 				for (int loop = 0; loop < this->m_NowTabMax; ++loop) {
 					auto& param = this->m_Param[loop];
 					Util::OptionType OptType = static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::WindowMode));
-					auto Type = pOption->GetOptionType(OptType);
+					int Type = pOption->GetOptionType(OptType);
 					bool IsChange = false;
 					if (this->m_DrawUI->Get(param.m_MinID).IsActive() && this->m_DrawUI->Get(param.m_MinID).IsSelectButton()) {
 						pOption->SetParam(Type, pOption->GetParam(Type)->GetSelect() - 1);
@@ -331,7 +331,7 @@ void OptionWindow::Update(void) noexcept {
 			{
 				for (int loop = 0; loop < 2; ++loop) {
 					auto& param = this->m_Param[loop];
-					auto Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::XSensing)));
+					int Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::XSensing)));
 					if (this->m_DrawUI->Get(param.m_MinID).IsActive() && this->m_DrawUI->Get(param.m_MinID).IsSelectButton()) {
 						pOption->SetParam(Type, pOption->GetParam(Type)->GetSelect() - 1);
 					}
@@ -354,7 +354,7 @@ void OptionWindow::Update(void) noexcept {
 				auto* Localize = Util::LocalizePool::Instance();
 				for (int loop = 0; loop < this->m_NowTabMax; ++loop) {
 					auto& param = this->m_Param[loop];
-					auto Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::HeadBobbing)));
+					int Type = pOption->GetOptionType(static_cast<Util::OptionType>(loop + static_cast<int>(Util::OptionType::HeadBobbing)));
 					if (this->m_DrawUI->Get(param.m_MinID).IsActive() && this->m_DrawUI->Get(param.m_MinID).IsSelectButton()) {
 						pOption->SetParam(Type, pOption->GetParam(Type)->GetSelect() - 1);
 						Localize->Load();

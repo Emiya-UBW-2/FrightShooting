@@ -12,7 +12,7 @@
 #include "../UI/MainUI.hpp"
 
 class AimPoint {
-	const Draw::GraphHandle* m_Cursor{};
+	const Draw::GraphHandle*		m_Cursor{};
 	Util::VECTOR2D					m_AimPoint2D_Near;
 	Util::VECTOR2D					m_AimPoint2D_Far;
 public:
@@ -24,21 +24,21 @@ public:
 	virtual ~AimPoint(void) noexcept {}
 public:
 	void Load() noexcept {
-		m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
+		this->m_Cursor = Draw::GraphPool::Instance()->Get("data/Image/Cursor.png")->Get();
 	}
 	void CalcPoint() noexcept {
 		auto& Watch = PlayerManager::Instance()->SetPlane();
 
-		auto Mat = Watch->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1));
+		Util::Matrix4x4 Mat = Watch->GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1));
 		{
-			auto Pos2D = ConvWorldPosToScreenPos((Mat.pos() + Mat.zvec2() * (25.f * Scale3DRate)).get());
+			Util::VECTOR3D Pos2D = ConvWorldPosToScreenPos((Mat.pos() + Mat.zvec2() * (25.f * Scale3DRate)).get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
 				this->m_AimPoint2D_Near.x = Pos2D.x;
 				this->m_AimPoint2D_Near.y = Pos2D.y;
 			}
 		}
 		{
-			auto Pos2D = ConvWorldPosToScreenPos((Mat.pos() + Mat.zvec2() * (50.f * Scale3DRate)).get());
+			Util::VECTOR3D Pos2D = ConvWorldPosToScreenPos((Mat.pos() + Mat.zvec2() * (50.f * Scale3DRate)).get());
 			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
 				this->m_AimPoint2D_Far.x = Pos2D.x;
 				this->m_AimPoint2D_Far.y = Pos2D.y;
@@ -48,18 +48,18 @@ public:
 	void Draw() noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
 		SetDrawBright(0, 128, 0);
-		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Far.x), static_cast<int>(this->m_AimPoint2D_Far.y),
+		this->m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Far.x), static_cast<int>(this->m_AimPoint2D_Far.y),
 			0.5f / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())), 0.f, true);
 		SetDrawBright(0, 255, 0);
-		m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Near.x), static_cast<int>(this->m_AimPoint2D_Near.y),
+		this->m_Cursor->DrawRotaGraph(static_cast<int>(this->m_AimPoint2D_Near.x), static_cast<int>(this->m_AimPoint2D_Near.y),
 			1.f / (static_cast<float>(DrawerMngr->GetDispWidth()) / static_cast<float>(DrawerMngr->GetRenderDispWidth())), 0.f, true);
 		SetDrawBright(255, 255, 255);
 	}
 };
 
 class MainScene : public Util::SceneBase {
-	const Draw::GraphHandle* m_Cursor{};
-	const Draw::GraphHandle* m_Damage{};
+	const Draw::GraphHandle*		m_Cursor{};
+	const Draw::GraphHandle*		m_Damage{};
 
 	StageScript						m_StageScript;
 

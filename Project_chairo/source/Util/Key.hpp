@@ -1009,7 +1009,7 @@ namespace Util {
 					}
 				}
 				size_t index = static_cast<size_t>(ID) - static_cast<size_t>(EnumInput::XInput_Begin);
-				auto XID = XInputInput[index];
+				int XID = XInputInput[index];
 				bool IsPress = false;
 				if (XID >= 0xF000) {
 					bool LS_Active = false;
@@ -1107,7 +1107,7 @@ namespace Util {
 					}
 				}
 				size_t index = static_cast<size_t>(ID) - static_cast<size_t>(EnumInput::DInput_Begin);
-				auto DID = DInputInput[index];
+				int DID = DInputInput[index];
 				bool IsPress = false;
 				if (DID >= 0xF000) {
 					bool LPOV_Active = false;

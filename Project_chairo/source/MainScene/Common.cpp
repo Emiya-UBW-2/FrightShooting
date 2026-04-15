@@ -2,4 +2,4 @@
 
 #include "Common.hpp"
 
-const EffectPool* Util::SingletonBase<EffectPool>::m_Singleton = nullptr;
+const EffectPool* Util::SingletonBase<EffectPool>::s_Singleton = nullptr;

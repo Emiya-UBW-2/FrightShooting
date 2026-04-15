@@ -304,12 +304,12 @@ namespace Draw {
 		pObj->ResetFrameUserLocalMatrix(Arm);
 		pObj->ResetFrameUserLocalMatrix(Arm2);
 		pObj->ResetFrameUserLocalMatrix(Wrist);
-		auto matBase = Util::Matrix3x3::Get33DX(pObj->GetParentFrameWorldMatrix(Arm)).inverse();
+		Util::Matrix3x3 matBase = Util::Matrix3x3::Get33DX(pObj->GetParentFrameWorldMatrix(Arm)).inverse();
 		// 基準
-		auto vec_a1 = Util::Matrix3x3::Vtrans((DirPos - pObj->GetFramePosition(Arm)).normalized(), matBase);// 基準
-		auto vec_a1L1 = Util::VECTOR3D(Util::VECTOR3D::vget(XPer, -1.f, vec_a1.y / -abs(vec_a1.z))).normalized();// x=0とする
+		Util::VECTOR3D vec_a1 = Util::Matrix3x3::Vtrans((DirPos - pObj->GetFramePosition(Arm)).normalized(), matBase);// 基準
+		Util::VECTOR3D vec_a1L1 = Util::VECTOR3D(Util::VECTOR3D::vget(XPer, -1.f, vec_a1.y / -abs(vec_a1.z))).normalized();// x=0とする
 		float cos_t = Util::GetCosFormula((Util::VECTOR3D(pObj->GetFramePosition(Wrist)) - pObj->GetFramePosition(Arm2)).magnitude(), (Util::VECTOR3D(pObj->GetFramePosition(Arm2)) - pObj->GetFramePosition(Arm)).magnitude(), (Util::VECTOR3D(pObj->GetFramePosition(Arm)) - DirPos).magnitude());
-		auto vec_t = vec_a1 * cos_t + vec_a1L1 * std::sqrtf(1.f - cos_t * cos_t);
+		Util::VECTOR3D vec_t = vec_a1 * cos_t + vec_a1L1 * std::sqrtf(1.f - cos_t * cos_t);
 		// 上腕
 		pObj->SetFrameLocalMatrix(Arm, Util::Matrix3x3::RotVec2(
 			Util::Matrix3x3::Vtrans(Util::VECTOR3D(pObj->GetFramePosition(Arm2)) - pObj->GetFramePosition(Arm), matBase),
@@ -327,7 +327,7 @@ namespace Draw {
 			Util::Matrix3x3 mat1;
 			mat1 = Util::Matrix3x3::RotVec2(Util::Matrix3x3::Vtrans(Util::Matrix3x3::Vtrans(Localzvec, Util::Matrix3x3::Get33DX(pObj->GetFrameLocalWorldMatrix(Wrist))), matBase), Util::Matrix3x3::Vtrans(Dirzvec, matBase));
 			pObj->SetFrameLocalMatrix(Wrist, mat1.Get44DX() * FrameBaseLocalMatWrist);
-			auto xvec = Util::Matrix3x3::Vtrans(Localyvec, Util::Matrix3x3::Get33DX(pObj->GetFrameLocalWorldMatrix(Wrist)));
+			Util::VECTOR3D xvec = Util::Matrix3x3::Vtrans(Localyvec, Util::Matrix3x3::Get33DX(pObj->GetFrameLocalWorldMatrix(Wrist)));
 			mat1 = Util::Matrix3x3::RotAxis(Localzvec, Util::VECTOR3D::Angle(xvec, Util::VECTOR3D::Cross(Diryvec, Dirzvec)) * ((Util::VECTOR3D::Dot(Diryvec, xvec) > 0.f) ? -1.f : 1.f)) * mat1;
 			pObj->SetFrameLocalMatrix(Wrist, mat1.Get44DX() * FrameBaseLocalMatWrist);
 		}

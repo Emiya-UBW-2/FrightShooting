@@ -6,7 +6,7 @@
 #include "../Draw/MainDraw.hpp"
 #include "../Draw/KeyGuide.hpp"
 
-const Util::KeyParam* Util::SingletonBase<Util::KeyParam>::m_Singleton = nullptr;
+const Util::KeyParam* Util::SingletonBase<Util::KeyParam>::s_Singleton = nullptr;
 
 namespace Util {
 	void KeyParam::Assign(InputType type) noexcept {

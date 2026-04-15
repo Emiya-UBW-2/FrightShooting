@@ -149,8 +149,8 @@ namespace File {
 	}
 	static void GetArgs(const std::string& str, std::string* FuncName, std::vector<std::string>* Args) noexcept {
 		std::string ALL = ReplaceAll(ReplaceAll(str, " ", ""), "\t", "");
-		auto Func = ALL.substr(0, ALL.find("("));
-		auto Arg = InputFileStream::getleft(InputFileStream::getright(ALL, "("), ")");
+		std::string Func = ALL.substr(0, ALL.find("("));
+		std::string Arg = InputFileStream::getleft(InputFileStream::getright(ALL, "("), ")");
 		*FuncName = Func;
 		Args->clear();
 		while (true) {

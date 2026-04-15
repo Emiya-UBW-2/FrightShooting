@@ -78,7 +78,7 @@ namespace Draw {
 	public://Getter
 		auto	GetFrameRate(void) const noexcept {
 			/*
-			if (this->m_UpdateTickCount >= 2 || m_FPSLimit == 30) {
+			if (this->m_UpdateTickCount >= 2 || this->m_FPSLimit == 30) {
 				return 30.f;
 			}
 			//*/

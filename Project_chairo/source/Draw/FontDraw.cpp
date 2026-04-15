@@ -6,7 +6,7 @@
 #pragma warning(disable:5259)
 #include "FontDraw.hpp"
 
-const Draw::FontPool* Util::SingletonBase<Draw::FontPool>::m_Singleton = nullptr;
+const Draw::FontPool* Util::SingletonBase<Draw::FontPool>::s_Singleton = nullptr;
 
 namespace Draw {
 	Fonthave::Fonthave(FontType type, int fontSize, int edgeSize) noexcept {

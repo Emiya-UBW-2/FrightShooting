@@ -519,7 +519,7 @@ namespace Draw {
 				this->m_Frame = 0;
 			}
 			else {
-				auto Max = 0;
+				int Max = 0;
 				for (auto& anim : a.m_AnimParam) {
 					Max = std::max(Max, anim.m_EndFrame);
 				}

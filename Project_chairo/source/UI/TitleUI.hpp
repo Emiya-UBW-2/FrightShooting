@@ -17,7 +17,7 @@ private:
 	int										m_UIBase{ InvalidID };
 	bool									m_IsActive{};
 	char		padding[3]{};
-	std::array<std::pair<int, std::function<void()>>, 4>	m_ButtonDo{};
+	std::array<std::pair<int, std::function<void()>>, 5>	m_ButtonDo{};
 
 	Sound::SoundUniqueID					m_cursorID{ InvalidID };
 	Sound::SoundUniqueID					m_OKID{ InvalidID };
@@ -47,7 +47,7 @@ public:
 
 		for (auto& b : this->m_ButtonDo) {
 			size_t index = static_cast<size_t>(&b - &this->m_ButtonDo.front());
-			b.first = this->m_DrawUI->GetID(("Tab" + std::to_string(index + 1)).c_str());
+			b.first = this->m_DrawUI->GetID(("Tab" + std::to_string(index)).c_str());
 		}
 		this->m_DrawUI->Get(this->m_UIBase).SetActive(true);
 	}
@@ -126,6 +126,81 @@ public:
 
 		this->m_DrawUI = new Draw::DrawUISystem();
 		this->m_DrawUI->Init("data/UI/Title/EndUI.json");
+		this->m_UIBase = this->m_DrawUI->GetID("");
+		this->m_ButtonID = this->m_DrawUI->GetID("Button");
+		this->m_CloseButtonID = this->m_DrawUI->GetID("CloseButton");
+		SetActive(false);
+	}
+	void		Update(void) noexcept {
+		auto* KeyMngr = Util::KeyParam::Instance();
+		if (IsActive()) {
+			bool IsSelect = false;
+			if (this->m_DrawUI->Get(this->m_ButtonID).IsSelectButton()) {
+				IsSelect = true;
+			}
+			if (this->m_DrawUI->Get(this->m_CloseButtonID).IsSelectButton()) {
+				IsSelect = true;
+			}
+			if (IsSelect && (IsSelect != this->m_isSelectSoundPrev)) {
+				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_cursorID)->Play(DX_PLAYTYPE_BACK, TRUE);
+			}
+			this->m_isSelectSoundPrev = IsSelect;
+
+			if (KeyMngr->GetMenuKeyTrigger(Util::EnumMenu::Diside)) {
+				if (this->m_DrawUI->Get(this->m_ButtonID).IsSelectButton()) {
+					Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_OKID)->Play(DX_PLAYTYPE_BACK, TRUE);
+				}
+			}
+			if (KeyMngr->GetMenuKeyReleaseTrigger(Util::EnumMenu::Diside)) {
+				if (this->m_DrawUI->Get(this->m_ButtonID).IsSelectButton()) {
+					this->m_ButtonDo();
+				}
+				if (this->m_DrawUI->Get(this->m_CloseButtonID).IsSelectButton()) {
+					SetActive(false);
+				}
+			}
+		}
+		this->m_DrawUI->Update(IsActive());
+	}
+	void		Draw(void) noexcept {
+		this->m_DrawUI->Draw();
+	}
+	void		Dispose(void) noexcept {
+		delete this->m_DrawUI;
+	}
+};
+
+class CheckUI {
+private:
+	Draw::DrawUISystem*		m_DrawUI{ nullptr };
+	int						m_UIBase{ InvalidID };
+	int						m_ButtonID{ InvalidID };
+	int						m_CloseButtonID{ InvalidID };
+	char		padding[4]{};
+	std::function<void()>	m_ButtonDo{};
+	Sound::SoundUniqueID	m_cursorID{ InvalidID };
+	Sound::SoundUniqueID	m_OKID{ InvalidID };
+	bool					m_isSelectSoundPrev{ false };
+	char		padding2[7]{};
+public:
+	CheckUI(void) noexcept {}
+	CheckUI(const CheckUI&) = delete;
+	CheckUI(CheckUI&&) = delete;
+	CheckUI& operator=(const CheckUI&) = delete;
+	CheckUI& operator=(CheckUI&&) = delete;
+	virtual ~CheckUI(void) noexcept {}
+public:
+	bool		IsEnd(void) const noexcept { return !this->m_DrawUI->Get(this->m_UIBase).IsActive() && this->m_DrawUI->Get(this->m_UIBase).IsAnimeEnd(); }
+	bool		IsActive(void) const noexcept { return this->m_DrawUI->Get(this->m_UIBase).IsActive(); }
+	void		SetActive(bool value) noexcept { this->m_DrawUI->Get(this->m_UIBase).SetActive(value); }
+	void		SetEvent(const std::function<void()>& value) noexcept { this->m_ButtonDo = value; }
+public:
+	void		Init(void) noexcept {
+		this->m_cursorID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/cursor.wav", false);
+		this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
+
+		this->m_DrawUI = new Draw::DrawUISystem();
+		this->m_DrawUI->Init("data/UI/Title/CheckUI.json");
 		this->m_UIBase = this->m_DrawUI->GetID("");
 		this->m_ButtonID = this->m_DrawUI->GetID("Button");
 		this->m_CloseButtonID = this->m_DrawUI->GetID("CloseButton");

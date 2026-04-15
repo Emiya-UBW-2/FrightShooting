@@ -3,7 +3,7 @@
 #pragma warning(disable:5259)
 #include "Light.hpp"
 
-const Draw::LightPool* Util::SingletonBase<Draw::LightPool>::m_Singleton = nullptr;
+const Draw::LightPool* Util::SingletonBase<Draw::LightPool>::s_Singleton = nullptr;
 namespace Draw {
 	// --------------------------------------------------------------------------------------------------
 	// 

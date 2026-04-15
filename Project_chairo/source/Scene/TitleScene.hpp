@@ -22,6 +22,7 @@ class TitleScene : public Util::SceneBase {
 	OptionWindow	m_OptionWindow;
 	TitleUI			m_TitleUI;
 	EndUI			m_EndUI;
+	CheckUI			m_CheckUI;
 public:
 	TitleScene(void) noexcept { SetID(static_cast<int>(EnumScene::Title)); }
 	TitleScene(const TitleScene&) = delete;
@@ -37,14 +38,28 @@ protected:
 
 		this->m_TitleUI.Init();
 		this->m_TitleUI.SetEvent(0, [this]() {
+			std::string_view StageString = Util::SaveData::Instance()->GetParam("Stage");
+			if (StageString == "" || StageString == "Stage0101") {
+				//最初のステージに戻す
+				Util::SaveData::Instance()->SetParam("Stage", "Stage0101");
+				GameRule::Instance()->SetNextStage("Stage0101");
+				GameRule::Instance()->SetIsStartEvent(false);
+				GameRule::Instance()->SetHP(100);
+				this->m_TitleUI.SetEnd();
+			}
+			else {
+				this->m_CheckUI.SetActive(true);
+			}
+			});
+		this->m_TitleUI.SetEvent(1, [this]() {
 			this->m_TitleUI.SetEnd();
 			});
-		this->m_TitleUI.SetEvent(1, []() {
+		this->m_TitleUI.SetEvent(2, []() {
 			});
-		this->m_TitleUI.SetEvent(2, [this]() {
+		this->m_TitleUI.SetEvent(3, [this]() {
 			this->m_OptionWindow.SetActive(true);
 			});
-		this->m_TitleUI.SetEvent(3, []() {
+		this->m_TitleUI.SetEvent(4, []() {
 			});
 
 		this->m_EndUI.Init();
@@ -52,6 +67,19 @@ protected:
 			Util::SceneBase::SetEndGame();
 			});
 		this->m_EndUI.SetActive(false);
+
+		this->m_CheckUI.Init();
+		this->m_CheckUI.SetEvent([this]() {
+			//最初のステージに戻す
+			Util::SaveData::Instance()->SetParam("Stage", "Stage0101");
+			GameRule::Instance()->SetNextStage("Stage0101");
+			GameRule::Instance()->SetIsStartEvent(false);
+			GameRule::Instance()->SetHP(100);
+			this->m_TitleUI.SetEnd();
+			//
+			this->m_CheckUI.SetActive(false);
+			});
+		this->m_CheckUI.SetActive(false);
 
 		auto* KeyGuideParts = DXLibRef::KeyGuide::Instance();
 		KeyGuideParts->SetGuideFlip();
@@ -76,6 +104,8 @@ protected:
 		DxLib::SetMouseDispFlag(true);
 		this->m_EndUI.Update();
 		if (this->m_EndUI.IsActive()) { return; }
+		this->m_CheckUI.Update();
+		if (this->m_CheckUI.IsActive()) { return; }
 		this->m_TitleUI.SetActive(!this->m_OptionWindow.IsActive());
 		this->m_TitleUI.Update();
 		if (this->m_TitleUI.IsEnd()) {
@@ -103,11 +133,13 @@ protected:
 	void UIDraw_Sub(void) noexcept override {
 		this->m_TitleUI.Draw();
 		this->m_OptionWindow.Draw();
+		this->m_CheckUI.Draw();
 		this->m_EndUI.Draw();
 	}
 	void Dispose_Sub(void) noexcept override {
 		this->m_TitleUI.Dispose();
 		this->m_OptionWindow.Dispose();
+		this->m_CheckUI.Dispose();
 		this->m_EndUI.Dispose();
 	}
 };

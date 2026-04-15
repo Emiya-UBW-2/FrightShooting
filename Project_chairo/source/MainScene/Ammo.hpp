@@ -21,7 +21,7 @@ private:
 	int				GetFrameNum(void) noexcept override { return 0; }
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
-	const Draw::GraphHandle* m_SmokeGraph{};
+	const Draw::GraphHandle*	m_SmokeGraph{};
 	Util::VECTOR3D Vector{};
 	float YVecAdd{};
 	float Timer{};
@@ -104,13 +104,13 @@ private:
 	int				GetFrameNum(void) noexcept override { return 0; }
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
-	Util::VECTOR3D Vector{};
-	float YVecAdd{};
-	float Timer{};
-	float DrawTimer{};
+	Util::VECTOR3D									Vector{};
+	float											YVecAdd{};
+	float											Timer{};
+	float											DrawTimer{};
 	std::array<std::shared_ptr<AmmoHitEffect>, 10>	m_AmmoEffectPer{};
-	int Shooter{ InvalidID };
-	float m_Scale{ 1.f };
+	int												Shooter{ InvalidID };
+	float											m_Scale{ 1.f };
 	//char		padding[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed, float Scale) noexcept {
@@ -120,13 +120,13 @@ public:
 		this->YVecAdd = 0.f;
 		this->Timer = 5.f;
 		this->DrawTimer = this->Timer + 0.1f;
-		Shooter = ID;
-		m_Scale = Scale;
+		this->Shooter = ID;
+		this->m_Scale = Scale;
 	}
 	bool IsActive() const noexcept { return this->Timer != 0.f; }
-	auto GetVector() const noexcept { return this->Vector; }
-	auto GetShooterID() const noexcept { return this->Shooter; }
-	auto GetScale() const noexcept { return this->m_Scale; }
+	const auto& GetVector() const noexcept { return this->Vector; }
+	const auto& GetShooterID() const noexcept { return this->Shooter; }
+	const auto& GetScale() const noexcept { return this->m_Scale; }
 public:
 	void SetHit(const Util::VECTOR3D& pos) noexcept {
 		this->Vector = pos - GetMat().pos();
@@ -163,7 +163,7 @@ public:
 		DxLib::DrawCapsule3D(
 			(GetMat().pos() - this->Vector * std::clamp(this->DrawTimer / 0.1f, 0.f, 1.f)).get(),
 			GetMat().pos().get(),
-			0.45f * Scale3DRate / 2.f * m_Scale,
+			0.45f * Scale3DRate / 2.f * this->m_Scale,
 			6,
 			DxLib::GetColor(192, 192, 255),
 			DxLib::GetColor(0, 255, 255),
@@ -221,31 +221,21 @@ public:
 		this->DrawTimer = this->Timer + 0.25f;
 		Shooter = ID;
 
-		m_LineEffect.Set(GetMat().pos());
-		m_SeekerFlag = true;
+		this->m_LineEffect.Set(GetMat().pos());
+		this->m_SeekerFlag = true;
 	}
-	bool IsActive() const noexcept {
-		return this->Timer != 0.f;
-	}
-	auto GetVector() const noexcept {
-		return this->Vector;
-	}
-	auto GetShooterID() const noexcept {
-		return this->Shooter;
-	}
-	auto GetHomingID() const noexcept {
-		return this->m_HomingID;
-	}
-	auto IsSeeker() const noexcept {
-		return this->m_SeekerFlag;
-	}
+	bool IsActive() const noexcept { return this->Timer != 0.f; }
+	const auto& GetVector() const noexcept { return this->Vector; }
+	const auto& GetShooterID() const noexcept { return this->Shooter; }
+	const auto& GetHomingID() const noexcept { return this->m_HomingID; }
+	const auto& IsSeeker() const noexcept { return this->m_SeekerFlag; }
 
 	void SetHomingTarget(bool IsHoming,int ID, int second) noexcept {
-		m_IsHoming = IsHoming;
-		m_HomingID.first = ID;
-		m_HomingID.second = second;
-		if (m_IsHoming) {
-			m_SeekerFlag = false;
+		this->m_IsHoming = IsHoming;
+		this->m_HomingID.first = ID;
+		this->m_HomingID.second = second;
+		if (this->m_IsHoming) {
+			this->m_SeekerFlag = false;
 		}
 	}
 public:
@@ -259,7 +249,7 @@ public:
 		this->m_Graph = Draw::GraphPool::Instance()->Get("data/Image/Light.png")->Get();
 	}
 	void Init_Sub(void) noexcept override {
-		m_LineEffect.Init(0.5f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+		this->m_LineEffect.Init(0.5f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
 	}
 	void Update_Sub(void) noexcept override;
 	void SetShadowDraw_Sub(void) const noexcept override {
@@ -275,7 +265,7 @@ public:
 		//DxLib::SetWriteZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
 
-		m_LineEffect.Draw();
+		this->m_LineEffect.Draw();
 
 		float Per = std::sin(Util::deg2rad(90.f));
 		if (Per > 0.f) {
@@ -314,19 +304,18 @@ private:
 	int				GetFrameNum(void) noexcept override { return 0; }
 	const char* GetFrameStr(int) noexcept override { return nullptr; }
 private:
-	const Draw::GraphHandle* m_Graph{};
-	Util::VECTOR3D Vector{};
+	const Draw::GraphHandle*	m_Graph{};
+	Util::VECTOR3D				Vector{};
 	char		padding0[4]{};
-	float YVecAdd{};
-	float Timer{};
-	float DrawTimer{};
-	float m_Scale{};
-	int Shooter{ InvalidID };
+	float						YVecAdd{};
+	float						Timer{};
+	float						DrawTimer{};
+	float						m_Scale{};
+	int							Shooter{ InvalidID };
 	char		padding[4]{};
-
-	bool m_IsHoming{};
+	bool						m_IsHoming{};
 	char		padding2[7]{};
-	Util::VECTOR3D m_HomingTarget{};
+	Util::VECTOR3D				m_HomingTarget{};
 	char		padding3[4]{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle, int ID, float Speed) noexcept {
@@ -338,19 +327,13 @@ public:
 		this->DrawTimer = this->Timer + 0.25f;
 		Shooter = ID;
 	}
-	bool IsActive() const noexcept {
-		return this->Timer != 0.f;
-	}
-	auto GetVector() const noexcept {
-		return this->Vector;
-	}
-	auto GetShooterID() const noexcept {
-		return this->Shooter;
-	}
+	bool IsActive() const noexcept { return this->Timer != 0.f; }
+	const auto& GetVector() const noexcept { return this->Vector; }
+	const auto& GetShooterID() const noexcept { return this->Shooter; }
 
 	void SetHomingTarget(bool IsHoming, Util::VECTOR3D& pos) noexcept {
-		m_IsHoming = IsHoming;
-		m_HomingTarget = pos;
+		this->m_IsHoming = IsHoming;
+		this->m_HomingTarget = pos;
 	}
 public:
 	void SetHit(const Util::VECTOR3D& pos) noexcept {
@@ -422,9 +405,9 @@ private:
 	AmmoPool& operator=(AmmoPool&&) = delete;
 	virtual ~AmmoPool(void) noexcept { Dispose(); }
 public:
-	auto& GetAmmoPer(void) noexcept { return m_AmmoPer; }
-	auto& GetBombPer(void) noexcept { return m_BombPer; }
-	auto& GetMultiBombPer(void) noexcept { return m_MultiBombPer; }
+	auto& GetAmmoPer(void) noexcept { return this->m_AmmoPer; }
+	auto& GetBombPer(void) noexcept { return this->m_BombPer; }
+	auto& GetMultiBombPer(void) noexcept { return this->m_MultiBombPer; }
 public:
 	void			ShotAmmo(Util::Matrix4x4 Mat, float speed, int ShooterID, float Scale) noexcept {
 		this->m_AmmoPer.at(static_cast<size_t>(this->m_AmmoID))->Set(Mat, ShooterID, speed * Scale3DRate, Scale);

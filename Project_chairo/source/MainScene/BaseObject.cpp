@@ -2,7 +2,7 @@
 
 #include "BaseObject.hpp"
 
-const ObjectManager* Util::SingletonBase<ObjectManager>::m_Singleton = nullptr;
+const ObjectManager* Util::SingletonBase<ObjectManager>::s_Singleton = nullptr;
 
 inline void ResourceModel::LoadEnd(const std::shared_ptr<BaseObject>& pObj) noexcept {
 	if (this->m_IsEndLoadData) { return; }

@@ -3,7 +3,7 @@
 #include "Option.hpp"
 
 // シングルトンの実態定義
-const Sound::SoundPool* Util::SingletonBase<Sound::SoundPool>::m_Singleton = nullptr;
+const Sound::SoundPool* Util::SingletonBase<Sound::SoundPool>::s_Singleton = nullptr;
 
 namespace Sound {
 	// 保持している音声すべての音量を設定

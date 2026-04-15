@@ -22,7 +22,7 @@ class MainUI {
 	float							m_HPRe2{};
 	float							m_Timer{};
 	float							m_AltRand{};
-	float							m_AltRand2{};
+	float							m_SpdRand{};
 	char		padding2[4]{};
 public:
 	MainUI(void) noexcept {}
@@ -32,9 +32,9 @@ public:
 	MainUI& operator=(MainUI&&) = delete;
 	virtual ~MainUI(void) noexcept {}
 public:
-	bool IsPauseActive(void) const noexcept { return m_IsPauseActive; }
-	bool IsExit(void) const noexcept { return m_IsExit; }
-	void SetIsAlert(bool IsAlert) noexcept { m_IsAlert = IsAlert; }
+	bool IsPauseActive(void) const noexcept { return this->m_IsPauseActive; }
+	bool IsExit(void) const noexcept { return this->m_IsExit; }
+	void SetIsAlert(bool IsAlert) noexcept { this->m_IsAlert = IsAlert; }
 public:
 	void Init() noexcept {
 		this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
@@ -63,9 +63,9 @@ public:
 
 		auto& Watch = PlayerManager::Instance()->SetPlane();
 
-		m_HPPrev = Watch->GetHitPointPer();
-		m_HPChangeTime = 0.f;
-		m_HPRe = Watch->GetHitPointPer();
+		this->m_HPPrev = Watch->GetHitPointPer();
+		this->m_HPChangeTime = 0.f;
+		this->m_HPRe = Watch->GetHitPointPer();
 	}
 	void Update() noexcept {
 		auto* KeyMngr = Util::KeyParam::Instance();
@@ -87,47 +87,48 @@ public:
 		this->m_OptionWindow.Update();
 
 		auto& Watch = PlayerManager::Instance()->SetPlane();
-		if (m_HPPrev != Watch->GetHitPointPer()) {
-			m_HPPrev = Watch->GetHitPointPer();
-			m_HPRe = m_HPRe2;
-			m_HPChangeTime = 2.f;
+		if (this->m_HPPrev != Watch->GetHitPointPer()) {
+			this->m_HPPrev = Watch->GetHitPointPer();
+			this->m_HPRe = this->m_HPRe2;
+			this->m_HPChangeTime = 2.f;
 		}
 
-		m_HPChangeTime = std::max(m_HPChangeTime - DrawerMngr->GetDeltaTime(), 0.f);
-		if (m_HPChangeTime <= 1.f) {
-			m_HPRe2 = Util::Lerp(Watch->GetHitPointPer(), m_HPRe, m_HPChangeTime);
+		this->m_HPChangeTime = std::max(this->m_HPChangeTime - DrawerMngr->GetDeltaTime(), 0.f);
+		if (this->m_HPChangeTime <= 1.f) {
+			this->m_HPRe2 = Util::Lerp(Watch->GetHitPointPer(), this->m_HPRe, this->m_HPChangeTime);
 		}
 		else {
-			m_HPRe2 = m_HPRe;
+			this->m_HPRe2 = this->m_HPRe;
 		}
 
-		m_Timer += DrawerMngr->GetDeltaTime();
+		this->m_Timer += DrawerMngr->GetDeltaTime();
 
 		Util::Easing(&m_AltRand, GetRandf(2.f), 0.9f);
-		Util::Easing(&m_AltRand2, GetRandf(2.f), 0.9f);
+		Util::Easing(&m_SpdRand, GetRandf(2.f), 0.9f);
 	}
 	void Draw() noexcept {
+		auto* DrawerMngr = Draw::MainDraw::Instance();
 
 		auto& Watch = PlayerManager::Instance()->SetPlane();
 		{
-			int XP = 64, YP = 1080 - 92, XS = 400, YS = 32;
+			int XP = 64, YP = DrawerMngr->GetDispHeight() - 92, XS = 400, YS = 32;
 			int R = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetHitPointPer())), 0, 255);
 			int G = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetHitPointPer())), 0, 255);
 			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Black, true);
-			DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * m_HPRe2), YP + YS, ColorPalette::Red, true);
+			DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * this->m_HPRe2), YP + YS, ColorPalette::Red, true);
 			DrawBox(XP, YP, XP + static_cast<int>(static_cast<float>(XS) * Watch->GetHitPointPer()), YP + YS, GetColor(R, G, 0), true);
 			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Gray30, false, 3);
 		}
 
 		{
-			int XP = 1920 - 64, YP = 1080 / 2, XS = 32, YS = 400;
+			int XP = DrawerMngr->GetDispWidth() - 64, YP = DrawerMngr->GetDispHeight() / 2, XS = 32, YS = 400;
 			int R = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetStallPer())), 0, 255);
 			int G = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetStallPer())), 0, 255);
 			DrawBox(XP, YP, XP + XS, YP + static_cast<int>(static_cast<float>(YS) * Watch->GetStallPer()), Watch->IsStall() ? ColorPalette::Red : GetColor(R, G, 0), true);
 			DrawBox(XP, YP, XP + XS, YP + YS, ColorPalette::Green, false, 3);
 		}
 		{
-			int XP = 1920 - 64, YP = 1080 / 2 - 400, XS = 32, YS = 400;
+			int XP = DrawerMngr->GetDispWidth() - 64, YP = DrawerMngr->GetDispHeight() / 2 - 400, XS = 32, YS = 400;
 			int R = std::clamp(static_cast<int>(Util::Lerp(0.f, 512.f, Watch->GetBoostPer())), 0, 255);
 			int G = std::clamp(static_cast<int>(Util::Lerp(512.f, 0.f, Watch->GetBoostPer())), 0, 255);
 			DrawBox(XP, YP + YS - static_cast<int>(static_cast<float>(YS) * Watch->GetBoostPer()), XP + XS, YP + YS, Watch->IsOverHeat() ? ColorPalette::Red : GetColor(R, G, 0), true);
@@ -136,11 +137,11 @@ public:
 
 		{
 			auto* CameraParts = Camera::Camera3D::Instance();
-			int XP = 1920 / 2 + static_cast<int>(CameraParts->GetShake().x * -10.f);
-			int YP = 1080 / 2 + static_cast<int>(CameraParts->GetShake().y * -10.f);
+			int XP = DrawerMngr->GetDispWidth() / 2 + static_cast<int>(CameraParts->GetShake().x * -10.f);
+			int YP = DrawerMngr->GetDispHeight() / 2 + static_cast<int>(CameraParts->GetShake().y * -10.f);
 			float Rad = Watch->GetRollPer() * -1.f;
 			{
-				float Alt = Watch->GetMat().pos().y / Scale3DRate + m_AltRand;
+				float Alt = Watch->GetMat().pos().y / Scale3DRate + this->m_AltRand;
 				int Range = 300;
 				for (int loop = -Range / 10; loop < Range / 10; ++loop) {
 					int XP1 = -300 - 16;
@@ -181,7 +182,7 @@ public:
 				}
 			}
 			{
-				float Alt = Watch->GetSpeed() / Watch->GetSpeedMax() * 100.f + m_AltRand2;
+				float Alt = Watch->GetSpeed() / Watch->GetSpeedMax() * 100.f + this->m_SpdRand;
 				int Range = 300;
 				for (int loop = -Range / 10; loop < Range / 10; ++loop) {
 					int XP1 = 300;
@@ -225,31 +226,31 @@ public:
 
 		{
 			int YP = 0;
-			if (Watch->IsStall() && (static_cast<int>(m_Timer * 10.f) % 10 < 5)) {
+			if (Watch->IsStall() && (static_cast<int>(this->m_Timer * 10.f) % 10 < 5)) {
 				auto* Font = Draw::FontPool::Instance();
 				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
 					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,
-					1920 / 2, 1080 / 2 - 400 + YP,
+					DrawerMngr->GetDispWidth() / 2, DrawerMngr->GetDispHeight() / 2 - 400 + YP,
 					ColorPalette::Red, ColorPalette::Red50,
 					"STALL");
 				YP += 32;
 			}
 
-			if (Watch->IsOverHeat() && (static_cast<int>(m_Timer * 10.f) % 10 < 5)) {
+			if (Watch->IsOverHeat() && (static_cast<int>(this->m_Timer * 10.f) % 10 < 5)) {
 				auto* Font = Draw::FontPool::Instance();
 				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
 					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,
-					1920 / 2, 1080 / 2 - 400 + YP,
+					DrawerMngr->GetDispWidth() / 2, DrawerMngr->GetDispHeight() / 2 - 400 + YP,
 					ColorPalette::Red, ColorPalette::Red50,
 					"OVER HEAT");
 				YP += 32;
 			}
 
-			if (m_IsAlert) {
+			if (this->m_IsAlert) {
 				auto* Font = Draw::FontPool::Instance();
 				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
 					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,
-					1920 / 2, 1080 / 2 - 400 + YP,
+					DrawerMngr->GetDispWidth() / 2, DrawerMngr->GetDispHeight() / 2 - 400 + YP,
 					ColorPalette::Red, ColorPalette::Red50,
 					"MISSILE");
 				YP += 32;

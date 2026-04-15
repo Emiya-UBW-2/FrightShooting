@@ -85,7 +85,7 @@ class MyPlane :public BaseObject {
 
 	Util::VECTOR3D			m_RePos;
 
-	int						m_HitPoint{ m_HitPointMax };
+	int						m_HitPoint{ this->m_HitPointMax };
 	static constexpr int	m_HitPointMax{ 100 };
 
 	int					DamageID{};
@@ -133,23 +133,23 @@ private:
 	int				GetFrameNum(void) noexcept override { return static_cast<int>(CharaFrame::Max); }
 	const char*		GetFrameStr(int id) noexcept override { return CharaFrameName[id]; }
 public:
-	bool			GetIsManeuver(void) const noexcept { return m_ManeuverIDRe != InvalidID; }
-	int				GetHitPoint(void) const noexcept { return m_HitPoint; }
-	float			GetHitPointPer(void) const noexcept { return static_cast<float>(m_HitPoint) / static_cast<float>(m_HitPointMax); }
-	const auto&		GetMovePoint(void) const noexcept { return m_MovePoint; }
-	const auto&		GetRollPer(void) const noexcept { return m_RollPer; }
+	bool			GetIsManeuver(void) const noexcept { return this->m_ManeuverIDRe != InvalidID; }
+	int				GetHitPoint(void) const noexcept { return this->m_HitPoint; }
+	float			GetHitPointPer(void) const noexcept { return static_cast<float>(this->m_HitPoint) / static_cast<float>(this->m_HitPointMax); }
+	const auto&		GetMovePoint(void) const noexcept { return this->m_MovePoint; }
+	const auto&		GetRollPer(void) const noexcept { return this->m_RollPer; }
 
-	const auto& GetBoostPer(void) const noexcept { return m_BoostPer; }
-	const auto& IsOverHeat(void) const noexcept { return m_OverHeat; }
-	const auto& GetStallPer(void) const noexcept { return m_StallPer; }
-	const auto& IsStall(void) const noexcept { return m_Stall; }
+	const auto& GetBoostPer(void) const noexcept { return this->m_BoostPer; }
+	const auto& IsOverHeat(void) const noexcept { return this->m_OverHeat; }
+	const auto& GetStallPer(void) const noexcept { return this->m_StallPer; }
+	const auto& IsStall(void) const noexcept { return this->m_Stall; }
 
-	const auto& GetRePos(void) const noexcept { return m_RePos; }
+	const auto& GetRePos(void) const noexcept { return this->m_RePos; }
 	
-	const auto& GetManeuverID(void) const noexcept { return m_ManeuverID; }
+	const auto& GetManeuverID(void) const noexcept { return this->m_ManeuverID; }
 
 	bool			IsDraw() const {
-		if ((m_DamageInterval != 0.f) && (static_cast<int>(m_DamageInterval * 50.f) % 10 > 5)) { return false; }
+		if ((this->m_DamageInterval != 0.f) && (static_cast<int>(this->m_DamageInterval * 50.f) % 10 > 5)) { return false; }
 		return true;
 	}
 
@@ -161,26 +161,26 @@ public:
 		return 1.f * Scale3DRate;
 	}
 	void			SetManeuverTargetID(int ManeuverID) noexcept {
-		m_ManeuverID = ManeuverID;
+		this->m_ManeuverID = ManeuverID;
 	}
 	void			SetPlanePosition(Util::VECTOR3D MyPos, Util::Matrix3x3 Mat, Util::VECTOR3D MovePoint) noexcept {
 		RailMat = Mat.Get44DX() * Util::Matrix4x4::Mtrans(MyPos);
 		EyeMat = RailMat;
-		m_Roll = Util::Matrix3x3::identity();
+		this->m_Roll = Util::Matrix3x3::identity();
 
-		m_MovePoint = MovePoint * -1.f;
-		m_MovePointAdd = m_MovePoint;
+		this->m_MovePoint = MovePoint * -1.f;
+		this->m_MovePointAdd = this->m_MovePoint;
 
 		SetMatrix(
-			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
-			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(m_MovePoint, RailMat.rotation())));
+			(this->m_Roll * Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), this->m_MoveVec) * Util::Matrix3x3::Get33DX(RailMat.rotation())).Get44DX() *
+			Util::Matrix4x4::Mtrans(RailMat.pos() - Util::Matrix4x4::Vtrans(this->m_MovePoint, RailMat.rotation())));
 
-		m_RePos = GetMat().pos();
+		this->m_RePos = GetMat().pos();
 
-		m_LineEffect1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
-		m_LineEffect2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
-		m_LineEffect3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
-		m_LineEffect4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
+		this->m_LineEffect1.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::LWingtip)).pos());
+		this->m_LineEffect2.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::RWingtip)).pos());
+		this->m_LineEffect3.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle1)).pos());
+		this->m_LineEffect4.Set(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Nozzle2)).pos());
 	}
 	auto			GetEyeMatrix(void) const noexcept {
 		return EyeMat;
@@ -189,13 +189,13 @@ public:
 		DamageID = InvalidID;
 	}
 	void			SetHitPoint(int hp) noexcept {
-		m_HitPoint = std::clamp(hp, 0, m_HitPointMax);
+		this->m_HitPoint = std::clamp(hp, 0, this->m_HitPointMax);
 	}
 	void			SetDamageOn(int damage) noexcept {
-		if (m_DamageInterval != 0.f) { return; }
-		m_DamageInterval = 3.0f;
+		if (this->m_DamageInterval != 0.f) { return; }
+		this->m_DamageInterval = 3.0f;
 		DamageID = 0;
-		SetHitPoint(m_HitPoint - damage);
+		SetHitPoint(this->m_HitPoint - damage);
 	}
 	bool				IsDamageOn(void) const noexcept { return DamageID != InvalidID; }
 public:
@@ -230,14 +230,14 @@ public:
 			}
 		}
 
-		m_LineEffect1.Draw();
-		m_LineEffect2.Draw();
+		this->m_LineEffect1.Draw();
+		this->m_LineEffect2.Draw();
 
-		m_LineEffect3.Draw();
-		m_LineEffect4.Draw();
+		this->m_LineEffect3.Draw();
+		this->m_LineEffect4.Draw();
 
-		if (m_RollingBarrier > 0.f) {
-			m_barrier.DrawModel();
+		if (this->m_RollingBarrier > 0.f) {
+			this->m_barrier.DrawModel();
 		}
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
@@ -245,7 +245,7 @@ public:
 		GetModel().DrawModel();
 	}
 	void Dispose_Sub(void) noexcept override {
-		m_barrier.Dispose();
+		this->m_barrier.Dispose();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_CockPitID)->StopAll();
 		Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EngineID)->StopAll();
 		SetModel().Dispose();

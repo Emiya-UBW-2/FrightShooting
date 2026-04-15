@@ -2,8 +2,8 @@
 #include "PostPass.hpp"
 #include "Camera.hpp"
 
-const Draw::PostPassScreenBufferPool* Util::SingletonBase<Draw::PostPassScreenBufferPool>::m_Singleton = nullptr;
-const Draw::PostPassEffect* Util::SingletonBase<Draw::PostPassEffect>::m_Singleton = nullptr;
+const Draw::PostPassScreenBufferPool* Util::SingletonBase<Draw::PostPassScreenBufferPool>::s_Singleton = nullptr;
+const Draw::PostPassEffect* Util::SingletonBase<Draw::PostPassEffect>::s_Singleton = nullptr;
 
 namespace Draw {
 	// 
@@ -43,7 +43,7 @@ namespace Draw {
 			pGaussScreen->GraphFilter(DX_GRAPH_FILTER_GAUSS, 8, 1000);
 			TargetGraph->SetDraw_Screen(false);
 			{
-				auto Prev = DxLib::GetDrawMode();
+				int Prev = DxLib::GetDrawMode();
 				DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
 				DxLib::SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
 				pGaussScreen->DrawExtendGraph(0, 0, xsize, ysize, true);
@@ -266,7 +266,7 @@ namespace Draw {
 			// ぼかしを入れる
 			pScreenBuffer->SetDraw_Screen();
 			{
-				auto Prev = DxLib::GetDrawMode();
+				int Prev = DxLib::GetDrawMode();
 				DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
 				pScreenBuffer2->DrawExtendGraph(0, 0, xsize2, ysize2, true);
 				DxLib::SetDrawMode(Prev);
@@ -375,7 +375,7 @@ namespace Draw {
 				this->m_GodRayTime -= 0.5f;
 				if (!this->m_IsUpdateSoftImage) {
 					this->m_Min.SetDraw_Screen();
-					auto Prev = DxLib::GetDrawMode();
+					int Prev = DxLib::GetDrawMode();
 					DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
 					pScreenBuffer->DrawExtendGraph(0, 0, 1, 1, true);
 					DxLib::SetDrawMode(Prev);
@@ -643,7 +643,7 @@ namespace Draw {
 						DxLib::SetDrawMode(Prev);
 					}
 				}
-				auto Cur = this->m_current;
+				size_t Cur = this->m_current;
 				this->m_current = next;
 				return &this->m_screen[Cur];
 			}

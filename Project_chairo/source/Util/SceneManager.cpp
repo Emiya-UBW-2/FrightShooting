@@ -4,7 +4,7 @@
 #pragma warning(disable:5259)
 #include "SceneManager.hpp"
 
-const Util::SceneManager* Util::SingletonBase<Util::SceneManager>::m_Singleton = nullptr;
+const Util::SceneManager* Util::SingletonBase<Util::SceneManager>::s_Singleton = nullptr;
 
 namespace Util {
 }

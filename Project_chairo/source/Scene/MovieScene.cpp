@@ -5,10 +5,10 @@
 #include "../MainScene/GameRule.hpp"
 
 void MovieScene::Load_Sub(void) noexcept {
-	m_StoryScript.Load(GameRule::Instance()->GetNextEvent());
+	this->m_StoryScript.Load(GameRule::Instance()->GetNextEvent());
 }
 void MovieScene::Init_Sub(void) noexcept {
-	m_StoryScript.Init();
+	this->m_StoryScript.Init();
 
 	auto* PostPassParts = Draw::PostPassEffect::Instance();
 	auto* LightParts = Draw::LightPool::Instance();
@@ -51,7 +51,7 @@ void MovieScene::Update_Sub(void) noexcept {
 	);
 	// 影をセット
 	PostPassParts->SetShadowFarChange();
-	if (m_StoryScript.GetIsEnd()) {
+	if (this->m_StoryScript.GetIsEnd()) {
 		this->m_Exit = true;
 	}
 	auto* KeyMngr = Util::KeyParam::Instance();
@@ -60,15 +60,22 @@ void MovieScene::Update_Sub(void) noexcept {
 	}
 
 	this->m_Fade = std::clamp(this->m_Fade + (this->m_Exit ? 1.f : -1.f) * DrawerMngr->GetDeltaTime() / 0.5f, 0.f, 2.f);
-	if (m_Exit) {
+	if (this->m_Exit) {
 		if (this->m_Fade >= 2.f) {
-			SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
-			SceneBase::SetEndScene();
+
+			if (GameRule::Instance()->GetNextStage() == "GameClear") {
+				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::ThankYou)));
+				SceneBase::SetEndScene();
+			}
+			else {
+				SceneBase::SetNextScene(Util::SceneManager::Instance()->GetScene(static_cast<int>(EnumScene::Main)));
+				SceneBase::SetEndScene();
+			}
 		}
 	}
 	//更新
 	if (this->m_Fade <= 1.f) {
-		m_StoryScript.Update();
+		this->m_StoryScript.Update();
 		//
 		ObjectManager::Instance()->UpdateObject();
 	}
@@ -106,6 +113,6 @@ void MovieScene::UIDraw_Sub(void) noexcept {
 	//
 }
 void MovieScene::Dispose_Sub(void) noexcept {
-	m_StoryScript.Dispose();
+	this->m_StoryScript.Dispose();
 	ObjectManager::Instance()->DeleteAll();
 }

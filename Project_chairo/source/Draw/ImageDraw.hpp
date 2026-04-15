@@ -213,9 +213,9 @@ namespace Draw {
 		}
 		void MakeDepth(int SizeX, int SizeY) noexcept {
 			// 深度を描画するテクスチャの作成( 2チャンネル浮動小数点32ビットテクスチャ )
-			auto prevMip = DxLib::GetCreateDrawValidGraphChannelNum();
-			auto prevFloatType = DxLib::GetDrawValidFloatTypeGraphCreateFlag();
-			auto prevBit = DxLib::GetCreateGraphChannelBitDepth();
+			int prevMip = DxLib::GetCreateDrawValidGraphChannelNum();
+			int prevFloatType = DxLib::GetDrawValidFloatTypeGraphCreateFlag();
+			int prevBit = DxLib::GetCreateGraphChannelBitDepth();
 			DxLib::SetCreateDrawValidGraphChannelNum(2);
 			DxLib::SetDrawValidFloatTypeGraphCreateFlag(TRUE);
 			DxLib::SetCreateGraphChannelBitDepth(32);
@@ -307,10 +307,10 @@ namespace Draw {
 		GraphPool& operator=(const GraphPool&) = delete;
 		GraphPool& operator=(GraphPool&&) = delete;
 		~GraphPool(void) noexcept {
-			for (auto& p : m_Pools) {
+			for (auto& p : this->m_Pools) {
 				p.reset();
 			}
-			m_Pools.clear();
+			this->m_Pools.clear();
 		}
 	public:
 		std::unique_ptr<Graphhave>& Get(std::string_view FilePath) noexcept {

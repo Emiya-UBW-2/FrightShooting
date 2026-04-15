@@ -112,7 +112,7 @@ namespace Draw {
 			DxLib::DrawExtendFormatString2ToHandle(x, y, static_cast<double>(xsiz), static_cast<double>(ysiz), Color, EdgeColor, Util::DXHandle::get(), String.c_str(), args...);
 		}
 		// 文字描画
-		auto DrawStringAutoFit(int x1, int y1, int x2, int y2, unsigned int Color, unsigned int EdgeColor, const std::string& String) const noexcept {
+		float DrawStringAutoFit(int x1, int y1, int x2, int y2, unsigned int Color, unsigned int EdgeColor, const std::string& String) const noexcept {
 			float draw_area_x_left = static_cast<float>(x1);
 			float draw_area_x_right = static_cast<float>(x2);
 			float draw_area_y_top = static_cast<float>(y1);
@@ -125,9 +125,9 @@ namespace Draw {
 			const auto info = get_draw_string_char_info(String, Util::DXHandle::get());
 
 			// ManageData->LineSpaceValidFlag ? ManageData->LineSpace : ManageData->BaseInfo.FontHeight
-			const auto line_space = DxLib::GetFontLineSpaceToHandle(Util::DXHandle::get());
+			const int line_space = DxLib::GetFontLineSpaceToHandle(Util::DXHandle::get());
 			const float area_width = draw_area_x_right - draw_area_x_left;
-			const auto total_draw_width = info.back().DrawX + info.back().SizeX - info.front().DrawX;
+			const float total_draw_width = info.back().DrawX + info.back().SizeX - info.front().DrawX;
 			if (total_draw_width <= area_width) {
 				// 一行ですむ場合
 				const float Padding = (area_width - total_draw_width) / 2.0f;
@@ -145,7 +145,7 @@ namespace Draw {
 			float current_y_relative = 0.0f;
 			auto line_front_it = info.begin();
 			for (auto it = info.begin(); it < info.end(); current_string_byte_pos += it->Bytes, ++it) {
-				const auto line_width_contain_current_it_point_char = it->DrawX + it->SizeX - line_front_it->DrawX;
+				const float line_width_contain_current_it_point_char = it->DrawX + it->SizeX - line_front_it->DrawX;
 				if (area_width < line_width_contain_current_it_point_char) {
 					using namespace std::string_literals;
 					// 次の行に行く前に描画、itが指す文字は含まない
@@ -153,7 +153,7 @@ namespace Draw {
 					// it->DrawXは前の文字の右端に等しい
 					// const float line_width = it->DrawX - line_front_it->DrawX;
 					const float Padding = 0.f;// (area_width - line_width) / 2.0f;
-					const auto line_string = String.substr(line_front_string_byte_pos / sizeof(TCHAR), (str_len_byte / sizeof(TCHAR)));
+					const std::string line_string = String.substr(line_front_string_byte_pos / sizeof(TCHAR), (str_len_byte / sizeof(TCHAR)));
 					DxLib::DrawStringFToHandle(draw_area_x_left + Padding, draw_area_y_top + current_y_relative, line_string.c_str(), Color, Util::DXHandle::get(), EdgeColor, false);
 					// itが指す文字が先頭になる
 					line_front_string_byte_pos = current_string_byte_pos;
@@ -163,9 +163,9 @@ namespace Draw {
 				}
 			}
 			// 最終行の描画
-			// const auto last_line_width = info.back().DrawX + info.back().SizeX - line_front_it->DrawX;
+			// const float last_line_width = info.back().DrawX + info.back().SizeX - line_front_it->DrawX;
 			const float Padding = 0.f;// (area_width - last_line_width) / 2.0f;
-			const auto line_string = String.substr(line_front_string_byte_pos / sizeof(TCHAR));
+			const std::string line_string = String.substr(line_front_string_byte_pos / sizeof(TCHAR));
 			DxLib::DrawStringFToHandle(draw_area_x_left + Padding, draw_area_y_top + current_y_relative, line_string.c_str(), Color, Util::DXHandle::get(), EdgeColor, false);
 			return current_y_relative + static_cast<float>(line_space);
 		}
@@ -178,7 +178,7 @@ namespace Draw {
 		static std::vector<DxLib::DRAWCHARINFO> get_draw_string_char_info(const std::basic_string<TCHAR>& string, int font_handle) {
 			std::vector<DxLib::DRAWCHARINFO> info;
 			info.resize(string.size());
-			auto char_info_num = DxLib::GetDrawStringCharInfoToHandle(info.data(), info.size(), string.c_str(), static_cast<int>(string.length() * sizeof(TCHAR)), font_handle, false);
+			int char_info_num = DxLib::GetDrawStringCharInfoToHandle(info.data(), info.size(), string.c_str(), static_cast<int>(string.length() * sizeof(TCHAR)), font_handle, false);
 			if (char_info_num < 0) throw std::runtime_error("fail in function DxLib::GetDrawStringCharInfoToHandle");
 			if (info.size() < static_cast<size_t>(char_info_num)) {
 				info.resize(static_cast<size_t>(char_info_num) + 1);
@@ -222,7 +222,7 @@ namespace Draw {
 			}
 			else {
 				float Scale = static_cast<float>(this->m_CustomSize) / static_cast<float>(this->m_CommonSize);
-				auto prev = DxLib::GetDrawMode();
+				int prev = DxLib::GetDrawMode();
 				DxLib::SetDrawMode(this->m_scaleType);
 				this->m_Handle.DrawExtendString(FontX, FontY, x, y, Scale, Scale, Color, EdgeColor, String, args...);
 				DxLib::SetDrawMode(prev);

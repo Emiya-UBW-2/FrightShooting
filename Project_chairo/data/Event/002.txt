@@ -1,6 +1,6 @@
 	SetBGM(data/Sound/BGM/midboss.wav, 0);
 SetCut(0);
-	SetCameraPos(30.0,0.0,-100.0);
+	SetCameraPos(-30.0,0.0,-100.0);
 	SetCameraTarget(0.0,0.0,-100.0);
 	SetCameraFov(60.0);
 	SetCameraShake(3.0);
@@ -22,7 +22,7 @@ SetCut(0);
 	SetSE(data/Sound/SE/engine.wav, 0);
 
 SetCut(60);
-	SetCameraPos(30.0,0.0,-100.0);
+	SetCameraPos(-30.0,0.0,-100.0);
 	SetCameraTarget(0.0,0.0,-100.0);
 	SetCameraFov(60.0);
 	SetCameraShake(100.0);
@@ -36,7 +36,7 @@ SetCut(120);
 	SetCameraShake(60.0);
 
 SetCut(240);
-	SetCameraPos(0.0,10.0,-30.0);
+	SetCameraPos(0.0,5.0,-30.0);
 	SetCameraTarget(0.0,0.0,0.0);
 	SetCameraFov(60.0);
 	SetCameraShake(10.0);
@@ -44,17 +44,17 @@ SetCut(240);
 	SetModel(data\model\Plane\,5,    0.0,0.0,0.0 ,0.0,0.0,0.0, 240,720);
 
 SetCut(300);
-	SetCameraPos(0.0,10.0,-30.0);
+	SetCameraPos(0.0,5.0,-30.0);
 	SetCameraTarget(0.0,0.0,0.0);
 	SetCameraFov(60.0);
-	SetCameraFovEnd(20.0);
+	SetCameraFovEnd(24.0);
 	SetCameraShake(10.0);
 
 SetCut(320);
-	SetCameraPos(0.0,10.0,-30.0);
+	SetCameraPos(0.0,5.0,-30.0);
 	SetCameraTarget(0.0,0.0,0.0);
-	SetCameraFov(20.0);
-	SetCameraFovEnd(24.0);
+	SetCameraFov(24.0);
+	SetCameraFovEnd(20.0);
 	SetCameraShake(10.0);
 
 EndCut(360);

@@ -3,9 +3,13 @@
 0002=Input
 0003=Else
 
-0010=ゲームを終了
-0011=ゲームを終了しますか？
-0012=終了
+0010=Exit Game
+0011=Exit Game？
+0012=Exit
+
+0020=NewGame
+0021=Your auto save progress will be reset. continue?
+0022=NewGame
 
 0050=<
 0051=>
@@ -36,43 +40,40 @@
 
 0300=XSensing
 0301=YSensing
-0302=Go Front
-0303=Go Back
-0304=Go Left
-0305=Go Right
-0306=Left Lean
-0307=Right Lean
-0308=Run
-0309=Walk
-0310=Squat
-0311=Prone
-0312=飛び込み
-0313=Attack
-0314=Use Sight
-0315=Change Weapon
-0316=Reload Weapon
+0302=Down
+0303=Up
+0304=Left
+0305=Right
+0306=Left Roll
+0307=Right Roll
+0308=Accel
+0309=Brake
+0310=Gun
+0311=Missile
+0312=Multi Missile
 
-0330=決定
-0331=戻る
-0332=選択
+0330=Decide
+0331=Return
+0332=Choose
 0333=PAUSE
 
-0334=移動
-0335=傾く
-0336=攻撃
-0337=構える
-0338=注視
+0334=Up/Down
+0335=Left/Right
+0336=Rill
+0337=Accel/Brake
+0338=Gun
+0339=Missile
+0340=Multi Missile
 
-0340=終了
-
-0341=首を絞める
-0342=注射
+0340=Exit
+0351=Skip
 
 0400=HeadBobbing
 0401=Language
 
-1000=Game Start
-1001=Tutorial
+1999=NewGame
+1000=Continue
+1001=Ranking
 1002=Option
 1003=Credit
 

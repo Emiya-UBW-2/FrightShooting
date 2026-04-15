@@ -36,7 +36,7 @@ static const char* MovieObjFrameName[static_cast<int>(MovieObjFrame::Max)] = {
 };
 
 class MovieObj : public BaseObject {
-	bool m_IsDraw = true;
+	bool					m_IsDraw = true;
 	char		padding[7]{};
 
 	LineEffect				m_LineEffect1;
@@ -56,51 +56,51 @@ private:
 	const char* GetFrameStr(int id) noexcept override { return MovieObjFrameName[id]; }
 public:
 	void SetIsDraw(bool IsDraw) noexcept {
-		m_IsDraw = IsDraw;
+		this->m_IsDraw = IsDraw;
 	}
 	void			SetPlanePosition(Util::Matrix4x4 Mat) noexcept {
 		SetMatrix(Mat);
 		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
-			m_LineEffect1.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos());
+			this->m_LineEffect1.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
-			m_LineEffect2.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos());
+			this->m_LineEffect2.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
-			m_LineEffect3.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos());
+			this->m_LineEffect3.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
-			m_LineEffect4.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos());
+			this->m_LineEffect4.Set(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos());
 		}
 	}
 public:
 	void Load_Sub(void) noexcept override {}
 	void Init_Sub(void) noexcept override {
 		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
-			m_LineEffect1.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+			this->m_LineEffect1.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
-			m_LineEffect2.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
+			this->m_LineEffect2.Init(0.25f, 0.05f * Scale3DRate / 2.f, DxLib::GetColor(64, 64, 64), DX_BLENDMODE_ALPHA);
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
-			m_LineEffect3.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+			this->m_LineEffect3.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
-			m_LineEffect4.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
+			this->m_LineEffect4.Init(0.05f, 0.5f * Scale3DRate / 2.f, DxLib::GetColor(255, 64, 12), DX_BLENDMODE_ADD);
 		}
 	}
 	void Update_Sub(void) noexcept override{
 		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
-			m_LineEffect1.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos());
+			this->m_LineEffect1.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::LWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
-			m_LineEffect2.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos());
+			this->m_LineEffect2.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::RWingtip)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
-			m_LineEffect3.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos());
+			this->m_LineEffect3.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle1)).pos());
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
-			m_LineEffect4.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos());
+			this->m_LineEffect4.Update(GetFrameLocalWorldMatrix(static_cast<int>(MovieObjFrame::Nozzle2)).pos());
 		}
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
@@ -116,16 +116,16 @@ public:
 	void DrawFront_Sub(void) const noexcept override {
 		if (!m_IsDraw) { return; }
 		if (HaveFrame(static_cast<int>(MovieObjFrame::LWingtip))) {
-			m_LineEffect1.Draw();
+			this->m_LineEffect1.Draw();
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::RWingtip))) {
-			m_LineEffect2.Draw();
+			this->m_LineEffect2.Draw();
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle1))) {
-			m_LineEffect3.Draw();
+			this->m_LineEffect3.Draw();
 		}
 		if (HaveFrame(static_cast<int>(MovieObjFrame::Nozzle2))) {
-			m_LineEffect4.Draw();
+			this->m_LineEffect4.Draw();
 		}
 	}
 	void ShadowDraw_Sub(void) const noexcept override {
@@ -172,18 +172,18 @@ class StoryScript {
 	std::vector<SoundPlay>	m_BGMPlay{};
 	float					m_Frame{};
 
-	bool m_IsEnd = false;
+	bool					m_IsEnd = false;
 	char		padding[3]{};
 public:
-	const auto& GetIsEnd() const noexcept { return m_IsEnd; }
+	const auto& GetIsEnd() const noexcept { return this->m_IsEnd; }
 public:
 	void Load(std::string Path) noexcept {
 		//
 		{
-			m_StoryPop.clear();
-			m_Models.clear();
-			m_SEPlay.clear();
-			m_BGMPlay.clear();
+			this->m_StoryPop.clear();
+			this->m_Models.clear();
+			this->m_SEPlay.clear();
+			this->m_BGMPlay.clear();
 			File::InputFileStream FileStream;
 			FileStream.Open("data/Event/" + Path + ".txt");
 			while (true) {
@@ -194,42 +194,42 @@ public:
 				//
 				{
 					if (Func == "SetCut") {
-						if (m_StoryPop.size() > 0) {
-							m_StoryPop.back().m_EndFrame = std::stoi(Args.at(0));
+						if (this->m_StoryPop.size() > 0) {
+							this->m_StoryPop.back().m_EndFrame = std::stoi(Args.at(0));
 						}
-						m_StoryPop.emplace_back();
-						m_StoryPop.back().m_StartFrame = std::stoi(Args.at(0));
+						this->m_StoryPop.emplace_back();
+						this->m_StoryPop.back().m_StartFrame = std::stoi(Args.at(0));
 					}
 					if (Func == "EndCut") {
-						m_StoryPop.back().m_EndFrame = std::stoi(Args.at(0));
+						this->m_StoryPop.back().m_EndFrame = std::stoi(Args.at(0));
 					}
 					if (Func == "SetCameraPos") {
-						m_StoryPop.back().m_CameraPos = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
-						m_StoryPop.back().m_CameraPosEnd = m_StoryPop.back().m_CameraPos;
+						this->m_StoryPop.back().m_CameraPos = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
+						this->m_StoryPop.back().m_CameraPosEnd = this->m_StoryPop.back().m_CameraPos;
 					}
 					if (Func == "SetCameraTarget") {
-						m_StoryPop.back().m_CameraTarget = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
-						m_StoryPop.back().m_CameraTargetEnd = m_StoryPop.back().m_CameraTarget;
+						this->m_StoryPop.back().m_CameraTarget = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
+						this->m_StoryPop.back().m_CameraTargetEnd = this->m_StoryPop.back().m_CameraTarget;
 					}
 					if (Func == "SetCameraPosEnd") {
-						m_StoryPop.back().m_CameraPosEnd = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
+						this->m_StoryPop.back().m_CameraPosEnd = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
 					}
 					if (Func == "SetCameraTargetEnd") {
-						m_StoryPop.back().m_CameraTargetEnd = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
+						this->m_StoryPop.back().m_CameraTargetEnd = Util::VECTOR3D::vget(std::stof(Args.at(0)), std::stof(Args.at(1)), std::stof(Args.at(2))) * Scale3DRate;
 					}
 					if (Func == "SetCameraFov") {
-						m_StoryPop.back().m_CameraFov = Util::deg2rad(std::stof(Args.at(0)));
-						m_StoryPop.back().m_CameraFovEnd = m_StoryPop.back().m_CameraFov;
+						this->m_StoryPop.back().m_CameraFov = Util::deg2rad(std::stof(Args.at(0)));
+						this->m_StoryPop.back().m_CameraFovEnd = this->m_StoryPop.back().m_CameraFov;
 					}
 					if (Func == "SetCameraFovEnd") {
-						m_StoryPop.back().m_CameraFovEnd = Util::deg2rad(std::stof(Args.at(0)));
+						this->m_StoryPop.back().m_CameraFovEnd = Util::deg2rad(std::stof(Args.at(0)));
 					}
 					if (Func == "SetCameraShake") {
-						m_StoryPop.back().m_CameraShakePow = Util::deg2rad(std::stof(Args.at(0)));
+						this->m_StoryPop.back().m_CameraShakePow = Util::deg2rad(std::stof(Args.at(0)));
 					}
 					if (Func == "SetModel") {
-						m_Models.emplace_back();
-						auto& b = m_Models.back();
+						this->m_Models.emplace_back();
+						auto& b = this->m_Models.back();
 						b.m_ObjPath = Args.at(0);
 						ObjectManager::Instance()->LoadModel(b.m_ObjPath);
 						b.m_UniqueID = std::stoi(Args.at(1));
@@ -243,7 +243,7 @@ public:
 						b.m_EndFrame = std::stoi(Args.at(9));
 					}
 					if (Func == "SetModelEnd") {
-						for (auto& b : m_Models) {
+						for (auto& b : this->m_Models) {
 							if (b.m_ObjPath == Args.at(0) && b.m_UniqueID == std::stoi(Args.at(1))) {
 								b.m_MatEnd =
 									Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(5))) *
@@ -254,7 +254,7 @@ public:
 						}
 					}
 					if (Func == "SetModelAnimation") {
-						for (auto& b : m_Models) {
+						for (auto& b : this->m_Models) {
 							if (b.m_ObjPath == Args.at(0) && b.m_UniqueID == std::stoi(Args.at(1))) {
 								b.m_AnimID = std::stoi(Args.at(2));
 								break;
@@ -262,15 +262,15 @@ public:
 						}
 					}
 					if (Func == "SetSE") {
-						m_SEPlay.emplace_back();
-						auto& b = m_SEPlay.back();
+						this->m_SEPlay.emplace_back();
+						auto& b = this->m_SEPlay.back();
 						b.m_ID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 10, Args.at(0), false);
 						b.m_PlayFrame = std::stoi(Args.at(1));
 						b.m_IsPlay = false;
 					}
 					if (Func == "SetBGM") {
-						m_BGMPlay.emplace_back();
-						auto& b = m_BGMPlay.back();
+						this->m_BGMPlay.emplace_back();
+						auto& b = this->m_BGMPlay.back();
 						b.m_ID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, Args.at(0), false);
 						b.m_PlayFrame = std::stoi(Args.at(1));
 						b.m_IsPlay = false;
@@ -279,11 +279,11 @@ public:
 			}
 			FileStream.Close();
 		}
-		m_Frame = 0.f;
-		m_IsEnd = false;
+		this->m_Frame = 0.f;
+		this->m_IsEnd = false;
 	}
 	void Init() noexcept {
-		for (auto& b : m_Models) {
+		for (auto& b : this->m_Models) {
 			if (b.m_ObjPath != "") {
 				b.m_MovieObj = std::make_shared<MovieObj>();
 				ObjectManager::Instance()->InitObject(b.m_MovieObj, b.m_MovieObj, b.m_ObjPath);
@@ -291,21 +291,21 @@ public:
 		}
 	}
 	void Update() noexcept {
-		for (auto& b : m_SEPlay) {
-			if (b.m_PlayFrame <= static_cast<int>(m_Frame) && !b.m_IsPlay) {
+		for (auto& b : this->m_SEPlay) {
+			if (b.m_PlayFrame <= static_cast<int>(this->m_Frame) && !b.m_IsPlay) {
 				b.m_IsPlay = true;
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, b.m_ID)->Play(DX_PLAYTYPE_BACK, TRUE);
 			}
 		}
-		for (auto& b : m_BGMPlay) {
-			if (b.m_PlayFrame <= static_cast<int>(m_Frame) && !b.m_IsPlay) {
+		for (auto& b : this->m_BGMPlay) {
+			if (b.m_PlayFrame <= static_cast<int>(this->m_Frame) && !b.m_IsPlay) {
 				b.m_IsPlay = true;
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, b.m_ID)->Play(DX_PLAYTYPE_BACK, TRUE);
 			}
 		}
-		for (auto& Now : m_StoryPop) {
-			if (Now.m_StartFrame <= static_cast<int>(m_Frame) && static_cast<int>(m_Frame) < Now.m_EndFrame) {
-				float Per = static_cast<float>(static_cast<int>(m_Frame) - Now.m_StartFrame) / static_cast<float>(Now.m_EndFrame - Now.m_StartFrame);
+		for (auto& Now : this->m_StoryPop) {
+			if (Now.m_StartFrame <= static_cast<int>(this->m_Frame) && static_cast<int>(this->m_Frame) < Now.m_EndFrame) {
+				float Per = static_cast<float>(static_cast<int>(this->m_Frame) - Now.m_StartFrame) / static_cast<float>(Now.m_EndFrame - Now.m_StartFrame);
 				auto* CameraParts = Camera::Camera3D::Instance();
 				CameraParts->SetCamPos(
 					Util::Lerp(Now.m_CameraPos, Now.m_CameraPosEnd, Per),
@@ -322,9 +322,9 @@ public:
 				}
 			}
 		}
-		for (auto& b : m_Models) {
-			if (b.m_StartFrame <= static_cast<int>(m_Frame) && (static_cast<int>(m_Frame) < b.m_EndFrame)) {
-				float Per = static_cast<float>(static_cast<int>(m_Frame) - b.m_StartFrame) / static_cast<float>(b.m_EndFrame - b.m_StartFrame);
+		for (auto& b : this->m_Models) {
+			if (b.m_StartFrame <= static_cast<int>(this->m_Frame) && (static_cast<int>(this->m_Frame) < b.m_EndFrame)) {
+				float Per = static_cast<float>(static_cast<int>(this->m_Frame) - b.m_StartFrame) / static_cast<float>(b.m_EndFrame - b.m_StartFrame);
 				b.m_MovieObj->SetIsDraw(true);
 				b.m_MovieObj->SetMatrix(Util::Lerp(b.m_Mat, b.m_MatEnd, Per));
 				if (b.m_AnimID != InvalidID) {
@@ -339,7 +339,7 @@ public:
 						b.m_MovieObj->SetModel().FlipAnimAll();
 					}
 				}
-				if (std::fabsf(m_Frame - static_cast<float>(b.m_StartFrame)) < 1.f) {//等速以外の場合2回実施される可能性があります
+				if (std::fabsf(this->m_Frame - static_cast<float>(b.m_StartFrame)) < 1.f) {//等速以外の場合2回実施される可能性があります
 					b.m_MovieObj->SetPlanePosition(Util::Lerp(b.m_Mat, b.m_MatEnd, Per));
 				}
 			}
@@ -347,18 +347,18 @@ public:
 				b.m_MovieObj->SetIsDraw(false);
 			}
 		}
-		if (m_StoryPop.back().m_EndFrame - 30 <= static_cast<int>(m_Frame)) {
-			m_IsEnd = true;
+		if (this->m_StoryPop.back().m_EndFrame - 30 <= static_cast<int>(this->m_Frame)) {
+			this->m_IsEnd = true;
 		}
 		auto* DrawerMngr = Draw::MainDraw::Instance();
-		m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
+		this->m_Frame += 60.f * DrawerMngr->GetDeltaTime();;
 	}
 	void Dispose() noexcept {
-		for (auto& b : m_SEPlay) {
+		for (auto& b : this->m_SEPlay) {
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, b.m_ID)->StopAll();
 			Sound::SoundPool::Instance()->Delete(Sound::SoundType::SE, b.m_ID);
 		}
-		for (auto& b : m_BGMPlay) {
+		for (auto& b : this->m_BGMPlay) {
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, b.m_ID)->StopAll();
 			Sound::SoundPool::Instance()->Delete(Sound::SoundType::BGM, b.m_ID);
 		}

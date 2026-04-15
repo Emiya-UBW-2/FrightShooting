@@ -106,7 +106,7 @@ namespace Sound {
 		bool	CheckPlay(void) const noexcept { return this->m_HandleList[this->m_nowSelect].CheckPlay(); }
 		// サウンドを一つ再生
 		size_t	Play(int type_t = DX_PLAYTYPE_BACK, int Flag_t = 1, int panpal = -256) noexcept {
-			auto Answer = this->m_nowSelect;
+			size_t Answer = this->m_nowSelect;
 			auto& NowHandle = this->m_HandleList[this->m_nowSelect];
 			NowHandle.Play(type_t, Flag_t);
 			if (panpal != -256) { NowHandle.Pan(panpal); }
@@ -114,7 +114,7 @@ namespace Sound {
 			return Answer;
 		}
 		size_t	Play3D(const Util::VECTOR3D& pos_t, float radius, int type_t = DX_PLAYTYPE_BACK) noexcept {
-			auto Answer = this->m_nowSelect;
+			size_t Answer = this->m_nowSelect;
 			this->m_HandleList[this->m_nowSelect].Play3D(pos_t, radius, type_t);
 			++this->m_nowSelect %= this->m_Size;
 			return Answer;
@@ -234,7 +234,7 @@ namespace Sound {
 	public:
 		// 特定のIDにサウンドを追加
 		SoundUniqueID			Add(SoundType Type, size_t buffersize, std::string path_t, bool is3Dsound = true) noexcept {
-			auto ID = this->m_SoundID;
+			SoundUniqueID ID = this->m_SoundID;
 			//末尾に追加
 			this->m_SoundHas[static_cast<size_t>(Type)].emplace_back(std::make_unique<Soundhave>(this->m_SoundID, buffersize, path_t, Type, is3Dsound));
 			++m_SoundID;

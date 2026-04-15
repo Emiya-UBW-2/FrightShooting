@@ -7,7 +7,7 @@
 
 #include "../File/FileStream.hpp"
 
-const DXLibRef::KeyGuide* Util::SingletonBase<DXLibRef::KeyGuide>::m_Singleton = nullptr;
+const DXLibRef::KeyGuide* Util::SingletonBase<DXLibRef::KeyGuide>::s_Singleton = nullptr;
 
 namespace DXLibRef {
 	// --------------------------------------------------------------------------------------------------
@@ -47,14 +47,14 @@ namespace DXLibRef {
 			File::InputFileStream FileStream("CommonData/key/OutputFont.psf");
 			while (true) {
 				if (FileStream.ComeEof()) { break; }
-				auto ALL = FileStream.SeekLineAndGetStr();
+				std::string ALL = FileStream.SeekLineAndGetStr();
 				if (ALL == "") { continue; }
 				//=の右側の文字をカンマ区切りとして識別する
-				auto RIGHT = File::InputFileStream::getright(ALL, "=");
+				std::string RIGHT = File::InputFileStream::getright(ALL, "=");
 				std::array<int, 4> Args{};
 				int now = 0;
 				while (true) {
-					auto div = RIGHT.find(",");
+					size_t div = RIGHT.find(",");
 					if (div != std::string::npos) {
 						Args[static_cast<size_t>(now)] = std::stoi(RIGHT.substr(0, div));
 						++now;

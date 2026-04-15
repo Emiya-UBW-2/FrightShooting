@@ -4,7 +4,7 @@
 #include "Script.hpp"
 
 
-const AmmoPool* Util::SingletonBase<AmmoPool>::m_Singleton = nullptr;
+const AmmoPool* Util::SingletonBase<AmmoPool>::s_Singleton = nullptr;
 
 void Ammo::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -16,7 +16,7 @@ void Ammo::Update_Sub(void) noexcept {
 	//this->YVecAdd -= DrawerMngr->GetGravAccel();
 	this->Vector.y += this->YVecAdd;
 	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
-	auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
+	MV1_COLL_RESULT_POLY Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
 	if (Ret.HitFlag == TRUE) {
 		Target = Ret.HitPosition;
 		SetHit(Target);
@@ -30,43 +30,43 @@ void Bomb::Update_Sub(void) noexcept {
 	if (this->DrawTimer == 0.f) { return; }
 	this->DrawTimer = std::max(this->DrawTimer - DrawerMngr->GetDeltaTime(), 0.f);
 
-	m_LineEffect.Update(GetMat().pos());
+	this->m_LineEffect.Update(GetMat().pos());
 
 	if (!IsActive()) {
 		float Alpha = 0.f;
-		if (m_Scale < 0.1f) {
+		if (this->m_Scale < 0.1f) {
 			Alpha = 1.f;
 		}
-		else if (m_Scale < 0.25f) {
-			Alpha = 1.f - (m_Scale - 0.1f) / (0.25f - 0.1f);
+		else if (this->m_Scale < 0.25f) {
+			Alpha = 1.f - (this->m_Scale - 0.1f) / (0.25f - 0.1f);
 		}
 		GetModel().SetOpacityRate(Alpha);
 
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
-		m_Scale += DrawerMngr->GetDeltaTime();
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(this->m_Scale, this->m_Scale, this->m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
+		this->m_Scale += DrawerMngr->GetDeltaTime();
 	}
 	else {
-		m_Scale = 0.f;
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f) * GetMat());
+		this->m_Scale = 0.f;
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(this->m_Scale, this->m_Scale, this->m_Scale) * 50.f) * GetMat());
 	}
 
 	if (this->Timer == 0.f) { return; }
 	this->Timer = std::max(this->Timer - DrawerMngr->GetDeltaTime(), 0.f);
 
-	if (m_IsHoming) {
+	if (this->m_IsHoming) {
 		{
-			auto& obj = (*ObjectManager::Instance()->GetObj(m_HomingID.first));
-			if (obj->HaveFrame(m_HomingID.second)) {
-				m_HomingTarget = obj->GetFrameLocalWorldMatrix(m_HomingID.second).pos();
+			auto& obj = (*ObjectManager::Instance()->GetObj(this->m_HomingID.first));
+			if (obj->HaveFrame(this->m_HomingID.second)) {
+				this->m_HomingTarget = obj->GetFrameLocalWorldMatrix(this->m_HomingID.second).pos();
 			}
 			else {
-				m_HomingTarget = obj->GetMat().pos();
+				this->m_HomingTarget = obj->GetMat().pos();
 			}
 		}
 		float Length = this->Vector.magnitude();
 		Util::Easing(
 			&this->Vector,
-			(m_HomingTarget - GetMat().pos()).normalized() * Length,
+			(this->m_HomingTarget - GetMat().pos()).normalized() * Length,
 			0.9f);
 		this->Vector = this->Vector.normalized() * Length;
 	}
@@ -74,7 +74,7 @@ void Bomb::Update_Sub(void) noexcept {
 	//this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
 	this->Vector.y += this->YVecAdd;
 	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
-	auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
+	MV1_COLL_RESULT_POLY Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
 	if (Ret.HitFlag == TRUE) {
 		Target = Ret.HitPosition;
 		SetHit(Target);
@@ -90,20 +90,20 @@ void MultiBomb::Update_Sub(void) noexcept {
 
 	if (!IsActive()) {
 		float Alpha = 0.f;
-		if (m_Scale < 0.1f) {
+		if (this->m_Scale < 0.1f) {
 			Alpha = 1.f;
 		}
-		else if (m_Scale < 0.25f) {
-			Alpha = 1.f - (m_Scale - 0.1f) / (0.25f - 0.1f);
+		else if (this->m_Scale < 0.25f) {
+			Alpha = 1.f - (this->m_Scale - 0.1f) / (0.25f - 0.1f);
 		}
 		GetModel().SetOpacityRate(Alpha);
 
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
-		m_Scale += DrawerMngr->GetDeltaTime();
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(this->m_Scale, this->m_Scale, this->m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
+		this->m_Scale += DrawerMngr->GetDeltaTime();
 	}
 	else {
-		m_Scale = 0.f;
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f) * GetMat());
+		this->m_Scale = 0.f;
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(this->m_Scale, this->m_Scale, this->m_Scale) * 50.f) * GetMat());
 	}
 
 	if (this->Timer == 0.f) { return; }
@@ -121,17 +121,17 @@ void MultiBomb::Update_Sub(void) noexcept {
 		}
 	}
 
-	if (m_IsHoming) {
+	if (this->m_IsHoming) {
 		Util::Easing(
 			&this->Vector,
-			(m_HomingTarget - GetMat().pos()).normalized() * this->Vector.magnitude(),
+			(this->m_HomingTarget - GetMat().pos()).normalized() * this->Vector.magnitude(),
 			0.95f);
 	}
 
 	//this->YVecAdd -= DrawerMngr->GetGravAccel()*0.5f;
 	this->Vector.y += this->YVecAdd;
 	Util::VECTOR3D Target = GetMat().pos() + this->Vector;
-	auto Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
+	MV1_COLL_RESULT_POLY Ret = BackGround::Instance()->GetCol().CollCheck_Line(GetMat().pos(), Target);
 	if (Ret.HitFlag == TRUE) {
 		Target = Ret.HitPosition;
 		SetHit(Target);

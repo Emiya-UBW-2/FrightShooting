@@ -38,7 +38,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	ObjectManager::Create();
 	GameRule::Create();
 
-	auto StageString = Util::SaveData::Instance()->GetParam("Stage");
+	std::string_view StageString = Util::SaveData::Instance()->GetParam("Stage");
 	GameRule::Instance()->SetNextStage((StageString == "") ? "Stage0101" : StageString);
 	GameRule::Instance()->SetIsStartEvent(false);
 	GameRule::Instance()->SetHP(100);

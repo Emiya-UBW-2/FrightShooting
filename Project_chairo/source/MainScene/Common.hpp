@@ -33,7 +33,7 @@ private:
 private:
 	Util::Matrix4x4				m_FireMat{};
 	Util::Matrix4x4				m_SmokeMat{};
-	const Draw::GraphHandle* m_SmokeGraph{};
+	const Draw::GraphHandle*	m_SmokeGraph{};
 	float						m_FireOpticalPer{};
 	float						m_SmokePer{};
 	float						AnimPer = 0.f;
@@ -67,7 +67,7 @@ public:
 			this->m_FireOpticalPer = Util::Lerp(1.f, 0.f, Util::GetPer01(0.3f, 1.f, AnimPer));
 		}
 		SetMatrix(
-			Util::Matrix4x4::GetScale(AnimPer * 3.f * m_Scale) *
+			Util::Matrix4x4::GetScale(AnimPer * 3.f * this->m_Scale) *
 			this->m_FireMat *
 			this->m_SmokeMat
 		);
@@ -123,25 +123,25 @@ private:
 private:
 	Util::Matrix4x4				m_FireMat{};
 	Util::Matrix4x4				m_SmokeMat{};
-	const Draw::GraphHandle* m_SmokeGraph{};
+	const Draw::GraphHandle*	m_SmokeGraph{};
 	float						m_FireOpticalPer{};
 	float						m_SmokePer{};
 	float						AnimPer = 0.f;
 	float						m_Scale{};
 public:
 	void Set(const Util::Matrix4x4& Muzzle) noexcept {
-		m_Scale = 0.f;
+		this->m_Scale = 0.f;
 		this->m_SmokePer = 0.f;
 		SetMatrix(Muzzle);
 		this->m_SmokeMat = Muzzle;
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f) * GetMat());
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, this->m_Scale, this->m_Scale) * 50.f) * GetMat());
 	}
 public:
 	void Load_Sub(void) noexcept override {
 		this->m_SmokeGraph = Draw::GraphPool::Instance()->Get("data/Image/Smoke.png")->Get();
 	}
 	void Init_Sub(void) noexcept override {
-		m_Scale = 10.f;
+		this->m_Scale = 10.f;
 		this->m_SmokePer = 10.f;
 	}
 	void Update_Sub(void) noexcept override {
@@ -156,8 +156,8 @@ public:
 		}
 		GetModel().SetOpacityRate(Alpha);
 
-		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, m_Scale, m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
-		m_Scale += DrawerMngr->GetDeltaTime();
+		SetModel().SetMatrix(Util::Matrix4x4::GetScale(Util::VECTOR3D::vget(m_Scale, this->m_Scale, this->m_Scale) * 50.f * ((Alpha == 0.f) ? 0.f : 1.f)) * GetMat());
+		this->m_Scale += DrawerMngr->GetDeltaTime();
 	}
 	void SetShadowDraw_Sub(void) const noexcept override {
 	}
@@ -246,8 +246,8 @@ public:
 
 class LineEffect {
 	struct LineParam {
-		Util::VECTOR3D m_Pos{};
-		float m_Per{};
+		Util::VECTOR3D	m_Pos{};
+		float			m_Per{};
 	};
 private:
 	float			m_Time{};
@@ -257,42 +257,42 @@ private:
 	std::array<LineParam, 32>	m_Line;
 public:
 	void Init(float Time, float Radius, unsigned int Color, int BLENDMODE) noexcept {
-		m_Time = Time;
-		m_Radius = Radius;
-		m_Color = Color;
-		m_BLENDMODE = BLENDMODE;
+		this->m_Time = Time;
+		this->m_Radius = Radius;
+		this->m_Color = Color;
+		this->m_BLENDMODE = BLENDMODE;
 	}
 	void Set(const Util::VECTOR3D& Point) noexcept {
-		for (auto& l : m_Line) {
+		for (auto& l : this->m_Line) {
 			l.m_Pos = Point;
 			l.m_Per = 0.f;
 		}
 	}
 	void Update(const Util::VECTOR3D& Point) noexcept {
 		auto* DrawerMngr = Draw::MainDraw::Instance();
-		for (auto& l : m_Line) {
-			l.m_Per = std::max(l.m_Per - DrawerMngr->GetDeltaTime() / m_Time, 0.f);
+		for (auto& l : this->m_Line) {
+			l.m_Per = std::max(l.m_Per - DrawerMngr->GetDeltaTime() / this->m_Time, 0.f);
 		}
-		for (size_t loop = m_Line.size() - 1; loop >= 1; --loop) {
-			m_Line.at(loop) = m_Line.at(loop - 1);
+		for (size_t loop = this->m_Line.size() - 1; loop >= 1; --loop) {
+			this->m_Line.at(loop) = this->m_Line.at(loop - 1);
 		}
-		m_Line.at(0).m_Pos = Point;
-		m_Line.at(0).m_Per = 1.f;
+		this->m_Line.at(0).m_Pos = Point;
+		this->m_Line.at(0).m_Per = 1.f;
 
 	}
 	void Draw(void) const noexcept {
 		DxLib::SetUseZBufferFlag(true);
 		DxLib::SetUseLighting(FALSE);
-		for (size_t loop = 0; loop < m_Line.size() - 1; ++loop) {
-			if ((255.f * m_Line.at(loop).m_Per) <= 0.f) { continue; }
-			DxLib::SetDrawBlendMode(m_BLENDMODE, static_cast<int>(255.f * m_Line.at(loop).m_Per));
+		for (size_t loop = 0; loop < this->m_Line.size() - 1; ++loop) {
+			if ((255.f * this->m_Line.at(loop).m_Per) <= 0.f) { continue; }
+			DxLib::SetDrawBlendMode(m_BLENDMODE, static_cast<int>(255.f * this->m_Line.at(loop).m_Per));
 			DxLib::DrawCapsule3D(
-				m_Line.at(loop).m_Pos.get(),
-				m_Line.at(loop + 1).m_Pos.get(),
-				m_Radius,
+				this->m_Line.at(loop).m_Pos.get(),
+				this->m_Line.at(loop + 1).m_Pos.get(),
+				this->m_Radius,
 				3,
-				m_Color,
-				m_Color,
+				this->m_Color,
+				this->m_Color,
 				true
 			);
 		}
