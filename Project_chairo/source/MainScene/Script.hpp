@@ -124,9 +124,15 @@ public:
 		Util::VECTOR3D Pos;
 		switch (Shooter) {
 		case 0:
+			if (this->m_DamagePoint.at(0).GetHitPoint() <= 0) {//todo:ちょっと強引
+				return;
+			}
 			Pos = GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun1)).pos();
 			break;
 		case 1:
+			if (this->m_DamagePoint.at(1).GetHitPoint() <= 0) {//todo:ちょっと強引
+				return;
+			}
 			Pos = GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun2)).pos();
 			break;
 		default:
