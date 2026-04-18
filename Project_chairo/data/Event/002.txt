@@ -5,7 +5,9 @@ SetCut(0);
 	SetCameraFov(60.0);
 	SetCameraShake(3.0);
 
-	SetModel(data\model\Sky\,0, 0.0,0.0,-300.0 ,0.0,0.0,0.0, 0,720);
+	SetModel(data\model\Sky\,0, 0.0,-25.0,-200.0 ,0.0,0.0,0.0, 0,720);
+
+	SetModel(data\model\Map2\,0, 0.0,-25.0,-300.0 ,0.0,0.0,0.0, 0,240);
 
 	SetModel(data\model\Plane\,0,    0.0,0.0,0.0 ,0.0,0.0,0.0, 0,720);
 	SetModelEnd(data\model\Plane\,0, 0.0,0.0,-1500.0 ,0.0,0.0,0.0);

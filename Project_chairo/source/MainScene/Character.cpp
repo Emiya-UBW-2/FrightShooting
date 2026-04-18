@@ -55,7 +55,18 @@ void MyPlane::Update_Sub(void) noexcept {
 					MoveVec.y = 0.5f;
 				}
 			}
-			this->m_MovePointAdd.y = std::clamp(this->m_MovePointAdd.y, -96.f * Scale3DRate, 12.f * Scale3DRate);
+			switch (GameRule::Instance()->GetGameType()) {
+			case GameType::Normal:
+				this->m_MovePointAdd.y = std::clamp(this->m_MovePointAdd.y, -12.f * Scale3DRate, 12.f * Scale3DRate);
+				break;
+			case GameType::AllRange:
+				this->m_MovePointAdd.y = std::clamp(this->m_MovePointAdd.y, -96.f * Scale3DRate, 12.f * Scale3DRate);
+				break;
+			case GameType::Max:
+			default:
+				break;
+			}
+
 			if (prev == this->m_MovePointAdd.y) {
 				MoveVec.y = 0.0f;
 			}

@@ -249,7 +249,7 @@ void MainScene::Update_Sub(void) noexcept {
 					if (!s.m_EnemyScript.IsAlive()) { continue; }
 					if (s.m_EnemyScript.GetEnemyType() != EnemyType::AI) { continue; }
 					Util::VECTOR3D vec2 = s.m_EnemyScript.EnemyObj()->GetMat().pos() - Player->GetMat().pos();
-					if (vec2.magnitude() > 100.f * Scale3DRate) { continue; }//彼我の距離が100m以内
+					if (vec2.magnitude() > 150.f * Scale3DRate) { continue; }//彼我の距離が100m以内
 					Util::VECTOR3D vec3 = s.m_EnemyScript.EnemyObj()->GetMat().zvec2();
 					float dot = Util::VECTOR3D::Dot(vec1, vec2.normalized());
 					float dot2 = Util::VECTOR3D::Dot(vec1, vec3.normalized());
@@ -463,64 +463,70 @@ void MainScene::Update_Sub(void) noexcept {
 				if (a->GetShooterID() == Player->GetObjectID()) {
 					//ホーミング用処理
 					if (a->IsSeeker()) {
-						//一番近い敵を探す
-						float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
-						std::pair<int, int> ID = std::make_pair(InvalidID, InvalidID);
-						for (auto& s : this->m_StageScript.EnemyPop()) {
-							if (!s.m_EnemyScript.IsAlive()) { continue; }
-							{
-								auto& dp = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
-								if (!s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-									if (s.m_EnemyScript.IsActive() && dp.GetHitPoint() > 0) {
-										Util::VECTOR3D Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
-										Util::VECTOR3D Vec = a->GetMat().pos() - Pos;
-										auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), InvalidID);
-										if (Mag > Vec.sqrMagnitude()) {
-											bool IsHitID = false;
-											//他のボムと同じロックオンIDを取らないようにする
-											for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
-												if (a2->IsActive() && (a != a2)) {
-													if (sID == a2->GetHomingID()) {
-														IsHitID = true;
-														break;
-													}
-												}
-											}
-											if (!IsHitID) {
-												Mag = Vec.sqrMagnitude();
-												ID = sID;
-											}
-										}
-									}
-								}
-							}
-							for (auto& dp : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
-								if (s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
-									if (s.m_EnemyScript.IsActive() && dp.GetHitPoint() > 0) {
-										Util::VECTOR3D Pos = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
-										Util::VECTOR3D Vec = a->GetMat().pos() - Pos;
-										auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), dp.frame);
-										if (Mag > Vec.sqrMagnitude()) {
-											bool IsHitID = false;
-											//他のボムと同じロックオンIDを取らないようにする
-											for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
-												if (a2->IsActive() && (a != a2)) {
-													if (sID == a2->GetHomingID()) {
-														IsHitID = true;
-														break;
-													}
-												}
-											}
-											if (!IsHitID) {
-												Mag = Vec.sqrMagnitude();
-												ID = sID;
-											}
-										}
-									}
-								}
-							}
+						if (Player->GetManeuverID() != InvalidID) {
+							//追尾対象だったらそちらを優先する
+							a->SetHomingTarget(Player->GetManeuverID() != InvalidID, Player->GetManeuverID(), 0);
 						}
-						a->SetHomingTarget(ID.first != InvalidID, ID.first, ID.second);
+						else {
+							//一番近い敵を探す
+							float Mag = (1000.f * Scale3DRate) * (1000.f * Scale3DRate);
+							std::pair<int, int> ID = std::make_pair(InvalidID, InvalidID);
+							for (auto& s : this->m_StageScript.EnemyPop()) {
+								if (!s.m_EnemyScript.IsAlive()) { continue; }
+								{
+									auto& dp = s.m_EnemyScript.EnemyObj()->SetDamagePoint().at(0);
+									if (!s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
+										if (s.m_EnemyScript.IsActive() && dp.GetHitPoint() > 0) {
+											Util::VECTOR3D Pos = s.m_EnemyScript.EnemyObj()->GetMat().pos();
+											Util::VECTOR3D Vec = a->GetMat().pos() - Pos;
+											auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), InvalidID);
+											if (Mag > Vec.sqrMagnitude()) {
+												bool IsHitID = false;
+												//他のボムと同じロックオンIDを取らないようにする
+												for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+													if (a2->IsActive() && (a != a2)) {
+														if (sID == a2->GetHomingID()) {
+															IsHitID = true;
+															break;
+														}
+													}
+												}
+												if (!IsHitID) {
+													Mag = Vec.sqrMagnitude();
+													ID = sID;
+												}
+											}
+										}
+									}
+								}
+								for (auto& dp : s.m_EnemyScript.EnemyObj()->SetDamagePoint()) {
+									if (s.m_EnemyScript.EnemyObj()->HaveFrame(dp.frame)) {
+										if (s.m_EnemyScript.IsActive() && dp.GetHitPoint() > 0) {
+											Util::VECTOR3D Pos = s.m_EnemyScript.EnemyObj()->GetFrameLocalWorldMatrix(dp.frame).pos();
+											Util::VECTOR3D Vec = a->GetMat().pos() - Pos;
+											auto sID = std::make_pair(s.m_EnemyScript.EnemyObj()->GetObjectID(), dp.frame);
+											if (Mag > Vec.sqrMagnitude()) {
+												bool IsHitID = false;
+												//他のボムと同じロックオンIDを取らないようにする
+												for (auto& a2 : AmmoPool::Instance()->GetBombPer()) {
+													if (a2->IsActive() && (a != a2)) {
+														if (sID == a2->GetHomingID()) {
+															IsHitID = true;
+															break;
+														}
+													}
+												}
+												if (!IsHitID) {
+													Mag = Vec.sqrMagnitude();
+													ID = sID;
+												}
+											}
+										}
+									}
+								}
+							}
+							a->SetHomingTarget(ID.first != InvalidID, ID.first, ID.second);
+						}
 					}
 					//ヒット判定
 					for (auto& s : this->m_StageScript.EnemyPop()) {
