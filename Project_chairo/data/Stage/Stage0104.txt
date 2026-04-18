@@ -6,5 +6,9 @@ StartPosition(0,111,200);
 
 SetEnemy(0,Boss0101);
 
+SetEnemy(0,Enemy0201);
+SetEnemy(2400,Enemy0202);
+SetEnemy(3600,Enemy0203);
+
 GameClear();
 EndEvent(004);//ステージ終わりに通るイベント

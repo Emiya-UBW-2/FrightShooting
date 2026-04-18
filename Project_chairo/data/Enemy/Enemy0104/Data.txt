@@ -1,4 +1,4 @@
-SetModel(data/model/Plane2/);
+SetModel(data/model/PlaneCombat/);
 HitPoint1(3);
 Radius1(2.0);
 Type(AI);

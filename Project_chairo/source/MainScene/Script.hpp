@@ -16,6 +16,12 @@ enum class EnemyFrame {
 	Gun1UD,
 	Gun2LR,
 	Gun2UD,
+	Gun3,
+	Gun4,
+	Gun3LR,
+	Gun3UD,
+	Gun4LR,
+	Gun4UD,
 	LWingtip,
 	RWingtip,
 	Nozzle1,
@@ -23,6 +29,8 @@ enum class EnemyFrame {
 	DamagePoint1,
 	DamagePoint2,
 	DamagePoint3,
+	DamagePoint4,
+	DamagePoint5,
 	Max,
 };
 static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
@@ -34,6 +42,12 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 	"砲塔仰角1",
 	"砲塔旋回2",
 	"砲塔仰角2",
+	"機銃3",
+	"機銃4",
+	"砲塔旋回3",
+	"砲塔仰角3",
+	"砲塔旋回4",
+	"砲塔仰角4",
 	"左翼端",
 	"右翼端",
 	"ノズル1",
@@ -41,6 +55,8 @@ static const char* EnemyFrameName[static_cast<int>(EnemyFrame::Max)] = {
 	"DamagePoint1",
 	"DamagePoint2",
 	"DamagePoint3",
+	"DamagePoint4",
+	"DamagePoint5",
 };
 
 struct DamagePointParam {
@@ -71,8 +87,10 @@ class Enemy :public BaseObject {
 
 	Util::VECTOR3D				m_Gun1Vec;
 	Util::VECTOR3D				m_Gun2Vec;
+	Util::VECTOR3D				m_Gun3Vec;
+	Util::VECTOR3D				m_Gun4Vec;
 
-	std::array<DamagePointParam, 3>	m_DamagePoint;
+	std::array<DamagePointParam, 5>	m_DamagePoint;
 	//char		padding2[4]{};
 
 	Util::Matrix4x4			m_Mat;
@@ -135,6 +153,18 @@ public:
 			}
 			Pos = GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun2)).pos();
 			break;
+		case 2:
+			if (this->m_DamagePoint.at(2).GetHitPoint() <= 0) {//todo:ちょっと強引
+				return;
+			}
+			Pos = GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun3)).pos();
+			break;
+		case 3:
+			if (this->m_DamagePoint.at(3).GetHitPoint() <= 0) {//todo:ちょっと強引
+				return;
+			}
+			Pos = GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun4)).pos();
+			break;
 		default:
 			break;
 		}
@@ -148,7 +178,7 @@ public:
 		}
 		if (IsHoming) {
 			AmmoPool::Instance()->ShotBomb(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos),
-				(50.f) * Scale3DRate, GetObjectID());
+				(10.f) * Scale3DRate, GetObjectID());
 		}
 		else {
 			AmmoPool::Instance()->ShotAmmo(Mat.Get44DX() * Util::Matrix4x4::Mtrans(Pos),
@@ -247,6 +277,56 @@ public:
 				);
 			}
 		}
+		if (this->m_DamagePoint.at(2).GetHitPoint() > 0) {//todo:ちょっと強引
+			if (HaveFrame(static_cast<int>(EnemyFrame::Gun3LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun3UD))) {
+				auto& Player = PlayerManager::Instance()->SetPlane();
+				Util::VECTOR3D Vec1 = this->m_Mat.zvec() * -1.f;
+				Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun3UD)).pos()).normalized();
+
+				Util::Easing(&m_Gun3Vec, Vec2, 0.975f);
+
+				Util::VECTOR3D Vec1XZ = Vec1; Vec1XZ.y = 0.f;
+				Util::VECTOR3D Vec2XZ = this->m_Gun3Vec.normalized(); Vec2XZ.y = 0.f;
+
+				Util::VECTOR3D Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
+				Util::VECTOR3D Vec2TY = this->m_Gun3Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun3LR),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun3LR))
+				);
+
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun3UD),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun3UD))
+				);
+			}
+		}
+		if (this->m_DamagePoint.at(3).GetHitPoint() > 0) {//todo:ちょっと強引
+			if (HaveFrame(static_cast<int>(EnemyFrame::Gun4LR)) && HaveFrame(static_cast<int>(EnemyFrame::Gun4UD))) {
+				auto& Player = PlayerManager::Instance()->SetPlane();
+				Util::VECTOR3D Vec1 = this->m_Mat.zvec() * -1.f;
+				Util::VECTOR3D Vec2 = (Player->GetMat().pos() - GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::Gun4UD)).pos()).normalized();
+
+				Util::Easing(&m_Gun4Vec, Vec2, 0.975f);
+
+				Util::VECTOR3D Vec1XZ = Vec1; Vec1XZ.y = 0.f;
+				Util::VECTOR3D Vec2XZ = this->m_Gun4Vec.normalized(); Vec2XZ.y = 0.f;
+
+				Util::VECTOR3D Vec1TY = Vec1; Vec1TY.x = 0.f; Vec1TY.z = Vec1XZ.magnitude();
+				Util::VECTOR3D Vec2TY = this->m_Gun4Vec.normalized(); Vec2TY.x = 0.f; Vec2TY.z = Vec2XZ.magnitude();
+
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun4LR),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::VECTOR3D::SignedAngle(Vec1XZ.normalized(), Vec2XZ.normalized(), Util::VECTOR3D::up())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun4LR))
+				);
+
+				SetFrameLocalMatrix(static_cast<int>(EnemyFrame::Gun4UD),
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::left(), Util::VECTOR3D::SignedAngle(Vec1TY.normalized(), Vec2TY.normalized(), Util::VECTOR3D::right())) *
+					GetFrameBaseLocalMat(static_cast<int>(EnemyFrame::Gun4UD))
+				);
+			}
+		}
 		//
 		if (HaveFrame(static_cast<int>(EnemyFrame::LWingtip))) {
 			this->m_LineEffect1.Update(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::LWingtip)).pos());
@@ -312,6 +392,28 @@ public:
 				dp.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint3)).pos() - GetCameraPosition()).magnitude();
 				dp.IsDraw = true;
 				dp.frame = static_cast<int>(EnemyFrame::DamagePoint3);
+			}
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint4))) {
+			Util::VECTOR3D Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint4)).pos().get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				auto& dp = this->m_DamagePoint.at(3);
+				dp.Pos2D.x = Pos2D.x;
+				dp.Pos2D.y = Pos2D.y;
+				dp.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint4)).pos() - GetCameraPosition()).magnitude();
+				dp.IsDraw = true;
+				dp.frame = static_cast<int>(EnemyFrame::DamagePoint4);
+			}
+		}
+		if (HaveFrame(static_cast<int>(EnemyFrame::DamagePoint5))) {
+			Util::VECTOR3D Pos2D = ConvWorldPosToScreenPos(GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint5)).pos().get());
+			if (0.f <= Pos2D.z && Pos2D.z <= 1.f) {
+				auto& dp = this->m_DamagePoint.at(4);
+				dp.Pos2D.x = Pos2D.x;
+				dp.Pos2D.y = Pos2D.y;
+				dp.Pos2D.z = (GetFrameLocalWorldMatrix(static_cast<int>(EnemyFrame::DamagePoint5)).pos() - GetCameraPosition()).magnitude();
+				dp.IsDraw = true;
+				dp.frame = static_cast<int>(EnemyFrame::DamagePoint5);
 			}
 		}
 	}
@@ -386,8 +488,8 @@ struct EnemyAmmo {
 class EnemyScript {
 	bool					m_IsActive{ false };
 	char		padding[3]{};
-	int						m_HP[3]{};
-	float					m_Radius[3]{};
+	int						m_HP[5]{};
+	float					m_Radius[5]{};
 	char		padding4[4]{};
 	EnemyType				m_EnemyType{ EnemyType::Normal };
 
@@ -507,6 +609,12 @@ public:
 					if (Func == "HitPoint3") {
 						this->m_HP[2] = std::stoi(Args.at(0));
 					}
+					if (Func == "HitPoint4") {
+						this->m_HP[3] = std::stoi(Args.at(0));
+					}
+					if (Func == "HitPoint5") {
+						this->m_HP[4] = std::stoi(Args.at(0));
+					}
 					if (Func == "Radius1") {
 						this->m_Radius[0] = std::stof(Args.at(0)) * Scale3DRate;
 					}
@@ -515,6 +623,12 @@ public:
 					}
 					if (Func == "Radius3") {
 						this->m_Radius[2] = std::stof(Args.at(0)) * Scale3DRate;
+					}
+					if (Func == "Radius4") {
+						this->m_Radius[3] = std::stof(Args.at(0)) * Scale3DRate;
+					}
+					if (Func == "Radius5") {
+						this->m_Radius[4] = std::stof(Args.at(0)) * Scale3DRate;
 					}
 					if (Func == "Type") {
 						for (int loop = 0; loop < static_cast<int>(EnemyType::Max); ++loop) {
@@ -594,6 +708,21 @@ public:
 						this->m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Target;
 						this->m_EnemyAmmo.back().m_Scale = std::stof(Args.at(4));
 					}
+					if (Func == "PutHomingAmmoLoop") {
+						//撃ち始めるまでの時間,撃つ間隔,何回撃つか,クールダウン時間
+						int startTime = std::stoi(Args.at(1));//Frame
+						int shotFrame = std::stoi(Args.at(2));//Frame
+						int shotCount = std::stoi(Args.at(3));
+						int shotCoolDown = std::stoi(Args.at(4));//Frame
+						for (int loop = 0; loop < 1000; ++loop) {
+							this->m_EnemyAmmo.emplace_back();
+							this->m_EnemyAmmo.back().m_Shooter = std::stoi(Args.at(0));
+							this->m_EnemyAmmo.back().m_IsPlayed = false;
+							this->m_EnemyAmmo.back().m_Frame = startTime + (loop % shotCount) * shotFrame + (loop / shotCount) * shotCoolDown;
+							this->m_EnemyAmmo.back().m_AmmoMoveType = AmmoMoveType::Homing;
+							this->m_EnemyAmmo.back().m_Scale = std::stof(Args.at(5));
+						}
+					}
 					if (Func == "Delete") {
 						this->m_EndFrame = std::stof(Args.at(0));//Frame
 					}
@@ -644,7 +773,12 @@ public:
 						}
 						break;
 						case AmmoMoveType::Homing:
-							EnemyObj()->SetAmmo(this->m_EnemyAmmo.at(loop).m_Shooter, this->m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, this->m_EnemyAmmo.at(loop).m_Rot, this->m_EnemyAmmo.at(loop).m_Scale);
+						{
+							auto& Player = PlayerManager::Instance()->SetPlane();
+							Util::VECTOR3D Pos = Player->GetMat().pos() + Player->GetMat().zvec() * -(10.f * Scale3DRate);//todo:みこし射撃
+							Util::Matrix3x3 Rot = Util::Matrix3x3::RotVec2(Util::VECTOR3D::forward(), (EnemyObj()->GetMat().pos() - Pos).normalized());
+							EnemyObj()->SetAmmo(this->m_EnemyAmmo.at(loop).m_Shooter, this->m_EnemyAmmo.at(loop).m_AmmoMoveType == AmmoMoveType::Homing, Rot, this->m_EnemyAmmo.at(loop).m_Scale);
+						}
 							break;
 						default:
 							break;

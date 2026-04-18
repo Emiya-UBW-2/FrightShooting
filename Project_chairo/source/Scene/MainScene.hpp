@@ -91,6 +91,7 @@ class MainScene : public Util::SceneBase {
 
 	Sound::SoundUniqueID HitHumanID{ InvalidID };
 	Sound::SoundUniqueID alert{ InvalidID };
+	Sound::SoundUniqueID alert2{ InvalidID };
 public:
 	MainScene(void) noexcept { SetID(static_cast<int>(EnumScene::Main)); }
 	MainScene(const MainScene&) = delete;

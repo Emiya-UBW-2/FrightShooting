@@ -36,7 +36,8 @@ void MainScene::Load_Sub(void) noexcept {
 	this->HitHumanID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/fall.wav", true);
 	this->m_EnviID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/Envi.wav", false);
 	this->alert = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/alert2.wav", false);
-	
+	this->alert2 = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/SE/alert.wav", false);
+
 
 	this->m_BGMID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, this->m_StageScript.GetBGM(), false);
 }
@@ -201,6 +202,16 @@ void MainScene::Update_Sub(void) noexcept {
 				//敵が生きている
 				if (s.m_EnemyScript.IsAlive()) {
 					IsClear = false;
+					break;
+				}
+			}
+			//ボスがいる場合はボスが死んだ時点でクリア　todo:少し強引
+			for (auto& s : this->m_StageScript.EnemyPop()) {
+				if (s.m_EnemyScript.GetEnemyType() == EnemyType::BOSS) {
+					if (!s.m_EnemyScript.IsAlive()) {
+						IsClear = true;
+						break;
+					}
 				}
 			}
 			if (IsClear) {
@@ -315,6 +326,26 @@ void MainScene::Update_Sub(void) noexcept {
 			else {
 				if (Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert)->CheckPlay()) {
 					Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert)->StopAll();
+				}
+			}
+		}
+		{
+			bool IsAlert2= false;
+			for (auto& b : AmmoPool::Instance()->GetBombPer()) {
+				if (b->IsActive() && b->GetHomingID().first == Player->GetObjectID()) {
+					IsAlert2 = true;
+					break;
+				}
+			}
+			this->m_MainUI->SetIsAlert2(IsAlert2);
+			if (IsAlert2) {
+				if (!Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert2)->CheckPlay()) {
+					Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert2)->Play(DX_PLAYTYPE_LOOP, FALSE);
+				}
+			}
+			else {
+				if (Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert2)->CheckPlay()) {
+					Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert2)->StopAll();
 				}
 			}
 		}

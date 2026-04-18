@@ -14,7 +14,8 @@ class MainUI {
 	bool							m_IsPauseActive{ false };
 	bool							m_IsExit{ false };
 	bool							m_IsAlert{ false };
-	char		padding[4]{};
+	bool							m_IsAlert2{ false };
+	char		padding[3]{};
 	Sound::SoundUniqueID			m_OKID{ InvalidID };
 	float							m_HPPrev{};
 	float							m_HPChangeTime{};
@@ -35,6 +36,7 @@ public:
 	bool IsPauseActive(void) const noexcept { return this->m_IsPauseActive; }
 	bool IsExit(void) const noexcept { return this->m_IsExit; }
 	void SetIsAlert(bool IsAlert) noexcept { this->m_IsAlert = IsAlert; }
+	void SetIsAlert2(bool IsAlert2) noexcept { this->m_IsAlert2 = IsAlert2; }
 public:
 	void Init() noexcept {
 		this->m_OKID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::SE, 3, "data/Sound/UI/ok.wav", false);
@@ -247,6 +249,15 @@ public:
 			}
 
 			if (this->m_IsAlert) {
+				auto* Font = Draw::FontPool::Instance();
+				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
+					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,
+					DrawerMngr->GetDispWidth() / 2, DrawerMngr->GetDispHeight() / 2 - 400 + YP,
+					ColorPalette::Red, ColorPalette::Red50,
+					"CAUTION");
+				YP += 32;
+			}
+			if (this->m_IsAlert2) {
 				auto* Font = Draw::FontPool::Instance();
 				Font->Get(Draw::FontType::DIZ_UD_Gothic, 24, 3)->DrawString(
 					Draw::FontXCenter::MIDDLE, Draw::FontYCenter::MIDDLE,

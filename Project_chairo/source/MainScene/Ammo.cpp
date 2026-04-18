@@ -64,10 +64,13 @@ void Bomb::Update_Sub(void) noexcept {
 			}
 		}
 		float Length = this->Vector.magnitude();
-		Util::Easing(
-			&this->Vector,
-			(this->m_HomingTarget - GetMat().pos()).normalized() * Length,
-			0.9f);
+		Util::VECTOR3D Target = (this->m_HomingTarget - GetMat().pos()).normalized() * Length;
+		if (Util::VECTOR3D::Dot(this->Vector, Target) > 0.f) {
+			Util::Easing(
+				&this->Vector,
+				Target,
+				0.95f);
+		}
 		this->Vector = this->Vector.normalized() * Length;
 	}
 
