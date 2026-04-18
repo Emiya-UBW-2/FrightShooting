@@ -14,7 +14,7 @@ SetCut(0);
 	SetModelAnimation(data\model\CV\,0, 0,0.0);
 
 	SetSE(data/Sound/SE/Envi.wav, 0);
-	SetSE(data/Sound/SE/engine.wav, 0);
+	SetSE(data/Sound/SE/tankengine.wav, 0);
 SetCut(120);
 	SetCameraPos(-60.0,10.0,-60.0);
 	SetCameraTarget(0.0,15.0,0.0);

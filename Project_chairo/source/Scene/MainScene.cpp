@@ -836,6 +836,9 @@ void MainScene::Dispose_Sub(void) noexcept {
 	Sound::SoundPool::Instance()->Delete(Sound::SoundType::BGM, this->m_BGMID);
 	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_EnviID)->StopAll();
 
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert)->StopAll();
+	Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->alert2)->StopAll();
+
 	auto& Player = PlayerManager::Instance()->SetPlane();
 	GameRule::Instance()->SetHP(Player->GetHitPoint());
 

@@ -1,80 +1,43 @@
-	SetBGM(data/Sound/BGM/movie.wav, 0);
+SetBGM(data/Sound/BGM/bgm1.wav, 0);
 SetCut(0);
-	SetCameraPos(0.5,10.0,1.0);
-	SetCameraTarget(0.0,3.0,0.0);
-	SetCameraPosEnd(-0.5,10.0,1.0);
-	SetCameraTargetEnd(0.0,3.0,0.0);
+	SetCameraPos(0.0,0.5,-50.0);
+	SetCameraTarget(0.0,1.0,10.0);
+	SetCameraPosEnd(0.0,0.5,0.0);
 	SetCameraFov(120.0);
 	SetCameraShake(10.0);
 
 	SetModel(data\model\Sky\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0, 0,720);
 
-	SetModel(data\model\Map0\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0, 0,420);
+	SetModel(data\model\Map2\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0, 0,420);
 
-	SetModel(data\model\Plane\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0, 0,180);
-	SetModelAnimation(data\model\Plane\,0, 0,0.0);
+	SetModel(data\model\CV\,0, 0.0,0.0,0.0 ,0.0,0.0,0.0, 0,420);
+	SetModelAnimation(data\model\CV\,0, 0,0.0);
 
 	SetSE(data/Sound/SE/Envi.wav, 0);
-	SetSE(data/Sound/SE/engine.wav, 0);
-SetCut(60);
-	SetCameraPos(0.0,0.5,-6.0);
-	SetCameraTarget(0.0,1.0,0.0);
-	SetCameraPosEnd(3.0,0.5,-5.0);
-	SetCameraTargetEnd(0.0,1.0,0.0);
-	SetCameraFov(120.0);
-
+	SetSE(data/Sound/SE/tankengine.wav, 0);
 SetCut(120);
-	SetCameraPos(3.0,0.5,-2.4);
-	SetCameraTarget(0.0,1.0,-2.4);
-	SetCameraPosEnd(3.0,0.5,0.0);
-	SetCameraTargetEnd(0.0,1.0,0.0);
-	SetCameraFov(90.0);
-
-SetCut(180);
-	SetCameraPos(-1.5,0.5,5.0);
-	SetCameraTarget(-1.0,1.0,0.0);
-	SetCameraPosEnd(-1.5,0.5,5.0);
-	SetCameraTargetEnd(-1.5,1.0,-100.0);
+	SetCameraPos(-60.0,10.0,-60.0);
+	SetCameraTarget(0.0,15.0,0.0);
+	SetCameraPosEnd(-20.0,10.0,-90.0);
 	SetCameraFov(120.0);
+	SetCameraShake(100.0);
 
-	SetModel(data\model\Plane\,1, 0.0,0.0,0.0 ,0.0,0.0,0.0, 180,420);
-	SetModelAnimation(data\model\Plane\,1, 1,0.0);
-SetCut(220);
-	SetCameraPos(-1.5,0.5,5.0);
-	SetCameraTarget(-1.5,1.0,-100.0);
+SetCut(240);
+	SetCameraPos(0.0,30.0,-100.0);
+	SetCameraTarget(0.0,5.0,0.0);
 	SetCameraFov(120.0);
-	SetCameraFovEnd(60.0);
-	SetCameraShake(50.0);
-SetCut(280);
-	SetCameraPos(-1.5,0.5,5.0);
-	SetCameraTarget(-1.5,1.0,-100.0);
-	SetCameraFov(60.0);
-	SetCameraFovEnd(40.0);
-	SetCameraShake(50.0);
-
-SetCut(420);
-	SetCameraPos(1.0,50.5,-105.0);
-	SetCameraTarget(1.0,50.0,-100.0);
+	SetCameraFovEnd(90.0);
+	SetCameraShake(100.0);
+SetCut(250);
+	SetCameraPos(0.0,30.0,-100.0);
+	SetCameraTarget(0.0,5.0,0.0);
 	SetCameraFov(90.0);
-	SetCameraFovEnd(100.0);
-	SetCameraShake(10.0);
+	SetCameraFovEnd(80.0);
+	SetCameraShake(100.0);
+SetCut(330);
+	SetCameraPos(0.0,30.0,-100.0);
+	SetCameraTarget(0.0,5.0,0.0);
+	SetCameraFov(80.0);
+	SetCameraShake(100.0);
 
-	SetModel(data\model\Map0\,1, 0.0,0.0,2500.0 ,0.0,0.0,0.0, 420,540);
-	SetModelEnd(data\model\Map0\,1, 0.0,0.0,3000.0 ,0.0,0.0,0.0);
-
-	SetModel(data\model\Plane\,2, 0.0,50.0,-100.0 ,0.0,0.0,0.0, 420,540);
-	SetModelAnimation(data\model\Plane\,2, 2,0.0);
-
-SetCut(540);
-	SetCameraPos(50.0,-150.0,-100.0);
-	SetCameraTarget(1.0,0.0,100.0);
-	SetCameraPosEnd(50.0,-150.0,300.0);
-	SetCameraTargetEnd(1.0,0.0,-100.0);
-	SetCameraFov(20.0);
-	SetCameraShake(50.0);
-
-	SetModel(data\model\Plane\,3, 0.0,0.0,100.0 ,0.0,0.0,0.0, 540,720);
-	SetModelAnimation(data\model\Plane\,3, 2,0.0);
-	SetModelEnd(data\model\Plane\,3, 0.0,0.0,-100.0 ,0.0,0.0,0.0);
-
-EndCut(720);
+EndCut(360);
