@@ -43,19 +43,19 @@ void MyPlane::Update_Sub(void) noexcept {
 			float prev = this->m_MovePointAdd.y;
 			if (UpKey && !DownKey) {
 				this->m_MovePointAdd.y -= 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.y = -0.3f;
+				MoveVec.y = -0.5f;
 			}
 			if (DownKey && !UpKey) {
 				this->m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-				MoveVec.y = 0.3f;
+				MoveVec.y = 0.5f;
 			}
 			if (!UpKey && !DownKey) {
 				if (this->m_MovePointAdd.y < -12.f * Scale3DRate) {
-					this->m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
-					MoveVec.y = 0.3f;
+					this->m_MovePointAdd.y += 20.f * Scale3DRate * DrawerMngr->GetDeltaTime();
+					MoveVec.y = 0.5f;
 				}
 			}
-			this->m_MovePointAdd.y = std::clamp(this->m_MovePointAdd.y, -48.f * Scale3DRate, 12.f * Scale3DRate);
+			this->m_MovePointAdd.y = std::clamp(this->m_MovePointAdd.y, -96.f * Scale3DRate, 12.f * Scale3DRate);
 			if (prev == this->m_MovePointAdd.y) {
 				MoveVec.y = 0.0f;
 			}
@@ -291,7 +291,7 @@ void MyPlane::Update_Sub(void) noexcept {
 			}
 			RailMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), this->m_RotRail * Util::deg2rad(45.f) * DrawerMngr->GetDeltaTime()) * RailMat;
 			//範囲外なら真ん中を向く
-			if (this->m_OutsidePer <= 0.f && (PosAfter.magnitude() > 200.f * Scale3DRate)) {
+			if (this->m_OutsidePer <= 0.f && (PosAfter.magnitude() > 400.f * Scale3DRate)) {
 				this->m_OutsidePer = 1.f;
 				this->m_OutsideMatBefore = RailMat.rotation();
 
@@ -334,14 +334,20 @@ void MyPlane::Update_Sub(void) noexcept {
 			break;
 		}
 
-		Util::VECTOR3D EyePos = this->m_MovePoint * -0.5f;
-		if (EyePos.y > 6.f * Scale3DRate) {
-			EyePos.y = 6.f * Scale3DRate + (EyePos.y - 6.f * Scale3DRate)*1.8f;
+		Util::VECTOR3D EyePos = this->m_MovePoint * -1.f;
+		bool IsDownRange = false;
+		if (EyePos.y > 12.f * Scale3DRate) {
+			EyePos.y = 12.f * Scale3DRate + (EyePos.y - 12.f * Scale3DRate)*1.95f;
+			IsDownRange = true;
 		}
+		EyePos *= 0.5f;
 
 		EyeMat = Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), this->m_RollingCam) * 
 			Util::Matrix4x4::Mtrans(EyePos) * 
 			EyeMat;
+
+		Util::Easing(&m_EyeRot, IsDownRange ? this->m_MoveVec : Util::VECTOR3D::forward(), 0.9f);
+		EyeMat = Util::Matrix4x4::RotVec2(Util::VECTOR3D::forward(), m_EyeRot.normalized()) * EyeMat;
 
 		this->m_RePos = GetMat().pos();
 		SetMatrix(
@@ -368,11 +374,12 @@ void MyPlane::Update_Sub(void) noexcept {
 	{
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::Missile)) {
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, ShotSoundID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
-			AmmoPool::Instance()->ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
+			AmmoPool::Instance()->ShotBomb(GetFrameLocalWorldMatrix(static_cast<int>(m_IsLeftMissile ? CharaFrame::Missile1 : CharaFrame::Missile2)), 100.f, GetObjectID());
+			m_IsLeftMissile ^= 1;
 		}
 		if (KeyMngr->GetBattleKeyTrigger(Util::EnumBattle::MultiMissile)) {
 			Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, ShotSoundID)->Play3D(GetMat().pos(), 500.f * Scale3DRate);
-			AmmoPool::Instance()->ShotMultiBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 100.f, GetObjectID());
+			AmmoPool::Instance()->ShotMultiBomb(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Missile2)), 100.f, GetObjectID());
 		}
 		if (!KeyMngr->GetBattleKeyPress(Util::EnumBattle::Gun)) {
 			this->m_ShootTimer = 0.f;
@@ -380,7 +387,17 @@ void MyPlane::Update_Sub(void) noexcept {
 		else {
 			if (this->m_ShootTimer == 0.f) {
 				EffectPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 1.f);
-				AmmoPool::Instance()->ShotAmmo(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f, GetObjectID(), 1.f);
+				AmmoPool::Instance()->ShotAmmo(
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), GetRandf(Util::deg2rad(1)))*
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), GetRandf(Util::deg2rad(1)))*
+					GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun1)), 200.f, GetObjectID(), 1.f);
+
+				EffectPool::Instance()->Shot(GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 1.f);
+				AmmoPool::Instance()->ShotAmmo(
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), GetRandf(Util::deg2rad(1)))*
+					Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), GetRandf(Util::deg2rad(1)))*
+					GetFrameLocalWorldMatrix(static_cast<int>(CharaFrame::Gun2)), 200.f, GetObjectID(), 1.f);
+
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::SE, this->m_ShotID)->Play3D(GetMat().pos(), 200.f * Scale3DRate);
 				this->m_ShootTimer = 0.1f;
 			}

@@ -724,7 +724,7 @@ public:
 							this->m_MovePointAdd.y += 10.f * Scale3DRate * DrawerMngr->GetDeltaTime();
 							MoveVec.y = 0.3f;
 						}
-						this->m_MovePointAdd.y = std::clamp(this->m_MovePointAdd.y, -48.f * Scale3DRate, 12.f * Scale3DRate);
+						this->m_MovePointAdd.y = std::clamp(this->m_MovePointAdd.y, -96.f * Scale3DRate, 12.f * Scale3DRate);
 						if (prev == this->m_MovePointAdd.y) {
 							MoveVec.y = 0.0f;
 						}
@@ -876,7 +876,7 @@ public:
 					}
 					EnemyObj()->SetRailMat(Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), this->m_RotRail * Util::deg2rad(45.f)* DrawerMngr->GetDeltaTime()) * EnemyObj()->GetRailMat());
 					//範囲外なら真ん中を向く
-					if (this->m_OutsidePer <= 0.f && (PosAfter.magnitude() > 200.f * Scale3DRate)) {
+					if (this->m_OutsidePer <= 0.f && (PosAfter.magnitude() > 400.f * Scale3DRate)) {
 						this->m_OutsidePer = 1.f;
 						this->m_OutsideMatBefore = EnemyObj()->GetRailMat().rotation();
 

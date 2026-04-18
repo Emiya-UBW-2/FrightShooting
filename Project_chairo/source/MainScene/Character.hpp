@@ -39,6 +39,8 @@ enum class CharaFrame {
 	Eye,
 	Gun1,
 	Gun2,
+	Missile1,
+	Missile2,
 	LWingtip,
 	RWingtip,
 	Nozzle1,
@@ -50,6 +52,8 @@ static const char* CharaFrameName[static_cast<int>(CharaFrame::Max)] = {
 	"目",
 	"機銃1",
 	"機銃2",
+	"ミサイル1",
+	"ミサイル2",
 	"左翼端",
 	"右翼端",
 	"ノズル1",
@@ -68,7 +72,8 @@ class MyPlane :public BaseObject {
 
 	bool				m_OverHeat{ false };
 	bool				m_Stall{ false };
-	char		padding[6]{};
+	bool				m_IsLeftMissile{ false };
+	char		padding[5]{};
 
 	size_t					m_CockPitIndex{};
 	Sound::SoundUniqueID	m_CockPitID{ InvalidID };
@@ -82,6 +87,8 @@ class MyPlane :public BaseObject {
 	Util::VECTOR3D			m_MovePoint;
 	Util::VECTOR3D			m_MovePointAdd;
 	Util::VECTOR3D			m_MoveVec;
+
+	Util::VECTOR3D			m_EyeRot;
 
 	Util::VECTOR3D			m_RePos;
 
@@ -119,7 +126,7 @@ class MyPlane :public BaseObject {
 
 	LineEffect				m_LineEffect3;
 	LineEffect				m_LineEffect4;
-	char		padding4[4]{};
+	//char		padding4[4]{};
 
 	Draw::MV1				m_barrier{};
 public:
