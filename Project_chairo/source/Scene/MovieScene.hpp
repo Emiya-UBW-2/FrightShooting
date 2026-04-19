@@ -35,6 +35,14 @@ static const char* MovieObjFrameName[static_cast<int>(MovieObjFrame::Max)] = {
 	"ノズル2",
 };
 
+enum class EffectID {
+	Explosion,
+	Max,
+};
+static const char* EffectIDName[static_cast<int>(EffectID::Max)] = {
+	"Explosion",
+};
+
 class MovieObj : public BaseObject {
 	bool					m_IsDraw = true;
 	char		padding[7]{};
@@ -165,11 +173,20 @@ struct SoundPlay {
 	bool							m_IsPlay{};
 	char		padding2[7]{};
 };
+struct EffectPlay {
+	int								m_PlayFrame{};
+	char		padding[4]{};
+	EffectID						m_ID{ InvalidID };
+	bool							m_IsPlay{};
+	char		padding2[7]{};
+	Util::VECTOR3D					m_Pos;
+};
 class StoryScript {
 	std::vector<StoryModel>	m_Models{};
 	std::vector<StoryPop>	m_StoryPop{};
 	std::vector<SoundPlay>	m_SEPlay{};
 	std::vector<SoundPlay>	m_BGMPlay{};
+	std::vector<EffectPlay>	m_EffectPlay{};
 	float					m_Frame{};
 
 	bool					m_IsEnd = false;
@@ -184,6 +201,7 @@ public:
 			this->m_Models.clear();
 			this->m_SEPlay.clear();
 			this->m_BGMPlay.clear();
+			this->m_EffectPlay.clear();
 			File::InputFileStream FileStream;
 			FileStream.Open("data/Event/" + Path + ".txt");
 			while (true) {
@@ -234,9 +252,9 @@ public:
 						ObjectManager::Instance()->LoadModel(b.m_ObjPath);
 						b.m_UniqueID = std::stoi(Args.at(1));
 						b.m_Mat =
-							Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(5))) *
-							Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::stof(Args.at(6))) *
-							Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), std::stof(Args.at(7))) *
+							Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(5)))) *
+							Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(6)))) *
+							Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(std::stof(Args.at(7)))) *
 							Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4))) * Scale3DRate);
 						b.m_MatEnd = b.m_Mat;
 						b.m_StartFrame = std::stoi(Args.at(8));
@@ -246,9 +264,9 @@ public:
 						for (auto& b : this->m_Models) {
 							if (b.m_ObjPath == Args.at(0) && b.m_UniqueID == std::stoi(Args.at(1))) {
 								b.m_MatEnd =
-									Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), std::stof(Args.at(5))) *
-									Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), std::stof(Args.at(6))) *
-									Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), std::stof(Args.at(7))) *
+									Util::Matrix4x4::RotAxis(Util::VECTOR3D::right(), Util::deg2rad(std::stof(Args.at(5)))) *
+									Util::Matrix4x4::RotAxis(Util::VECTOR3D::up(), Util::deg2rad(std::stof(Args.at(6)))) *
+									Util::Matrix4x4::RotAxis(Util::VECTOR3D::forward(), Util::deg2rad(std::stof(Args.at(7)))) *
 									Util::Matrix4x4::Mtrans(Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4))) * Scale3DRate);
 							}
 						}
@@ -273,6 +291,19 @@ public:
 						auto& b = this->m_BGMPlay.back();
 						b.m_ID = Sound::SoundPool::Instance()->GetUniqueID(Sound::SoundType::BGM, 1, Args.at(0), false);
 						b.m_PlayFrame = std::stoi(Args.at(1));
+						b.m_IsPlay = false;
+					}
+					if (Func == "SetEffect") {
+						this->m_EffectPlay.emplace_back();
+						auto& b = this->m_EffectPlay.back();
+						for (int loop = 0; loop < static_cast<int>(EffectID::Max); ++loop) {
+							if (Args.at(0) == EffectIDName[loop]) {
+								b.m_ID = static_cast<EffectID>(loop);
+								break;
+							}
+						}
+						b.m_PlayFrame = std::stoi(Args.at(1));
+						b.m_Pos = Util::VECTOR3D::vget(std::stof(Args.at(2)), std::stof(Args.at(3)), std::stof(Args.at(4)))* Scale3DRate;
 						b.m_IsPlay = false;
 					}
 				}
@@ -303,6 +334,21 @@ public:
 				Sound::SoundPool::Instance()->Get(Sound::SoundType::BGM, b.m_ID)->Play(DX_PLAYTYPE_BACK, TRUE);
 			}
 		}
+		for (auto& b : this->m_EffectPlay) {
+			if (b.m_PlayFrame <= static_cast<int>(this->m_Frame) && !b.m_IsPlay) {
+				b.m_IsPlay = true;
+				;
+				switch (b.m_ID) {
+				case EffectID::Explosion:
+					EffectPool::Instance()->Cannon(Util::Matrix4x4::Mtrans(b.m_Pos));
+					break;
+				case EffectID::Max:
+				default:
+					break;
+				}
+			}
+		}
+		
 		for (auto& Now : this->m_StoryPop) {
 			if (Now.m_StartFrame <= static_cast<int>(this->m_Frame) && static_cast<int>(this->m_Frame) < Now.m_EndFrame) {
 				float Per = static_cast<float>(static_cast<int>(this->m_Frame) - Now.m_StartFrame) / static_cast<float>(Now.m_EndFrame - Now.m_StartFrame);

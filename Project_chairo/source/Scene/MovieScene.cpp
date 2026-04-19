@@ -6,6 +6,9 @@
 
 void MovieScene::Load_Sub(void) noexcept {
 	this->m_StoryScript.Load(GameRule::Instance()->GetNextEvent());
+
+	EffectPool::Create();
+	EffectPool::Instance()->Load();
 }
 void MovieScene::Init_Sub(void) noexcept {
 	this->m_StoryScript.Init();
@@ -35,6 +38,8 @@ void MovieScene::Init_Sub(void) noexcept {
 	PostPassParts->SetGodRayPer(0.25f);
 
 	KeyGuideParts->SetGuideFlip();
+
+	EffectPool::Instance()->Init();
 }
 void MovieScene::Update_Sub(void) noexcept {
 	auto* DrawerMngr = Draw::MainDraw::Instance();
@@ -115,4 +120,5 @@ void MovieScene::UIDraw_Sub(void) noexcept {
 void MovieScene::Dispose_Sub(void) noexcept {
 	this->m_StoryScript.Dispose();
 	ObjectManager::Instance()->DeleteAll();
+	EffectPool::Release();
 }
