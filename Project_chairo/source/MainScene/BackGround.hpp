@@ -16,8 +16,6 @@
 #include "../Draw/Light.hpp"
 #include "../Draw/MV1.hpp"
 
-static float GetRandf(float arg) noexcept { return -arg + static_cast<float>(GetRand(static_cast<int>(arg * 2.f * 10000.f))) / 10000.f; }
-
 class BackGround : public Util::SingletonBase<BackGround> {
 private:
 	friend class Util::SingletonBase<BackGround>;

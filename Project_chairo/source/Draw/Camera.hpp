@@ -54,8 +54,6 @@ namespace Camera {
 
 		virtual ~Camera3D(void) noexcept {}
 	public:
-		static float GetRandf(float arg) noexcept { return -arg + static_cast<float>(DxLib::GetRand(static_cast<int>(arg * 2.f * 10000.f))) / 10000.f; }
-
 		void Update(void) noexcept;
 	};
 }

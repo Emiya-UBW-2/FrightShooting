@@ -19,6 +19,8 @@
 #include "Algorithm.hpp"
 #include "../File/FileStream.hpp"
 
+static float GetRandf(float arg) noexcept { return -arg + static_cast<float>(GetRand(static_cast<int>(arg * 2.f * 10000.f))) / 10000.f; }
+
 namespace Util {
 	// --------------------------------------------------------------------------------------------------
 	// シングルトン
